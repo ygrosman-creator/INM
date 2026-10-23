@@ -19,7 +19,7 @@ create table proveedores(
   nombre text, cuit text, rubro text, tel text, email text, facturacion text, condiciones text, obs text);
 create table reparaciones(
   id uuid primary key default gen_random_uuid(), created_at timestamptz default now(),
-  numero text unique, titulo text, prop uuid references propiedades on delete set null,
+  numero text unique, titulo text, prop uuid references propiedades on delete set null, prov uuid references proveedores on delete set null,
   solicitante text, categoria text, prioridad text, estado text, responsable text, "desc" text,
   "fechaSol" date, "fechaIni" date, "fechaFinPrev" date, "fechaFinReal" date,
   docs jsonb default '[]', novedades jsonb default '[]');

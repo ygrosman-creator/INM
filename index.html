@@ -48,7 +48,7 @@ a{color:var(--ac);word-break:break-all}
 </style></head><body>
 <div id="root"><header><h1>Inmuebles | Reparaciones y Mantenimiento</h1><input id="me" placeholder="Tu nombre" title="Se usa en pagos, novedades y “Mis pendientes”"><button class="btn s" id="out" style="display:none">Salir</button></header><nav id="nav"></nav><div id="app"></div></div>
 <dialog id="dlg"></dialog><div id="toast"></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script><script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="config.js"></script>
 <script>
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -58,7 +58,7 @@ const COL={prop:'propiedades',rep:'reparaciones',pre:'presupuestos',pag:'pagos',
 const S={prop:[],rep:[],pre:[],pag:[],prov:[]};
 const ESTADOS=['Pendiente de revisión','Solicitando presupuestos','Pendiente de aprobación','Aprobada','En ejecución','Finalizada','Cancelada'];
 const PRIO=['Baja','Normal','Alta','Urgente'],CATS=['Plomería','Electricidad','Albañilería','Pintura','Techos','Ascensores','Seguridad','Otros'];
-const PEST=['Recibido','En evaluación','Aprobado','Rechazado','Vencido'],MEDIOS=['Transferencia','Cheque','Efectivo','Otro'],EPROP=['Activo','En obra','Desocupado','En venta','Otro'];
+const PEST=['Recibido','En evaluación','Aprobado','Rechazado','Vencido'],MEDIOS=['Transferencia','Cheque','Efectivo','Otro'],EPROP=['ALQUILADO','EN ALQUILER','A LA VENTA','EN COMODATO','DE AMIA','VARIOS'];
 const DOCC=['Foto del problema','Foto del trabajo terminado','Factura','Comprobante','Otro'],MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 let DB=null,ASSETS=null,view='kan',selProp=null,dlg=null,dragId=null,F={q:'',p:'',v:'',pr:'',e:'',y:'',rp:''};
 const sum=(a,f)=>a.reduce((t,x)=>t+(+f(x)||0),0),by=(a,id)=>a.find(x=>x.id===id);
@@ -68,7 +68,7 @@ const pres=r=>S.pre.filter(p=>p.rep===r.id),pagos=r=>S.pag.filter(p=>p.rep===r.i
 const apr=r=>pres(r).find(p=>p.estado==='Aprobado');
 const aprobado=r=>apr(r)?+apr(r).monto||0:0,paid=r=>sum(pagos(r),p=>p.monto),saldo=r=>aprobado(r)-paid(r);
 const epago=r=>{const a=aprobado(r),p=paid(r);return p>a?'Con diferencia':!a&&!p?'Sin aprobar':p>=a?'Pagado':p?'Parcial':'Pendiente'};
-const provN=r=>{const a=apr(r),v=a&&by(S.prov,a.prov);return v?v.nombre:'—'};
+const provId=r=>r.prov||(apr(r)||{}).prov;const provN=r=>{const v=by(S.prov,provId(r));return v?v.nombre:'—'};
 const open=r=>!['Finalizada','Cancelada'].includes(r.estado);
 const opts=(l,sel,blank)=>(blank!=null?`<option value="">${blank}</option>`:'')+l.map(o=>{const[v,t]=Array.isArray(o)?o:[o,o];return`<option value="${esc(v)}"${v===sel?' selected':''}>${esc(t)}</option>`}).join('');
 let tt;function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(tt);tt=setTimeout(()=>t.style.display='none',5000)}
@@ -84,10 +84,10 @@ function repTable(l){
   return`<div class="wrap"><table><tr><th>N°</th><th>Reparación</th><th>Inmueble</th><th>Estado</th><th>Prioridad</th><th>Proveedor</th><th>Aprobado</th><th>Pagado</th><th>Saldo</th><th>Pago</th></tr>`+l.map(r=>{const p=by(S.prop,r.prop);return`<tr class="row" data-act="rep" data-id="${r.id}"><td>${esc(r.numero)}</td><td><b>${esc(r.titulo||'Sin título')}</b><div class="mut">${esc(r.responsable||'')}</div></td><td>${esc(p?p.codigo:'—')}</td><td>${eb(r.estado)}</td><td>${pb(r.prioridad||'Normal')}</td><td>${esc(provN(r))}</td><td>${fmt(aprobado(r))}</td><td>${fmt(paid(r))}</td><td class="${saldo(r)>0?'neg':''}">${fmt(saldo(r))}</td><td>${xb(r)}</td></tr>`}).join('')+'</table></div>';
 }
 function vKan(){
-  return`<div class="bar2"><button class="btn" data-act="new" data-k="rep">+ Nueva reparación</button></div><div class="kan">`+ESTADOS.map(e=>{const l=S.rep.filter(r=>(r.estado||ESTADOS[0])===e);return`<div class="col" data-drop="${e}"><h3>${e} <span class="mut">${l.length}</span></h3>`+l.map(r=>{const p=by(S.prop,r.prop);return`<div class="kc" draggable="true" data-act="rep" data-id="${r.id}"><b>${esc(r.titulo||'Sin título')}</b><div class="mut">${esc(r.numero)} · ${esc(p?p.codigo:'—')}</div><div style="margin-top:4px">${pb(r.prioridad||'Normal')} ${xb(r)}</div></div>`}).join('')+'</div>'}).join('')+'</div><div class="mut">Arrastrá las tarjetas para cambiar el estado (en el celular, abrí la reparación).</div>';
+  return`<div class="bar2"><button class="btn" data-act="new" data-k="rep">+ Nueva reparación</button></div><div class="kan">`+ESTADOS.map(e=>{const l=S.rep.filter(r=>(r.estado||ESTADOS[0])===e);return`<div class="col" data-drop="${e}"><h3>${e} <span class="mut">${l.length}</span></h3>`+l.map(r=>{const p=by(S.prop,r.prop);return`<div class="kc" draggable="true" data-act="rep" data-id="${r.id}"><b>${esc(r.titulo||'Sin título')}</b><div style="margin-top:4px">${pb(r.prioridad||'Normal')} ${xb(r)}</div></div>`}).join('')+'</div>'}).join('')+'</div><div class="mut">Arrastrá las tarjetas para cambiar el estado (en el celular, abrí la reparación).</div>';
 }
 function vReps(){
-  const q=F.q.toLowerCase(),l=S.rep.filter(r=>(!F.p||r.prop===F.p)&&(!F.v||(apr(r)||{}).prov===F.v)&&(!F.pr||r.prioridad===F.pr)&&(!F.e||r.estado===F.e)&&(!q||[r.titulo,r.numero,r.responsable,r.solicitante].join(' ').toLowerCase().includes(q)));
+  const q=F.q.toLowerCase(),l=S.rep.filter(r=>(!F.p||r.prop===F.p)&&(!F.v||provId(r)===F.v)&&(!F.pr||r.prioridad===F.pr)&&(!F.e||r.estado===F.e)&&(!q||[r.titulo,r.numero,r.responsable,r.solicitante].join(' ').toLowerCase().includes(q)));
   return`<div class="bar2"><input data-flt="q" placeholder="Buscar…" value="${esc(F.q)}"><select data-flt="p">${opts(S.prop.map(p=>[p.id,p.codigo+' · '+p.direccion]),F.p,'Todos los inmuebles')}</select><select data-flt="v">${opts(S.prov.map(p=>[p.id,p.nombre]),F.v,'Todos los proveedores')}</select><select data-flt="pr">${opts(PRIO,F.pr,'Toda prioridad')}</select><select data-flt="e">${opts(ESTADOS,F.e,'Todo estado')}</select><button class="btn" data-act="new" data-k="rep">+ Nueva</button></div><div class="card">${repTable(l)}</div>`;
 }
 function vPagos(){
@@ -96,7 +96,7 @@ function vPagos(){
   <h2>Trabajos aprobados con saldo</h2><div class="card">${repTable(pend)}</div><h2>Pagos registrados</h2><div class="card wrap">${ps.length?`<table><tr><th>N°</th><th>Fecha</th><th>Reparación</th><th>Proveedor</th><th>Importe</th><th>Medio</th><th>Factura</th><th>Comprobante</th></tr>${ps.map(p=>{const r=by(S.rep,p.rep),v=by(S.prov,p.prov);return`<tr class="row" data-act="rep" data-id="${p.rep}"><td>${esc(p.numero)}</td><td>${esc(p.fecha)}</td><td>${esc(r?r.numero:'—')}</td><td>${esc(v?v.nombre:'—')}</td><td>${fmt(p.monto)}</td><td>${esc(p.medio)}</td><td>${esc(p.factura||'')}</td><td>${p.archivo?'Sí':'—'}</td></tr>`}).join('')}</table>`:'<div class="empty">Todavía no hay pagos.</div>'}</div>`;
 }
 function vProps(){
-  return`<div class="bar2"><button class="btn" data-act="new" data-k="prop">+ Nueva propiedad</button></div>`+(S.prop.length?`<div class="grid">${S.prop.map(p=>{const l=S.rep.filter(r=>r.prop===p.id);return`<div class="card" style="cursor:pointer" data-act="prop" data-id="${p.id}"><b>${esc(p.codigo)}</b> ${bd(p.estado||'Activo')}<div>${esc(p.direccion)}</div><div class="mut">${esc(p.localidad||'')} · ${esc(p.responsable||'sin responsable')}</div><div style="margin-top:8px">${l.length} reparaciones · ${fmt(sum(l,paid))} pagado</div></div>`}).join('')}</div>`:'<div class="card empty">Cargá primero las propiedades.</div>');
+  return`<div class="bar2"><button class="btn" data-act="new" data-k="prop">+ Nueva propiedad</button></div>`+(S.prop.length?`<div class="grid">${S.prop.map(p=>{const l=S.rep.filter(r=>r.prop===p.id);return`<div class="card" style="cursor:pointer" data-act="prop" data-id="${p.id}"><b>${esc(p.codigo)}</b> ${bd(p.estado||'Sin estado')}<div>${esc(p.direccion)}</div><div class="mut">${esc(p.localidad||'')} · ${esc(p.responsable||'sin responsable')}</div><div style="margin-top:8px">${l.length} reparaciones · ${fmt(sum(l,paid))} pagado</div></div>`}).join('')}</div>`:'<div class="card empty">Cargá primero las propiedades.</div>');
 }
 function vProp(){
   const p=by(S.prop,selProp);if(!p){view='props';return vProps()}const l=S.rep.filter(r=>r.prop===p.id).sort((a,b)=>(b.fechaSol||'').localeCompare(a.fechaSol||''));
@@ -104,19 +104,40 @@ function vProp(){
   <div class="card"><h1>${esc(p.codigo)} · ${esc(p.direccion)}</h1><div class="mut">${esc(p.localidad||'')} · ${esc(p.estado||'')} · Responsable: ${esc(p.responsable||'—')}</div><p>${esc(p.obs||'')}</p><div class="grid"><div class="kpi"><b>${fmt(sum(l,aprobado))}</b><span>aprobado acumulado</span></div><div class="kpi"><b>${fmt(sum(l,paid))}</b><span>pagado acumulado</span></div><div class="kpi"><b>${fmt(sum(l,r=>Math.max(0,saldo(r))))}</b><span>saldo pendiente</span></div></div></div><h2>Historial de reparaciones</h2><div class="card">${repTable(l)}</div>`;
 }
 function vProvs(){
-  return`<div class="bar2"><button class="btn" data-act="new" data-k="prov">+ Nuevo proveedor</button></div>`+(S.prov.length?`<div class="grid">${S.prov.map(v=>{const l=S.rep.filter(r=>(apr(r)||{}).prov===v.id);return`<div class="card" style="cursor:pointer" data-act="edit" data-k="prov" data-id="${v.id}"><b>${esc(v.nombre)}</b><div class="mut">${esc(v.rubro||'')} ${v.cuit?'· CUIT '+esc(v.cuit):''}</div><div class="mut">${esc(v.tel||'')} ${esc(v.email||'')}</div><div style="margin-top:8px">${l.length} trabajos · ${fmt(sum(l,aprobado))}</div></div>`}).join('')}</div>`:'<div class="card empty">No hay proveedores cargados.</div>');
+  return`<div class="bar2"><button class="btn" data-act="new" data-k="prov">+ Nuevo proveedor</button></div>`+(S.prov.length?`<div class="grid">${S.prov.map(v=>{const l=S.rep.filter(r=>provId(r)===v.id);return`<div class="card" style="cursor:pointer" data-act="edit" data-k="prov" data-id="${v.id}"><b>${esc(v.nombre)}</b><div class="mut">${esc(v.rubro||'')} ${v.cuit?'· CUIT '+esc(v.cuit):''}</div><div class="mut">${esc(v.tel||'')} ${esc(v.email||'')}</div><div style="margin-top:8px">${l.length} trabajos · ${fmt(sum(l,aprobado))}</div></div>`}).join('')}</div>`:'<div class="card empty">No hay proveedores cargados.</div>');
 }
 const agg=(k,p)=>{const ok=id=>{const r=by(S.rep,id);return r&&(!p||r.prop===p)};return[sum(S.pre.filter(x=>ok(x.rep)&&(x.fecha||'').startsWith(k)),x=>x.monto),sum(S.pre.filter(x=>x.estado==='Aprobado'&&ok(x.rep)&&(x.fechaAprob||'').startsWith(k)),x=>x.monto),sum(S.pag.filter(x=>ok(x.rep)&&(x.fecha||'').startsWith(k)),x=>x.monto)]};
 function vRes(){
   const cy=new Date().getFullYear(),y=F.y||String(cy),th='<tr><th></th><th>Presupuestado</th><th>Aprobado</th><th>Pagado</th></tr>',row=(n,a)=>`<tr><td>${esc(n)}</td>${a.map(x=>`<td>${fmt(x)}</td>`).join('')}</tr>`;
   const ms=MESES.map((m,i)=>[m,agg(y+'-'+String(i+1).padStart(2,'0'),F.rp)]),tot=[0,1,2].map(i=>sum(ms,m=>m[1][i]));
-  return`<div class="bar2"><select data-flt="y">${opts([cy-2,cy-1,cy,cy+1].map(String),y)}</select><select data-flt="rp">${opts(S.prop.map(p=>[p.id,p.codigo+' · '+p.direccion]),F.rp,'Todos los inmuebles')}</select></div>
+  return`<div class="bar2"><select data-flt="y">${opts([cy-2,cy-1,cy,cy+1].map(String),y)}</select><select data-flt="rp">${opts(S.prop.map(p=>[p.id,p.codigo+' · '+p.direccion]),F.rp,'Todos los inmuebles')}</select></div><div class="bar2" style="align-items:center"><span class="mut">Descargar Excel:</span><button class="btn s" data-act="xl" data-t="mes">Por mes</button><button class="btn s" data-act="xl" data-t="inmueble">Por inmueble</button><button class="btn s" data-act="xl" data-t="tipo">Por tipo de arreglo</button><button class="btn s" data-act="xl" data-t="proveedor">Por proveedor</button></div>
   <div class="card wrap"><table>${th}${ms.map(m=>row(m[0],m[1])).join('')}<tr><th>Total ${y}</th>${tot.map(x=>`<th>${fmt(x)}</th>`).join('')}</tr></table></div>
   <h2>Por inmueble en ${y}</h2><div class="card wrap"><table>${th}${S.prop.map(p=>row(p.codigo+' · '+p.direccion,agg(y,p.id))).join('')}</table></div><div class="mut">Presupuestado = por fecha del presupuesto; aprobado = por fecha de aprobación; pagado = por fecha del pago.</div>`;
 }
 function vMine(){
   const n=me().toLowerCase(),l=n?S.rep.filter(r=>open(r)&&(r.responsable||'').toLowerCase().includes(n)).sort((a,b)=>PRIO.indexOf(b.prioridad||'Normal')-PRIO.indexOf(a.prioridad||'Normal')):[];
   return`<div class="card">${n?repTable(l):'<div class="empty">Escribí tu nombre arriba a la derecha para ver tus pendientes.</div>'}</div>`;
+}
+const num=x=>{x=String(x).replace(/[^\d,.\-]/g,'');if(x.includes(','))x=x.replace(/\./g,'').replace(',','.');else if(/^-?\d{1,3}(\.\d{3})+$/.test(x))x=x.replace(/\./g,'');return+x||0};
+function xl(tipo){
+  if(!window.XLSX)return toast('No se pudo cargar el generador de Excel. Revisá la conexión o el bloqueador.');
+  const y=F.y||String(new Date().getFullYear()),p=F.rp,reps=S.rep.filter(r=>(!p||r.prop===p)&&(r.fechaSol||'').startsWith(y));
+  const pn=r=>{const x=by(S.prop,r.prop);return x?x.codigo+' · '+x.direccion:'Sin inmueble'},pv=r=>{const v=provN(r);return v==='—'?'Sin proveedor':v},pr=r=>sum(pres(r),x=>x.monto);
+  let res,det;
+  if(tipo==='mes'){
+    res=MESES.map((m,i)=>{const a=agg(y+'-'+String(i+1).padStart(2,'0'),p);return{Mes:m,Presupuestado:a[0],Aprobado:a[1],Pagado:a[2]}});
+    det=S.pag.filter(x=>(x.fecha||'').startsWith(y)&&(()=>{const r=by(S.rep,x.rep);return r&&(!p||r.prop===p)})()).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')).map(x=>{const r=by(S.rep,x.rep),v=by(S.prov,x.prov);return{'N° pago':x.numero,Fecha:x.fecha,Reparación:r.numero,Inmueble:pn(r),Proveedor:v?v.nombre:'',Importe:x.monto,Medio:x.medio,Factura:x.factura||''}});
+  }else{
+    const lab={inmueble:'Inmueble',tipo:'Tipo de arreglo',proveedor:'Proveedor'}[tipo],key={inmueble:pn,tipo:r=>r.categoria||'Sin categoría',proveedor:pv}[tipo],g={};
+    reps.forEach(r=>{const k=key(r);const o=g[k]=g[k]||{[lab]:k,Reparaciones:0,Presupuestado:0,Aprobado:0,Pagado:0,Saldo:0};o.Reparaciones++;o.Presupuestado+=pr(r);o.Aprobado+=aprobado(r);o.Pagado+=paid(r);o.Saldo+=saldo(r)});
+    res=Object.values(g).sort((a,b)=>String(a[lab]).localeCompare(String(b[lab])));
+    det=reps.map(r=>({'N°':r.numero,'Fecha solicitud':r.fechaSol||'',Inmueble:pn(r),Categoría:r.categoria||'',Proveedor:pv(r),Estado:r.estado,Prioridad:r.prioridad,Presupuestado:pr(r),Aprobado:aprobado(r),Pagado:paid(r),Saldo:saldo(r),'Estado de pago':epago(r),Resumen:r.titulo||''}));
+  }
+  if(!res.length)return toast('No hay datos para ese año.');
+  const k0=Object.keys(res[0])[0],tot={[k0]:'TOTAL'};Object.keys(res[0]).slice(1).forEach(c=>tot[c]=sum(res,x=>x[c]));res.push(tot);
+  const wb=XLSX.utils.book_new(),sh=(d,n)=>{const w=XLSX.utils.json_to_sheet(d.length?d:[{'Sin datos':''}]);w['!cols']=Object.keys(d[0]||{a:1}).map(c=>({wch:Math.max(14,c.length+2)}));XLSX.utils.book_append_sheet(wb,w,n)};
+  sh(res,'Resumen');sh(det,tipo==='mes'?'Pagos':'Detalle');
+  XLSX.writeFile(wb,`informe-por-${tipo}-${y}.xlsx`);
 }
 const TABS=[['kan','Tablero',vKan],['reps','Reparaciones',vReps],['pagos','Control de pagos',vPagos],['props','Inmuebles',vProps],['prov','Proveedores',vProvs],['res','Resumen económico',vRes],['mine','Mis pendientes',vMine]];
 function render(){
@@ -136,7 +157,7 @@ function drawForm(){
   const{k,id,pre}=dlg,v=id?by(S[k],id)||{}:(pre||{});
   $('#dlg').innerHTML=`<h2 style="margin-top:0">${id?'Editar':'Nueva'} ${FORMS[k].t}</h2>`+FORMS[k].f.map(([f,l,t])=>{const val=v[f]??(f==='codigo'?nx(S.prop,'codigo','INM-',3):f==='prioridad'?'Normal':'');return`<label>${l}</label>`+(t==='area'?`<textarea data-f="${f}" rows="3">${esc(val)}</textarea>`:t==='prop'?`<select data-f="${f}">${opts(S.prop.map(p=>[p.id,p.codigo+' · '+p.direccion]),val,'Elegir…')}</select>`:Array.isArray(t)?`<select data-f="${f}">${opts(t,val,'')}</select>`:`<input data-f="${f}" value="${esc(val)}">`)}).join('')+`<div class="bar2" style="margin-top:14px"><button class="btn" data-act="save">Guardar</button><button class="btn s" data-act="close">Cancelar</button>${id?'<button class="btn d" data-act="delete">Eliminar</button>':''}</div>`;
 }
-const I=(c,id,f,v,t='text',x='')=>`<input data-c="${c}" data-id="${id}" data-f="${f}" type="${t}" value="${esc(v??'')}" ${x}>`;
+const I=(c,id,f,v,t='text',x='')=>`<input data-c="${c}" data-id="${id}" data-f="${f}" type="${t==='number'?'text':t}" ${t==='number'?'inputmode="decimal" data-num="1"':''} value="${esc(v??'')}" ${x}>`;
 const SE=(c,id,f,v,l,b)=>`<select data-c="${c}" data-id="${id}" data-f="${f}">${opts(l,v,b)}</select>`;
 const L=(l,h)=>`<div><label>${l}</label>${h}</div>`;
 function drawRep(){
@@ -145,7 +166,7 @@ function drawRep(){
   d.innerHTML=`<div style="display:flex;justify-content:space-between;gap:8px"><h2 style="margin:0">${esc(r.numero)} ${eb(r.estado)}</h2><button class="btn x" data-act="close">✕</button></div>
   ${L('Resumen del problema',I(c,id,'titulo',r.titulo))}
   <h2>Identificación</h2><div class="r2">${L('Propiedad',SE(c,id,'prop',r.prop,S.prop.map(p=>[p.id,p.codigo+' · '+p.direccion]),'Elegir…'))}${L('Fecha de solicitud',I(c,id,'fechaSol',r.fechaSol,'date'))}${L('Solicitante',I(c,id,'solicitante',r.solicitante))}${L('Categoría',SE(c,id,'categoria',r.categoria,CATS,''))}</div>${L('Descripción del problema',`<textarea data-c="${c}" data-id="${id}" data-f="desc" rows="2">${esc(r.desc||'')}</textarea>`)}
-  <h2>Gestión</h2><div class="r2">${L('Responsable del seguimiento',I(c,id,'responsable',r.responsable))}${L('Prioridad',SE(c,id,'prioridad',r.prioridad||'Normal',PRIO))}${L('Estado',SE(c,id,'estado',r.estado||ESTADOS[0],ESTADOS))}${L('Proveedor seleccionado',`<input value="${esc(provN(r))}" disabled>`)}${L('Inicio previsto',I(c,id,'fechaIni',r.fechaIni,'date'))}${L('Fin previsto',I(c,id,'fechaFinPrev',r.fechaFinPrev,'date'))}${L('Fin real',I(c,id,'fechaFinReal',r.fechaFinReal,'date'))}</div>
+  <h2>Gestión</h2><div class="r2">${L('Responsable del seguimiento',I(c,id,'responsable',r.responsable))}${L('Prioridad',SE(c,id,'prioridad',r.prioridad||'Normal',PRIO))}${L('Estado',SE(c,id,'estado',r.estado||ESTADOS[0],ESTADOS))}${L('Proveedor elegido',SE(c,id,'prov',provId(r)||'',pv,'Sin elegir'))}${L('Inicio previsto',I(c,id,'fechaIni',r.fechaIni,'date'))}${L('Fin previsto',I(c,id,'fechaFinPrev',r.fechaFinPrev,'date'))}${L('Fin real',I(c,id,'fechaFinReal',r.fechaFinReal,'date'))}</div>
   <h2>Control económico</h2><div class="grid"><div class="kpi"><b>${fmt(aprobado(r))}</b><span>importe aprobado</span></div><div class="kpi"><b>${fmt(paid(r))}</b><span>total pagado</span></div><div class="kpi"><b class="${saldo(r)>0?'neg':''}">${fmt(saldo(r))}</b><span>saldo pendiente</span></div><div class="kpi">${xb(r)}<br><span>estado de pago</span></div></div>
   <h2>Presupuestos</h2>${pres(r).map(p=>`<div class="sub"><div class="r2">${L('Proveedor',SE('pre',p.id,'prov',p.prov,pv,'Elegir…'))}${L('Fecha',I('pre',p.id,'fecha',p.fecha,'date'))}${L('Importe total',I('pre',p.id,'monto',p.monto,'number','min="0"'))}${L('Estado',SE('pre',p.id,'estado',p.estado,PEST))}${L('Validez hasta',I('pre',p.id,'validez',p.validez,'date'))}${L('Plazo estimado',I('pre',p.id,'plazo',p.plazo))}${L('Condiciones de pago',I('pre',p.id,'condiciones',p.condiciones))}${L('Descripción',I('pre',p.id,'desc',p.desc))}${L('Aprobado por',I('pre',p.id,'aprobadoPor',p.aprobadoPor))}${L('Fecha de aprobación',I('pre',p.id,'fechaAprob',p.fechaAprob,'date'))}</div><div class="bar2" style="margin:6px 0 0;align-items:center"><span>${att(p.archivo)}</span>${up('pre',p.id)}${p.estado==='Aprobado'&&p.aprobadoOriginal!=null&&+p.aprobadoOriginal!==+p.monto?`<span class="neg">Importe original aprobado: ${fmt(p.aprobadoOriginal)}</span>`:''}<button class="btn x" data-act="delc" data-c="pre" data-id="${p.id}">Eliminar</button></div></div>`).join('')}<button class="btn s" data-act="addpre">+ Presupuesto</button>
   <h2>Pagos</h2>${pagos(r).map(p=>`<div class="sub"><b>${esc(p.numero)}</b><div class="r2">${L('Fecha',I('pag',p.id,'fecha',p.fecha,'date'))}${L('Importe pagado',I('pag',p.id,'monto',p.monto,'number','min="0"'))}${L('Proveedor',SE('pag',p.id,'prov',p.prov,pv,'Elegir…'))}${L('Medio de pago',SE('pag',p.id,'medio',p.medio,MEDIOS))}${L('N° de operación',I('pag',p.id,'operacion',p.operacion))}${L('N° de factura',I('pag',p.id,'factura',p.factura))}${L('Registrado por',I('pag',p.id,'por',p.por))}${L('Observaciones',I('pag',p.id,'obs',p.obs))}</div><div class="bar2" style="margin:6px 0 0;align-items:center"><span>${att(p.archivo)}</span>${up('pag',p.id)}<button class="btn x" data-act="delc" data-c="pag" data-id="${p.id}">Eliminar</button></div></div>`).join('')}<button class="btn s" data-act="addpag">+ Pago</button>
@@ -160,26 +181,27 @@ async function save(){
   if(id){await upd(k,id,v);$('#dlg').close();return}
   if(k==='rep')Object.assign(v,{numero:nx(S.rep,'numero','REP-',4),estado:ESTADOS[0],fechaSol:today(),docs:[],novedades:[],responsable:me()});
   const ref=await w(()=>DB.collection(COL[k]).add(v));
-  if(ref&&k==='rep')openDlg({type:'rep',id:ref.id});else $('#dlg').close();
+  $('#dlg').close();if(ref&&k==='rep')toast('Reparación guardada');
 }
 async function aprobar(id){
   const p=by(S.pre,id),r=p&&by(S.rep,p.rep),o=r&&apr(r);
   if(o&&o.id!==id){toast('Esta reparación ya tiene un presupuesto aprobado. Cambiá el estado del otro antes de aprobar este.');drawRep();return}
   await upd('pre',id,{estado:'Aprobado',aprobadoOriginal:p.monto,fechaAprob:p.fechaAprob||today(),aprobadoPor:p.aprobadoPor||me()});
-  if(ESTADOS.indexOf(r.estado||ESTADOS[0])<3)upd('rep',r.id,{estado:'Aprobada'});
+  upd('rep',r.id,{prov:p.prov||r.prov||null,...(ESTADOS.indexOf(r.estado||ESTADOS[0])<3?{estado:'Aprobada'}:{})});
 }
 document.addEventListener('click',async ev=>{
   const sg=ev.target.closest('[data-sign]');if(sg){ev.preventDefault();const{data,error}=await sb.storage.from('adjuntos').createSignedUrl(sg.dataset.sign.replace(/^sb:/,''),120);if(error)return toast(error.message);window.open(data.signedUrl,'_blank','noopener');return}
   const t=ev.target.closest('[data-act]');if(!t)return;const a=t.dataset.act,r=dlg&&dlg.type==='rep'?by(S.rep,dlg.id):null;
   if(a==='tab'){view=t.dataset.v;render()}
-  else if(a==='prop'){selProp=t.dataset.id;view='prop';render()}
-  else if(a==='rep')openDlg({type:'rep',id:t.dataset.id});
+  else if(a==='prop'){if(String(getSelection()).trim())return;selProp=t.dataset.id;view='prop';render()}
+  else if(a==='rep'){if(String(getSelection()).trim())return;openDlg({type:'rep',id:t.dataset.id})}
   else if(a==='new')openDlg({type:'form',k:t.dataset.k,pre:t.dataset.p?{prop:t.dataset.p}:null});
   else if(a==='edit')openDlg({type:'form',k:t.dataset.k,id:t.dataset.id});
+  else if(a==='xl')xl(t.dataset.t);
   else if(a==='save')save();
   else if(a==='close')$('#dlg').close();
   else if(a==='addpre'&&r)w(()=>DB.collection(COL.pre).add({rep:r.id,estado:'Recibido',fecha:today(),monto:0}));
-  else if(a==='addpag'&&r)w(()=>DB.collection(COL.pag).add({rep:r.id,numero:nx(S.pag,'numero','PAG-',4),fecha:today(),monto:0,medio:'Transferencia',prov:(apr(r)||{}).prov||'',por:me()}));
+  else if(a==='addpag'&&r)w(()=>DB.collection(COL.pag).add({rep:r.id,numero:nx(S.pag,'numero','PAG-',4),fecha:today(),monto:0,medio:'Transferencia',prov:provId(r)||'',por:me()}));
   else if(a==='delc'){if(!t.dataset.arm){t.dataset.arm=1;t.textContent='¿Seguro?';return}w(()=>DB.doc(COL[t.dataset.c]+'/'+t.dataset.id).delete())}
   else if(a==='deldoc'&&r)upd('rep',r.id,{docs:(r.docs||[]).filter((_,i)=>i!==+t.dataset.i)});
   else if(a==='nov'&&r){const x=$('#nov').value.trim();if(x)upd('rep',r.id,{novedades:[...(r.novedades||[]),{f:today(),t:x,por:me()}]})}
@@ -201,7 +223,7 @@ document.addEventListener('change',async ev=>{
     for(const f of t.files){const x=await w(()=>ASSETS.upload(f));if(x)add.push({id:x.id,url:x.url,name:f.name,cat,fecha:today()})}
     const cur=by(S.rep,dlg.id);if(add.length&&cur){await upd('rep',cur.id,{docs:[...(cur.docs||[]),...add]});toast('Archivo adjuntado')}return}
   const c=t.dataset.c,f=t.dataset.f,id=t.dataset.id;if(!c)return;
-  const v=t.type==='number'?+t.value||0:t.value;
+  const v=t.dataset.num?num(t.value):t.value;
   if(c==='pre'&&f==='estado'&&v==='Aprobado')return aprobar(id);
   if(c==='pag'&&f==='monto'){const o=by(S.pag,id),a=aprobado(r);if(a>0&&paid(r)-(+o.monto||0)+v>a)toast('El total pagado supera el importe aprobado: requiere aprobación adicional.')}
   upd(c,id,{[f]:v});
@@ -210,7 +232,10 @@ document.addEventListener('input',ev=>{if(ev.target.dataset.flt==='q'){F.q=ev.ta
 document.addEventListener('dragstart',e=>{const c=e.target.closest('.kc');if(c)dragId=c.dataset.id});
 document.addEventListener('dragover',e=>{if(e.target.closest('.col'))e.preventDefault()});
 document.addEventListener('drop',e=>{const c=e.target.closest('.col');if(c&&dragId){e.preventDefault();upd('rep',dragId,{estado:c.dataset.drop});dragId=null}});
-$('#dlg').addEventListener('click',e=>{if(e.target.id==='dlg')e.target.close()});
+let mdOut=false;const outside=e=>{const r=$('#dlg').getBoundingClientRect();return e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom};
+$('#dlg').addEventListener('mousedown',e=>{mdOut=outside(e)});
+$('#dlg').addEventListener('click',e=>{if(mdOut&&outside(e))$('#dlg').close();mdOut=false});
+document.addEventListener('paste',e=>{const t=e.target;if(t.type!=='date')return;const x=(e.clipboardData.getData('text')||'').trim(),m=x.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);const iso=m?`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`:/^\d{4}-\d{2}-\d{2}$/.test(x)?x:null;if(iso){e.preventDefault();t.value=iso;t.dispatchEvent(new Event('change',{bubbles:true}))}});
 $('#dlg').addEventListener('close',()=>{dlg=null});
 $('#me').value=me();
 const sb=supabase.createClient(CFG.url,CFG.key);
