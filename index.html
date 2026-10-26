@@ -3,9 +3,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>INMUEBLES - REPARACIONES</title>
 <style>
-:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f5f1;--card:#fff;--tx:#1f2328;--mut:#6b7280;--bd:#e3e1da;--ac:#1d6b5a;--acbg:#e2f1ed;--warn:#b45309;--warnbg:#fdf0dc;--ok:#15803d;--okbg:#e1f4e7;--bad:#b91c1c;--badbg:#fbe4e4}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17191a;--card:#212426;--tx:#e8e8e5;--mut:#9aa0a6;--bd:#34383b;--ac:#5fc4ac;--acbg:#1e3a34;--warn:#f0b35a;--warnbg:#3a2d17;--ok:#6fd08c;--okbg:#1c3626;--bad:#f28b82;--badbg:#3d1f1f}}
-:root[data-theme="dark"]{--bg:#17191a;--card:#212426;--tx:#e8e8e5;--mut:#9aa0a6;--bd:#34383b;--ac:#5fc4ac;--acbg:#1e3a34;--warn:#f0b35a;--warnbg:#3a2d17;--ok:#6fd08c;--okbg:#1c3626;--bad:#f28b82;--badbg:#3d1f1f}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f5f1;--card:#fff;--tx:#1f2328;--mut:#6b7280;--bd:#e3e1da;--ac:#1d6b5a;--acbg:#e2f1ed;--warn:#b45309;--warnbg:#fdf0dc;--ok:#15803d;--okbg:#e1f4e7;--bad:#b91c1c;--badbg:#fbe4e4;--rbg:#fde4e4;--rtx:#b91c1c;--nbg:#ffe8d1;--ntx:#c2410c;--ybg:#fdf3b8;--ytx:#92660a;--vbg:#ede4fb;--vtx:#6d28d9}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17191a;--card:#212426;--tx:#e8e8e5;--mut:#9aa0a6;--bd:#34383b;--ac:#5fc4ac;--acbg:#1e3a34;--warn:#f0b35a;--warnbg:#3a2d17;--ok:#6fd08c;--okbg:#1c3626;--bad:#f28b82;--badbg:#3d1f1f;--rbg:#4a2323;--rtx:#f28b82;--nbg:#472a14;--ntx:#fdba74;--ybg:#473f12;--ytx:#fde047;--vbg:#33264f;--vtx:#c4b5fd}}
+:root[data-theme="dark"]{--bg:#17191a;--card:#212426;--tx:#e8e8e5;--mut:#9aa0a6;--bd:#34383b;--ac:#5fc4ac;--acbg:#1e3a34;--warn:#f0b35a;--warnbg:#3a2d17;--ok:#6fd08c;--okbg:#1c3626;--bad:#f28b82;--badbg:#3d1f1f;--rbg:#4a2323;--rtx:#f28b82;--nbg:#472a14;--ntx:#fdba74;--ybg:#473f12;--ytx:#fde047;--vbg:#33264f;--vtx:#c4b5fd}
 *,*:before,*:after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
@@ -40,13 +40,17 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .docs{display:flex;flex-wrap:wrap;gap:8px}.doc{border:1px solid var(--bd);border-radius:8px;padding:6px 8px;font-size:13px;max-width:200px}
 .doc img{display:block;width:100%;max-height:90px;object-fit:cover;border-radius:5px;margin-bottom:4px}
 a{color:var(--ac);word-break:break-all}
-.kan{display:grid;grid-auto-flow:column;grid-auto-columns:235px;gap:10px;overflow-x:auto;padding-bottom:8px}
+.kan{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(230px,1fr);gap:10px;overflow-x:auto;padding-bottom:8px}
 .col{background:var(--acbg);border-radius:10px;padding:8px;min-height:160px}.col h3{font-size:13px;margin:2px 4px 8px}
 .kc{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:8px;margin-bottom:8px;cursor:grab}
 #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--tx);color:var(--bg);padding:8px 14px;border-radius:8px;display:none;z-index:99;max-width:90vw}
 .empty{text-align:center;color:var(--mut);padding:24px}
+.badge.r{background:var(--rbg);color:var(--rtx)}.badge.n{background:var(--nbg);color:var(--ntx)}.badge.y{background:var(--ybg);color:var(--ytx)}.badge.v{background:var(--vbg);color:var(--vtx)}
+.col.c0{background:var(--rbg)}.col.c1{background:var(--nbg)}.col.c2{background:var(--ybg)}.col.c3{background:var(--okbg)}
+.col.c0 h3{color:var(--rtx)}.col.c1 h3{color:var(--ntx)}.col.c2 h3{color:var(--ytx)}.col.c3 h3{color:var(--ok)}
+.chk{display:inline-flex;gap:6px;align-items:center;margin:0 14px 6px 0;font-size:14px;color:var(--tx)}.chk input{width:auto}
 </style></head><body>
-<div id="root"><header><h1>Inmuebles | Reparaciones y Mantenimiento</h1><input id="me" placeholder="Tu nombre" title="Se usa en pagos, novedades y “Mis pendientes”"><button class="btn s" id="out" style="display:none">Salir</button></header><nav id="nav"></nav><div id="app"></div></div>
+<div id="root"><header><h1>Inmuebles | Reparaciones y Mantenimiento</h1><input id="me" placeholder="Tu nombre" title="Se usa en pagos y novedades"><button class="btn s" id="out" style="display:none">Salir</button></header><nav id="nav"></nav><div id="app"></div></div>
 <dialog id="dlg"></dialog><div id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="config.js"></script>
 <script>
@@ -56,11 +60,11 @@ const fmt=n=>new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maxi
 const today=()=>new Date().toISOString().slice(0,10);
 const COL={prop:'propiedades',rep:'reparaciones',pre:'presupuestos',pag:'pagos',prov:'proveedores'};
 const S={prop:[],rep:[],pre:[],pag:[],prov:[]};
-const ESTADOS=['Pendiente de revisión','Solicitando presupuestos','Pendiente de aprobación','Aprobada','En ejecución','Finalizada','Cancelada'];
+const ESTADOS=['PENDIENTE DE REVISIÓN','SOLICITADO PRESUPUESTO','EN EJECUCIÓN','FINALIZADO'];
 const PRIO=['Baja','Normal','Alta','Urgente'],CATS=['Plomería','Electricidad','Albañilería','Pintura','Techos','Ascensores','Seguridad','Otros'];
 const PEST=['Recibido','En evaluación','Aprobado','Rechazado','Vencido'],MEDIOS=['Transferencia','Cheque','Efectivo','Otro'],EPROP=['ALQUILADO','EN ALQUILER','A LA VENTA','EN COMODATO','DE AMIA','VARIOS'];
 const DOCC=['Foto del problema','Foto del trabajo terminado','Factura','Comprobante','Otro'],MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-let DB=null,ASSETS=null,view='kan',selProp=null,dlg=null,dragId=null,F={q:'',p:'',v:'',pr:'',e:'',y:'',rp:''};
+let ARM=null,DB=null,ASSETS=null,view='kan',selProp=null,dlg=null,dragId=null,F={q:'',p:'',v:'',pr:'',e:'',y:'',rp:''};
 const sum=(a,f)=>a.reduce((t,x)=>t+(+f(x)||0),0),by=(a,id)=>a.find(x=>x.id===id);
 const nx=(a,f,p,n)=>p+String(Math.max(0,...a.map(x=>parseInt(String(x[f]||'').replace(/\D/g,''))||0))+1).padStart(n,'0');
 const me=()=>{try{return localStorage.getItem('me')||''}catch(e){return''}};
@@ -75,71 +79,81 @@ let tt;function toast(m){const t=$('#toast');t.textContent=m;t.style.display='bl
 async function w(fn){try{return await fn()}catch(e){toast(/row-level security/i.test((e&&e.message)||'')?'Tu usuario no tiene permiso de edición.':(e&&e.message)||'Error al guardar')}}
 const upd=(k,id,d)=>w(()=>DB.doc(COL[k]+'/'+id).update(d));
 const bd=(t,c='')=>`<span class="badge ${c}">${esc(t)}</span>`;
-const eb=e=>bd(e,e==='Finalizada'?'o':e==='Cancelada'?'':/Pendiente de/.test(e||'')?'w':'');
-const pb=p=>bd(p,p==='Urgente'?'u':p==='Alta'?'w':''),xb=r=>{const e=epago(r);return bd(e,e==='Pagado'?'o':e==='Con diferencia'?'u':e==='Sin aprobar'?'':'w')};
+const ECLS=['r','n','y','o'];
+const estOf=r=>{const e=String(r.estado||'').toUpperCase();if(/FINALIZ|CANCEL/.test(e))return ESTADOS[3];if(/EJECUC|APROBAD/.test(e))return ESTADOS[2];if(/PRESUPUESTO|APROBACI/.test(e))return ESTADOS[1];return ESTADOS[0]};
+const eb=r=>{const e=estOf(r);return bd(e,ECLS[ESTADOS.indexOf(e)])};
+const pb=p=>bd(p,p==='Urgente'||p==='Alta'?'u':''),xb=r=>{const e=epago(r);return bd(e,e==='Pagado'?'o':e==='Con diferencia'?'v':e==='Sin aprobar'?'':'w')};
 const att=a=>a?`<a href="#" data-sign="${esc(a.url)}">${esc(a.name)}</a>`:'<span class="mut">Sin archivo</span>';
 
 function repTable(l){
   if(!l.length)return'<div class="empty">No hay reparaciones para mostrar.</div>';
-  return`<div class="wrap"><table><tr><th>N°</th><th>Reparación</th><th>Inmueble</th><th>Estado</th><th>Prioridad</th><th>Proveedor</th><th>Aprobado</th><th>Pagado</th><th>Saldo</th><th>Pago</th></tr>`+l.map(r=>{const p=by(S.prop,r.prop);return`<tr class="row" data-act="rep" data-id="${r.id}"><td>${esc(r.numero)}</td><td><b>${esc(r.titulo||'Sin título')}</b><div class="mut">${esc(r.responsable||'')}</div></td><td>${esc(p?p.codigo:'—')}</td><td>${eb(r.estado)}</td><td>${pb(r.prioridad||'Normal')}</td><td>${esc(provN(r))}</td><td>${fmt(aprobado(r))}</td><td>${fmt(paid(r))}</td><td class="${saldo(r)>0?'neg':''}">${fmt(saldo(r))}</td><td>${xb(r)}</td></tr>`}).join('')+'</table></div>';
+  return`<div class="wrap"><table style="min-width:640px"><tr><th>Reparación</th><th>Dirección del inmueble</th><th>Proveedor</th><th>Estado</th><th>Importe total</th></tr>`+l.map(r=>{const p=by(S.prop,r.prop);return`<tr class="row" data-act="rep" data-id="${r.id}"><td><b>${esc(r.titulo||'Sin título')}</b></td><td>${esc(p?p.direccion:'—')}</td><td>${esc(provN(r))}</td><td>${eb(r)}</td><td>${fmt(aprobado(r))}</td></tr>`}).join('')+'</table></div>';
+}
+function pagoTable(l,conPagado){
+  return`<div class="wrap"><table style="min-width:560px"><tr><th>Dirección del inmueble</th><th>Proveedor</th><th>Importe total</th>${conPagado?'<th>Pagado</th>':''}<th>Saldo pendiente</th></tr>`+l.map(r=>{const p=by(S.prop,r.prop);return`<tr class="row" data-act="rep" data-id="${r.id}"><td><b>${esc(p?p.direccion:'—')}</b></td><td>${esc(provN(r))}</td><td>${fmt(aprobado(r))}</td>${conPagado?`<td>${fmt(paid(r))}</td>`:''}<td class="${saldo(r)>0?'neg':''}">${fmt(saldo(r))} ${epago(r)==='Con diferencia'?bd('Con diferencia','v'):''}</td></tr>`}).join('')+'</table></div>';
 }
 function vKan(){
-  return`<div class="bar2"><button class="btn" data-act="new" data-k="rep">+ Nueva reparación</button></div><div class="kan">`+ESTADOS.map(e=>{const l=S.rep.filter(r=>(r.estado||ESTADOS[0])===e);return`<div class="col" data-drop="${e}"><h3>${e} <span class="mut">${l.length}</span></h3>`+l.map(r=>{const p=by(S.prop,r.prop);return`<div class="kc" draggable="true" data-act="rep" data-id="${r.id}"><b>${esc(r.titulo||'Sin título')}</b><div style="margin-top:4px">${pb(r.prioridad||'Normal')} ${xb(r)}</div></div>`}).join('')+'</div>'}).join('')+'</div><div class="mut">Arrastrá las tarjetas para cambiar el estado (en el celular, abrí la reparación).</div>';
+  return`<div class="bar2"><button class="btn" data-act="new" data-k="rep">+ Nueva reparación</button></div><div class="kan">`+ESTADOS.map((e,i)=>{const l=S.rep.filter(r=>estOf(r)===e);return`<div class="col c${i}" data-drop="${e}"><h3>${e} <span class="mut">${l.length}</span></h3>`+l.map(r=>{const p=by(S.prop,r.prop);return`<div class="kc" draggable="true" data-act="rep" data-id="${r.id}"><b>${esc(r.titulo||'Sin título')}</b><div class="mut">${esc(p?p.direccion:'')}</div><div style="margin-top:4px">${pb(r.prioridad||'Normal')} ${xb(r)}</div></div>`}).join('')+'</div>'}).join('')+'</div><div class="mut">Arrastrá las tarjetas para cambiar el estado (en el celular, abrí la reparación).</div>';
 }
 function vReps(){
-  const q=F.q.toLowerCase(),l=S.rep.filter(r=>(!F.p||r.prop===F.p)&&(!F.v||provId(r)===F.v)&&(!F.pr||r.prioridad===F.pr)&&(!F.e||r.estado===F.e)&&(!q||[r.titulo,r.numero,r.responsable,r.solicitante].join(' ').toLowerCase().includes(q)));
-  return`<div class="bar2"><input data-flt="q" placeholder="Buscar…" value="${esc(F.q)}"><select data-flt="p">${opts(S.prop.map(p=>[p.id,p.codigo+' · '+p.direccion]),F.p,'Todos los inmuebles')}</select><select data-flt="v">${opts(S.prov.map(p=>[p.id,p.nombre]),F.v,'Todos los proveedores')}</select><select data-flt="pr">${opts(PRIO,F.pr,'Toda prioridad')}</select><select data-flt="e">${opts(ESTADOS,F.e,'Todo estado')}</select><button class="btn" data-act="new" data-k="rep">+ Nueva</button></div><div class="card">${repTable(l)}</div>`;
+  const q=F.q.toLowerCase(),l=S.rep.filter(r=>(!F.p||r.prop===F.p)&&(!F.v||provId(r)===F.v)&&(!F.pr||r.prioridad===F.pr)&&(!F.e||estOf(r)===F.e)&&(!q||[r.titulo,r.responsable,r.solicitante,(by(S.prop,r.prop)||{}).direccion].join(' ').toLowerCase().includes(q)));
+  return`<div class="bar2"><input data-flt="q" placeholder="Buscar…" value="${esc(F.q)}"><select data-flt="p">${opts(S.prop.map(p=>[p.id,p.direccion]),F.p,'Todos los inmuebles')}</select><select data-flt="v">${opts(S.prov.map(p=>[p.id,p.nombre]),F.v,'Todos los proveedores')}</select><select data-flt="pr">${opts(PRIO,F.pr,'Toda prioridad')}</select><select data-flt="e">${opts(ESTADOS,F.e,'Todo estado')}</select><button class="btn" data-act="new" data-k="rep">+ Nueva</button></div><div class="card">${repTable(l)}</div>`;
 }
 function vPagos(){
-  const pend=S.rep.filter(r=>aprobado(r)>0&&saldo(r)!==0).sort((a,b)=>saldo(b)-saldo(a)),ps=[...S.pag].sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
-  return`<div class="grid"><div class="card kpi"><b>${fmt(sum(S.rep,aprobado))}</b><span>aprobado total</span></div><div class="card kpi"><b>${fmt(sum(S.rep,paid))}</b><span>pagado</span></div><div class="card kpi"><b class="neg">${fmt(sum(pend,r=>Math.max(0,saldo(r))))}</b><span>saldo pendiente</span></div></div>
-  <h2>Trabajos aprobados con saldo</h2><div class="card">${repTable(pend)}</div><h2>Pagos registrados</h2><div class="card wrap">${ps.length?`<table><tr><th>N°</th><th>Fecha</th><th>Reparación</th><th>Proveedor</th><th>Importe</th><th>Medio</th><th>Factura</th><th>Comprobante</th></tr>${ps.map(p=>{const r=by(S.rep,p.rep),v=by(S.prov,p.prov);return`<tr class="row" data-act="rep" data-id="${p.rep}"><td>${esc(p.numero)}</td><td>${esc(p.fecha)}</td><td>${esc(r?r.numero:'—')}</td><td>${esc(v?v.nombre:'—')}</td><td>${fmt(p.monto)}</td><td>${esc(p.medio)}</td><td>${esc(p.factura||'')}</td><td>${p.archivo?'Sí':'—'}</td></tr>`}).join('')}</table>`:'<div class="empty">Todavía no hay pagos.</div>'}</div>`;
+  const pend=S.rep.filter(r=>saldo(r)!==0&&(aprobado(r)>0||paid(r)>0)).sort((a,b)=>saldo(b)-saldo(a)),con=S.rep.filter(r=>pagos(r).length).sort((a,b)=>saldo(b)-saldo(a));
+  return`<div class="grid"><div class="card kpi"><b>${fmt(sum(S.rep,aprobado))}</b><span>aprobado total</span></div><div class="card kpi"><b>${fmt(sum(S.rep,paid))}</b><span>pagado</span></div><div class="card kpi"><b class="neg">${fmt(sum(S.rep,r=>Math.max(0,saldo(r))))}</b><span>saldo pendiente</span></div></div>
+  <h2>Trabajos aprobados con saldo</h2><div class="card">${pend.length?pagoTable(pend,true):'<div class="empty">No hay trabajos con saldo pendiente. Un trabajo aparece acá cuando tiene un presupuesto en estado Aprobado (con su importe) y todavía falta pagar.</div>'}</div>
+  <h2>Pagos registrados</h2><div class="card">${con.length?pagoTable(con,false):'<div class="empty">Todavía no hay pagos registrados.</div>'}</div>`;
 }
 function vProps(){
-  return`<div class="bar2"><button class="btn" data-act="new" data-k="prop">+ Nueva propiedad</button></div>`+(S.prop.length?`<div class="grid">${S.prop.map(p=>{const l=S.rep.filter(r=>r.prop===p.id);return`<div class="card" style="cursor:pointer" data-act="prop" data-id="${p.id}"><b>${esc(p.codigo)}</b> ${bd(p.estado||'Sin estado')}<div>${esc(p.direccion)}</div><div class="mut">${esc(p.localidad||'')} · ${esc(p.responsable||'sin responsable')}</div><div style="margin-top:8px">${l.length} reparaciones · ${fmt(sum(l,paid))} pagado</div></div>`}).join('')}</div>`:'<div class="card empty">Cargá primero las propiedades.</div>');
+  return`<div class="bar2"><button class="btn" data-act="new" data-k="prop">+ Nueva propiedad</button></div>`+(S.prop.length?`<div class="grid">${S.prop.map(p=>{const l=S.rep.filter(r=>r.prop===p.id);return`<div class="card" style="cursor:pointer" data-act="prop" data-id="${p.id}"><b>${esc(p.direccion)}</b> ${p.estado?bd(p.estado):''}<div class="mut">${esc([p.localidad,p.responsable].filter(Boolean).join(' · '))}</div><div style="margin-top:8px">${l.length} reparaciones · ${fmt(sum(l,paid))} pagado</div></div>`}).join('')}</div>`:'<div class="card empty">Cargá primero las propiedades.</div>');
 }
 function vProp(){
   const p=by(S.prop,selProp);if(!p){view='props';return vProps()}const l=S.rep.filter(r=>r.prop===p.id).sort((a,b)=>(b.fechaSol||'').localeCompare(a.fechaSol||''));
   return`<div class="bar2"><button class="btn s" data-act="tab" data-v="props">← Propiedades</button><button class="btn s" data-act="edit" data-k="prop" data-id="${p.id}">Editar datos</button><button class="btn" data-act="new" data-k="rep" data-p="${p.id}">+ Nueva reparación</button></div>
-  <div class="card"><h1>${esc(p.codigo)} · ${esc(p.direccion)}</h1><div class="mut">${esc(p.localidad||'')} · ${esc(p.estado||'')} · Responsable: ${esc(p.responsable||'—')}</div><p>${esc(p.obs||'')}</p><div class="grid"><div class="kpi"><b>${fmt(sum(l,aprobado))}</b><span>aprobado acumulado</span></div><div class="kpi"><b>${fmt(sum(l,paid))}</b><span>pagado acumulado</span></div><div class="kpi"><b>${fmt(sum(l,r=>Math.max(0,saldo(r))))}</b><span>saldo pendiente</span></div></div></div><h2>Historial de reparaciones</h2><div class="card">${repTable(l)}</div>`;
+  <div class="card"><h1>${esc(p.direccion)}</h1><div class="mut">${esc([p.localidad,p.estado,p.responsable&&'Responsable: '+p.responsable].filter(Boolean).join(' · '))}</div><p>${esc(p.obs||'')}</p><div class="grid"><div class="kpi"><b>${fmt(sum(l,aprobado))}</b><span>aprobado acumulado</span></div><div class="kpi"><b>${fmt(sum(l,paid))}</b><span>pagado acumulado</span></div><div class="kpi"><b>${fmt(sum(l,r=>Math.max(0,saldo(r))))}</b><span>saldo pendiente</span></div></div></div><h2>Historial de reparaciones</h2><div class="card">${repTable(l)}</div>`;
 }
 function vProvs(){
   return`<div class="bar2"><button class="btn" data-act="new" data-k="prov">+ Nuevo proveedor</button></div>`+(S.prov.length?`<div class="grid">${S.prov.map(v=>{const l=S.rep.filter(r=>provId(r)===v.id);return`<div class="card" style="cursor:pointer" data-act="edit" data-k="prov" data-id="${v.id}"><b>${esc(v.nombre)}</b><div class="mut">${esc(v.rubro||'')} ${v.cuit?'· CUIT '+esc(v.cuit):''}</div><div class="mut">${esc(v.tel||'')} ${esc(v.email||'')}</div><div style="margin-top:8px">${l.length} trabajos · ${fmt(sum(l,aprobado))}</div></div>`}).join('')}</div>`:'<div class="card empty">No hay proveedores cargados.</div>');
 }
 const agg=(k,p)=>{const ok=id=>{const r=by(S.rep,id);return r&&(!p||r.prop===p)};return[sum(S.pre.filter(x=>ok(x.rep)&&(x.fecha||'').startsWith(k)),x=>x.monto),sum(S.pre.filter(x=>x.estado==='Aprobado'&&ok(x.rep)&&(x.fechaAprob||'').startsWith(k)),x=>x.monto),sum(S.pag.filter(x=>ok(x.rep)&&(x.fecha||'').startsWith(k)),x=>x.monto)]};
-function vRes(){
-  const cy=new Date().getFullYear(),y=F.y||String(cy),th='<tr><th></th><th>Presupuestado</th><th>Aprobado</th><th>Pagado</th></tr>',row=(n,a)=>`<tr><td>${esc(n)}</td>${a.map(x=>`<td>${fmt(x)}</td>`).join('')}</tr>`;
-  const ms=MESES.map((m,i)=>[m,agg(y+'-'+String(i+1).padStart(2,'0'),F.rp)]),tot=[0,1,2].map(i=>sum(ms,m=>m[1][i]));
-  return`<div class="bar2"><select data-flt="y">${opts([cy-2,cy-1,cy,cy+1].map(String),y)}</select><select data-flt="rp">${opts(S.prop.map(p=>[p.id,p.codigo+' · '+p.direccion]),F.rp,'Todos los inmuebles')}</select></div><div class="bar2" style="align-items:center"><span class="mut">Descargar Excel:</span><button class="btn s" data-act="xl" data-t="mes">Por mes</button><button class="btn s" data-act="xl" data-t="inmueble">Por inmueble</button><button class="btn s" data-act="xl" data-t="tipo">Por tipo de arreglo</button><button class="btn s" data-act="xl" data-t="proveedor">Por proveedor</button></div>
-  <div class="card wrap"><table>${th}${ms.map(m=>row(m[0],m[1])).join('')}<tr><th>Total ${y}</th>${tot.map(x=>`<th>${fmt(x)}</th>`).join('')}</tr></table></div>
-  <h2>Por inmueble en ${y}</h2><div class="card wrap"><table>${th}${S.prop.map(p=>row(p.codigo+' · '+p.direccion,agg(y,p.id))).join('')}</table></div><div class="mut">Presupuestado = por fecha del presupuesto; aprobado = por fecha de aprobación; pagado = por fecha del pago.</div>`;
-}
-function vMine(){
-  const n=me().toLowerCase(),l=n?S.rep.filter(r=>open(r)&&(r.responsable||'').toLowerCase().includes(n)).sort((a,b)=>PRIO.indexOf(b.prioridad||'Normal')-PRIO.indexOf(a.prioridad||'Normal')):[];
-  return`<div class="card">${n?repTable(l):'<div class="empty">Escribí tu nombre arriba a la derecha para ver tus pendientes.</div>'}</div>`;
-}
 const num=x=>{x=String(x).replace(/[^\d,.\-]/g,'');if(x.includes(','))x=x.replace(/\./g,'').replace(',','.');else if(/^-?\d{1,3}(\.\d{3})+$/.test(x))x=x.replace(/\./g,'');return+x||0};
-function xl(tipo){
-  if(!window.XLSX)return toast('No se pudo cargar el generador de Excel. Revisá la conexión o el bloqueador.');
+const OPS=[['mes','Por mes'],['inmueble','Por inmueble'],['tipo','Por tipo de arreglo'],['proveedor','Por proveedor']];let SEL=new Set(),PREV=null;
+function report(tipo){
   const y=F.y||String(new Date().getFullYear()),p=F.rp,reps=S.rep.filter(r=>(!p||r.prop===p)&&(r.fechaSol||'').startsWith(y));
-  const pn=r=>{const x=by(S.prop,r.prop);return x?x.codigo+' · '+x.direccion:'Sin inmueble'},pv=r=>{const v=provN(r);return v==='—'?'Sin proveedor':v},pr=r=>sum(pres(r),x=>x.monto);
+  const pn=r=>{const x=by(S.prop,r.prop);return x?x.direccion:'Sin inmueble'},pv=r=>{const v=provN(r);return v==='—'?'Sin proveedor':v},pr=r=>sum(pres(r),x=>x.monto);
   let res,det;
   if(tipo==='mes'){
     res=MESES.map((m,i)=>{const a=agg(y+'-'+String(i+1).padStart(2,'0'),p);return{Mes:m,Presupuestado:a[0],Aprobado:a[1],Pagado:a[2]}});
-    det=S.pag.filter(x=>(x.fecha||'').startsWith(y)&&(()=>{const r=by(S.rep,x.rep);return r&&(!p||r.prop===p)})()).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')).map(x=>{const r=by(S.rep,x.rep),v=by(S.prov,x.prov);return{'N° pago':x.numero,Fecha:x.fecha,Reparación:r.numero,Inmueble:pn(r),Proveedor:v?v.nombre:'',Importe:x.monto,Medio:x.medio,Factura:x.factura||''}});
+    det=S.pag.filter(x=>(x.fecha||'').startsWith(y)&&(()=>{const r=by(S.rep,x.rep);return r&&(!p||r.prop===p)})()).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')).map(x=>{const r=by(S.rep,x.rep),v=by(S.prov,x.prov);return{Fecha:x.fecha,Reparación:r.titulo||'',Inmueble:pn(r),Proveedor:v?v.nombre:'',Importe:x.monto,Medio:x.medio,Factura:x.factura||''}});
   }else{
     const lab={inmueble:'Inmueble',tipo:'Tipo de arreglo',proveedor:'Proveedor'}[tipo],key={inmueble:pn,tipo:r=>r.categoria||'Sin categoría',proveedor:pv}[tipo],g={};
     reps.forEach(r=>{const k=key(r);const o=g[k]=g[k]||{[lab]:k,Reparaciones:0,Presupuestado:0,Aprobado:0,Pagado:0,Saldo:0};o.Reparaciones++;o.Presupuestado+=pr(r);o.Aprobado+=aprobado(r);o.Pagado+=paid(r);o.Saldo+=saldo(r)});
     res=Object.values(g).sort((a,b)=>String(a[lab]).localeCompare(String(b[lab])));
-    det=reps.map(r=>({'N°':r.numero,'Fecha solicitud':r.fechaSol||'',Inmueble:pn(r),Categoría:r.categoria||'',Proveedor:pv(r),Estado:r.estado,Prioridad:r.prioridad,Presupuestado:pr(r),Aprobado:aprobado(r),Pagado:paid(r),Saldo:saldo(r),'Estado de pago':epago(r),Resumen:r.titulo||''}));
+    det=reps.map(r=>({'Fecha solicitud':r.fechaSol||'',Reparación:r.titulo||'',Inmueble:pn(r),Categoría:r.categoria||'',Proveedor:pv(r),Estado:estOf(r),Prioridad:r.prioridad,Presupuestado:pr(r),Aprobado:aprobado(r),Pagado:paid(r),Saldo:saldo(r),'Estado de pago':epago(r)}));
   }
-  if(!res.length)return toast('No hay datos para ese año.');
+  if(!res.length)return null;
   const k0=Object.keys(res[0])[0],tot={[k0]:'TOTAL'};Object.keys(res[0]).slice(1).forEach(c=>tot[c]=sum(res,x=>x[c]));res.push(tot);
-  const wb=XLSX.utils.book_new(),sh=(d,n)=>{const w=XLSX.utils.json_to_sheet(d.length?d:[{'Sin datos':''}]);w['!cols']=Object.keys(d[0]||{a:1}).map(c=>({wch:Math.max(14,c.length+2)}));XLSX.utils.book_append_sheet(wb,w,n)};
-  sh(res,'Resumen');sh(det,tipo==='mes'?'Pagos':'Detalle');
-  XLSX.writeFile(wb,`informe-por-${tipo}-${y}.xlsx`);
+  return{label:OPS.find(o=>o[0]===tipo)[1],res,det};
 }
-const TABS=[['kan','Tablero',vKan],['reps','Reparaciones',vReps],['pagos','Control de pagos',vPagos],['props','Inmuebles',vProps],['prov','Proveedores',vProvs],['res','Resumen económico',vRes],['mine','Mis pendientes',vMine]];
+function dl(){
+  if(!window.XLSX)return toast('No se pudo cargar el generador de Excel. Revisá la conexión o el bloqueador.');
+  if(!PREV||!PREV.length)return;
+  const wb=XLSX.utils.book_new(),y=F.y||String(new Date().getFullYear()),sh=(d,n)=>{const w=XLSX.utils.json_to_sheet(d.length?d:[{'Sin datos':''}]);w['!cols']=Object.keys(d[0]||{a:1}).map(c=>({wch:Math.max(14,c.length+2)}));XLSX.utils.book_append_sheet(wb,w,n.slice(0,31))};
+  PREV.forEach(p=>{const n=p.label.replace('Por ','');sh(p.res,'Resumen '+n);sh(p.det,'Detalle '+n)});
+  XLSX.writeFile(wb,`informe-${y}.xlsx`);
+}
+const tbl=d=>{const k=Object.keys(d[0]);return`<div class="wrap"><table style="min-width:520px"><tr>${k.map(x=>`<th>${esc(x)}</th>`).join('')}</tr>${d.map(r=>`<tr>${k.map(x=>`<td>${typeof r[x]==='number'&&x!=='Reparaciones'?fmt(r[x]):esc(r[x]??'')}</td>`).join('')}</tr>`).join('')}</table></div>`};
+function vRes(){
+  const cy=new Date().getFullYear(),y=F.y||String(cy),th='<tr><th></th><th>Presupuestado</th><th>Aprobado</th><th>Pagado</th></tr>',row=(n,a)=>`<tr><td>${esc(n)}</td>${a.map(x=>`<td>${fmt(x)}</td>`).join('')}</tr>`;
+  const ms=MESES.map((m,i)=>[m,agg(y+'-'+String(i+1).padStart(2,'0'),F.rp)]),tot=[0,1,2].map(i=>sum(ms,m=>m[1][i]));
+  return`<div class="bar2"><select data-flt="y">${opts([cy-2,cy-1,cy,cy+1].map(String),y)}</select><select data-flt="rp">${opts(S.prop.map(p=>[p.id,p.direccion]),F.rp,'Todos los inmuebles')}</select></div>
+  <div class="card wrap"><table>${th}${ms.map(m=>row(m[0],m[1])).join('')}<tr><th>Total ${y}</th>${tot.map(x=>`<th>${fmt(x)}</th>`).join('')}</tr></table></div>
+  <h2>Por inmueble en ${y}</h2><div class="card wrap"><table>${th}${S.prop.map(p=>row(p.direccion,agg(y,p.id))).join('')}</table></div><div class="mut">Presupuestado = por fecha del presupuesto; aprobado = por fecha de aprobación; pagado = por fecha del pago.</div>
+  <h2>Informes en Excel</h2><div class="card"><div class="mut" style="margin-bottom:8px">Elegí uno o varios informes, mirá la vista previa y después descargá un solo archivo (usa el año e inmueble elegidos arriba).</div>${OPS.map(([k,l])=>`<label class="chk"><input type="checkbox" data-chk="${k}" ${SEL.has(k)?'checked':''}> ${l}</label>`).join('')}<div class="bar2" style="margin-top:6px"><button class="btn" data-act="prev">Vista previa</button>${PREV&&PREV.length?'<button class="btn s" data-act="dl">Descargar Excel</button>':''}</div>
+  ${PREV?(PREV.length?PREV.map(p=>`<h2>${p.label}</h2>${tbl(p.res)}<div class="mut">El Excel incluye además una hoja de detalle con ${p.det.length} renglones.</div>`).join(''):'<div class="empty">No hay datos para ese año.</div>'):''}</div>`;
+}
+const TABS=[['kan','Tablero',vKan],['reps','Reparaciones',vReps],['pagos','Control de pagos',vPagos],['props','Inmuebles',vProps],['prov','Proveedores',vProvs],['res','Resumen económico',vRes]];
 function render(){
   if(!DB){$('#app').innerHTML='<div class="card empty">Cargando…</div>';return}
   const a=document.activeElement;if(a&&a.dataset&&a.dataset.flt==='q')return;
@@ -149,13 +163,13 @@ function render(){
   if(dlg&&dlg.type==='rep'&&!(a&&$('#dlg').contains(a)&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)))drawRep();
 }
 const FORMS={
-  prop:{t:'propiedad',f:[['codigo','Código'],['direccion','Dirección'],['localidad','Localidad'],['estado','Estado del inmueble',EPROP],['responsable','Responsable interno'],['obs','Observaciones','area']]},
+  prop:{t:'propiedad',f:[['direccion','Dirección'],['localidad','Localidad'],['estado','Estado del inmueble',EPROP],['responsable','Responsable interno'],['obs','Observaciones','area']]},
   prov:{t:'proveedor',f:[['nombre','Nombre o razón social'],['cuit','CUIT'],['rubro','Rubro o especialidad'],['tel','Teléfono'],['email','Correo electrónico'],['facturacion','Datos de facturación'],['condiciones','Condiciones de pago habituales'],['obs','Observaciones sobre trabajos anteriores','area']]},
   rep:{t:'reparación',f:[['titulo','Resumen del problema'],['prop','Propiedad','prop'],['solicitante','Solicitante'],['categoria','Categoría',CATS],['prioridad','Prioridad',PRIO]]}
 };
 function drawForm(){
   const{k,id,pre}=dlg,v=id?by(S[k],id)||{}:(pre||{});
-  $('#dlg').innerHTML=`<h2 style="margin-top:0">${id?'Editar':'Nueva'} ${FORMS[k].t}</h2>`+FORMS[k].f.map(([f,l,t])=>{const val=v[f]??(f==='codigo'?nx(S.prop,'codigo','INM-',3):f==='prioridad'?'Normal':'');return`<label>${l}</label>`+(t==='area'?`<textarea data-f="${f}" rows="3">${esc(val)}</textarea>`:t==='prop'?`<select data-f="${f}">${opts(S.prop.map(p=>[p.id,p.codigo+' · '+p.direccion]),val,'Elegir…')}</select>`:Array.isArray(t)?`<select data-f="${f}">${opts(t,val,'')}</select>`:`<input data-f="${f}" value="${esc(val)}">`)}).join('')+`<div class="bar2" style="margin-top:14px"><button class="btn" data-act="save">Guardar</button><button class="btn s" data-act="close">Cancelar</button>${id?'<button class="btn d" data-act="delete">Eliminar</button>':''}</div>`;
+  $('#dlg').innerHTML=`<h2 style="margin-top:0">${id?'Editar':'Nueva'} ${FORMS[k].t}</h2>`+FORMS[k].f.map(([f,l,t])=>{const val=v[f]??(f==='codigo'?nx(S.prop,'codigo','INM-',3):f==='prioridad'?'Normal':'');return`<label>${l}</label>`+(t==='area'?`<textarea data-f="${f}" rows="3">${esc(val)}</textarea>`:t==='prop'?`<select data-f="${f}">${opts(S.prop.map(p=>[p.id,p.direccion]),val,'Elegir…')}</select>`:Array.isArray(t)?`<select data-f="${f}">${opts(t,val,'')}</select>`:`<input data-f="${f}" value="${esc(val)}">`)}).join('')+`<div class="bar2" style="margin-top:14px"><button class="btn" data-act="save">Guardar</button><button class="btn s" data-act="close">Cancelar</button>${id?'<button class="btn d" data-act="delete">Eliminar</button>':''}</div>`;
 }
 const I=(c,id,f,v,t='text',x='')=>`<input data-c="${c}" data-id="${id}" data-f="${f}" type="${t==='number'?'text':t}" ${t==='number'?'inputmode="decimal" data-num="1"':''} value="${esc(v??'')}" ${x}>`;
 const SE=(c,id,f,v,l,b)=>`<select data-c="${c}" data-id="${id}" data-f="${f}">${opts(l,v,b)}</select>`;
@@ -163,22 +177,23 @@ const L=(l,h)=>`<div><label>${l}</label>${h}</div>`;
 function drawRep(){
   const r=by(S.rep,dlg.id),d=$('#dlg');if(!r){d.close();return}
   const c='rep',id=r.id,pv=S.prov.map(p=>[p.id,p.nombre]),up=(k,i)=>ASSETS?`<input type="file" data-up="${k}" data-id="${i}">`:'';
-  d.innerHTML=`<div style="display:flex;justify-content:space-between;gap:8px"><h2 style="margin:0">${esc(r.numero)} ${eb(r.estado)}</h2><button class="btn x" data-act="close">✕</button></div>
+  d.innerHTML=`<div style="display:flex;justify-content:space-between;gap:8px"><h2 style="margin:0">Expediente ${eb(r)}</h2><button class="btn x" data-act="close">✕</button></div>
   ${L('Resumen del problema',I(c,id,'titulo',r.titulo))}
-  <h2>Identificación</h2><div class="r2">${L('Propiedad',SE(c,id,'prop',r.prop,S.prop.map(p=>[p.id,p.codigo+' · '+p.direccion]),'Elegir…'))}${L('Fecha de solicitud',I(c,id,'fechaSol',r.fechaSol,'date'))}${L('Solicitante',I(c,id,'solicitante',r.solicitante))}${L('Categoría',SE(c,id,'categoria',r.categoria,CATS,''))}</div>${L('Descripción del problema',`<textarea data-c="${c}" data-id="${id}" data-f="desc" rows="2">${esc(r.desc||'')}</textarea>`)}
-  <h2>Gestión</h2><div class="r2">${L('Responsable del seguimiento',I(c,id,'responsable',r.responsable))}${L('Prioridad',SE(c,id,'prioridad',r.prioridad||'Normal',PRIO))}${L('Estado',SE(c,id,'estado',r.estado||ESTADOS[0],ESTADOS))}${L('Proveedor elegido',SE(c,id,'prov',provId(r)||'',pv,'Sin elegir'))}${L('Inicio previsto',I(c,id,'fechaIni',r.fechaIni,'date'))}${L('Fin previsto',I(c,id,'fechaFinPrev',r.fechaFinPrev,'date'))}${L('Fin real',I(c,id,'fechaFinReal',r.fechaFinReal,'date'))}</div>
+  <h2>Identificación</h2><div class="r2">${L('Propiedad',SE(c,id,'prop',r.prop,S.prop.map(p=>[p.id,p.direccion]),'Elegir…'))}${L('Fecha de solicitud',I(c,id,'fechaSol',r.fechaSol,'date'))}${L('Solicitante',I(c,id,'solicitante',r.solicitante))}${L('Categoría',SE(c,id,'categoria',r.categoria,CATS,''))}</div>${L('Descripción del problema',`<textarea data-c="${c}" data-id="${id}" data-f="desc" rows="2">${esc(r.desc||'')}</textarea>`)}
+  <h2>Gestión</h2><div class="r2">${L('Responsable del seguimiento',I(c,id,'responsable',r.responsable))}${L('Prioridad',SE(c,id,'prioridad',r.prioridad||'Normal',PRIO))}${L('Estado',SE(c,id,'estado',estOf(r),ESTADOS))}${L('Proveedor elegido',SE(c,id,'prov',provId(r)||'',pv,'Sin elegir'))}${L('Inicio previsto',I(c,id,'fechaIni',r.fechaIni,'date'))}${L('Fin previsto',I(c,id,'fechaFinPrev',r.fechaFinPrev,'date'))}${L('Fin real',I(c,id,'fechaFinReal',r.fechaFinReal,'date'))}</div>
   <h2>Control económico</h2><div class="grid"><div class="kpi"><b>${fmt(aprobado(r))}</b><span>importe aprobado</span></div><div class="kpi"><b>${fmt(paid(r))}</b><span>total pagado</span></div><div class="kpi"><b class="${saldo(r)>0?'neg':''}">${fmt(saldo(r))}</b><span>saldo pendiente</span></div><div class="kpi">${xb(r)}<br><span>estado de pago</span></div></div>
   <h2>Presupuestos</h2>${pres(r).map(p=>`<div class="sub"><div class="r2">${L('Proveedor',SE('pre',p.id,'prov',p.prov,pv,'Elegir…'))}${L('Fecha',I('pre',p.id,'fecha',p.fecha,'date'))}${L('Importe total',I('pre',p.id,'monto',p.monto,'number','min="0"'))}${L('Estado',SE('pre',p.id,'estado',p.estado,PEST))}${L('Validez hasta',I('pre',p.id,'validez',p.validez,'date'))}${L('Plazo estimado',I('pre',p.id,'plazo',p.plazo))}${L('Condiciones de pago',I('pre',p.id,'condiciones',p.condiciones))}${L('Descripción',I('pre',p.id,'desc',p.desc))}${L('Aprobado por',I('pre',p.id,'aprobadoPor',p.aprobadoPor))}${L('Fecha de aprobación',I('pre',p.id,'fechaAprob',p.fechaAprob,'date'))}</div><div class="bar2" style="margin:6px 0 0;align-items:center"><span>${att(p.archivo)}</span>${up('pre',p.id)}${p.estado==='Aprobado'&&p.aprobadoOriginal!=null&&+p.aprobadoOriginal!==+p.monto?`<span class="neg">Importe original aprobado: ${fmt(p.aprobadoOriginal)}</span>`:''}<button class="btn x" data-act="delc" data-c="pre" data-id="${p.id}">Eliminar</button></div></div>`).join('')}<button class="btn s" data-act="addpre">+ Presupuesto</button>
   <h2>Pagos</h2>${pagos(r).map(p=>`<div class="sub"><b>${esc(p.numero)}</b><div class="r2">${L('Fecha',I('pag',p.id,'fecha',p.fecha,'date'))}${L('Importe pagado',I('pag',p.id,'monto',p.monto,'number','min="0"'))}${L('Proveedor',SE('pag',p.id,'prov',p.prov,pv,'Elegir…'))}${L('Medio de pago',SE('pag',p.id,'medio',p.medio,MEDIOS))}${L('N° de operación',I('pag',p.id,'operacion',p.operacion))}${L('N° de factura',I('pag',p.id,'factura',p.factura))}${L('Registrado por',I('pag',p.id,'por',p.por))}${L('Observaciones',I('pag',p.id,'obs',p.obs))}</div><div class="bar2" style="margin:6px 0 0;align-items:center"><span>${att(p.archivo)}</span>${up('pag',p.id)}<button class="btn x" data-act="delc" data-c="pag" data-id="${p.id}">Eliminar</button></div></div>`).join('')}<button class="btn s" data-act="addpag">+ Pago</button>
   <h2>Fotos, facturas y comprobantes</h2><div class="docs">${(r.docs||[]).map((x,n)=>`<div class="doc">${false?`<img src="${esc(x.url)}" alt="">`:''}${att(x)}<div class="mut">${esc(x.cat)} · ${esc(x.fecha||'')} <button class="btn x" data-act="deldoc" data-i="${n}">✕</button></div></div>`).join('')||'<span class="mut">Sin archivos.</span>'}</div>${ASSETS?`<div class="bar2" style="margin-top:8px"><select id="cat">${opts(DOCC)}</select><input type="file" id="file" multiple></div>`:'<div class="mut">Adjuntar archivos requiere permiso de colaborador.</div>'}
   <h2>Novedades</h2><textarea id="nov" rows="2" placeholder="Escribí una novedad…"></textarea><button class="btn s" data-act="nov" style="margin-top:6px">Agregar novedad</button>${[...(r.novedades||[])].reverse().map(n=>`<div class="sub"><span class="mut">${esc(n.f)} · ${esc(n.por||'')}</span><div>${esc(n.t)}</div></div>`).join('')}
-  <div class="bar2" style="margin-top:14px"><button class="btn d" data-act="delrep">Eliminar expediente</button></div>`;
+  <div class="bar2" style="margin-top:14px"><button class="btn d" data-act="delrep">${ARM==='delrep'+r.id?'Hacé clic otra vez para confirmar':'Eliminar expediente'}</button></div>`;
 }
 function openDlg(o){dlg=o;const d=$('#dlg');o.type==='rep'?drawRep():drawForm();if(!d.open)d.showModal()}
 async function save(){
   const{k,id}=dlg,v={};document.querySelectorAll('#dlg [data-f]').forEach(e=>v[e.dataset.f]=e.value);
   if(!(v.nombre||v.titulo||v.direccion||'').trim())return toast('Completá los datos principales');
   if(id){await upd(k,id,v);$('#dlg').close();return}
+  if(k==='prop')v.codigo=nx(S.prop,'codigo','INM-',3);
   if(k==='rep')Object.assign(v,{numero:nx(S.rep,'numero','REP-',4),estado:ESTADOS[0],fechaSol:today(),docs:[],novedades:[],responsable:me()});
   const ref=await w(()=>DB.collection(COL[k]).add(v));
   $('#dlg').close();if(ref&&k==='rep')toast('Reparación guardada');
@@ -187,7 +202,7 @@ async function aprobar(id){
   const p=by(S.pre,id),r=p&&by(S.rep,p.rep),o=r&&apr(r);
   if(o&&o.id!==id){toast('Esta reparación ya tiene un presupuesto aprobado. Cambiá el estado del otro antes de aprobar este.');drawRep();return}
   await upd('pre',id,{estado:'Aprobado',aprobadoOriginal:p.monto,fechaAprob:p.fechaAprob||today(),aprobadoPor:p.aprobadoPor||me()});
-  upd('rep',r.id,{prov:p.prov||r.prov||null,...(ESTADOS.indexOf(r.estado||ESTADOS[0])<3?{estado:'Aprobada'}:{})});
+  upd('rep',r.id,{prov:p.prov||r.prov||null,...(ESTADOS.indexOf(estOf(r))<2?{estado:ESTADOS[2]}:{})});
 }
 document.addEventListener('click',async ev=>{
   const sg=ev.target.closest('[data-sign]');if(sg){ev.preventDefault();const{data,error}=await sb.storage.from('adjuntos').createSignedUrl(sg.dataset.sign.replace(/^sb:/,''),120);if(error)return toast(error.message);window.open(data.signedUrl,'_blank','noopener');return}
@@ -197,7 +212,8 @@ document.addEventListener('click',async ev=>{
   else if(a==='rep'){if(String(getSelection()).trim())return;openDlg({type:'rep',id:t.dataset.id})}
   else if(a==='new')openDlg({type:'form',k:t.dataset.k,pre:t.dataset.p?{prop:t.dataset.p}:null});
   else if(a==='edit')openDlg({type:'form',k:t.dataset.k,id:t.dataset.id});
-  else if(a==='xl')xl(t.dataset.t);
+  else if(a==='prev'){if(!SEL.size)return toast('Elegí al menos un informe');PREV=OPS.filter(o=>SEL.has(o[0])).map(o=>report(o[0])).filter(Boolean);render()}
+  else if(a==='dl')dl();
   else if(a==='save')save();
   else if(a==='close')$('#dlg').close();
   else if(a==='addpre'&&r)w(()=>DB.collection(COL.pre).add({rep:r.id,estado:'Recibido',fecha:today(),monto:0}));
@@ -206,16 +222,18 @@ document.addEventListener('click',async ev=>{
   else if(a==='deldoc'&&r)upd('rep',r.id,{docs:(r.docs||[]).filter((_,i)=>i!==+t.dataset.i)});
   else if(a==='nov'&&r){const x=$('#nov').value.trim();if(x)upd('rep',r.id,{novedades:[...(r.novedades||[]),{f:today(),t:x,por:me()}]})}
   else if(a==='delete'||a==='delrep'){
-    if(!t.dataset.arm){t.dataset.arm=1;t.textContent='Confirmar eliminación';return}
-    const k=a==='delrep'?'rep':dlg.k,id=dlg.id;
-    if(k==='rep')for(const x of[...pres(r),...pagos(r)])await w(()=>DB.doc(COL[S.pre.includes(x)?'pre':'pag']+'/'+x.id).delete());
-    await w(()=>DB.doc(COL[k]+'/'+id).delete());$('#dlg').close();
+    const k=a==='delrep'?'rep':dlg.k,id=dlg.id,key=a+id;
+    if(ARM!==key){ARM=key;t.textContent='Hacé clic otra vez para confirmar';return}
+    ARM=null;
+    const ok=await w(async()=>{await DB.doc(COL[k]+'/'+id).delete();return true});
+    if(ok){$('#dlg').close();toast('Eliminado')}
   }
 });
 document.addEventListener('change',async ev=>{
   const t=ev.target;
   if(t.id==='me'){try{localStorage.setItem('me',t.value)}catch(e){}render();return}
-  if(t.dataset.flt){F[t.dataset.flt]=t.value;t.blur();render();return}
+  if(t.dataset.chk){t.checked?SEL.add(t.dataset.chk):SEL.delete(t.dataset.chk);PREV=null;render();return}
+  if(t.dataset.flt){F[t.dataset.flt]=t.value;PREV=null;t.blur();render();return}
   if(t.dataset.up&&t.files.length){toast('Subiendo…');const x=await w(()=>ASSETS.upload(t.files[0]));if(x){upd(t.dataset.up,t.dataset.id,{archivo:{id:x.id,url:x.url,name:t.files[0].name}});toast('Archivo adjuntado')}return}
   if(!dlg||dlg.type!=='rep')return;const r=by(S.rep,dlg.id);if(!r)return;
   if(t.id==='file'&&t.files.length){
@@ -236,7 +254,7 @@ let mdOut=false;const outside=e=>{const r=$('#dlg').getBoundingClientRect();retu
 $('#dlg').addEventListener('mousedown',e=>{mdOut=outside(e)});
 $('#dlg').addEventListener('click',e=>{if(mdOut&&outside(e))$('#dlg').close();mdOut=false});
 document.addEventListener('paste',e=>{const t=e.target;if(t.type!=='date')return;const x=(e.clipboardData.getData('text')||'').trim(),m=x.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);const iso=m?`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`:/^\d{4}-\d{2}-\d{2}$/.test(x)?x:null;if(iso){e.preventDefault();t.value=iso;t.dispatchEvent(new Event('change',{bubbles:true}))}});
-$('#dlg').addEventListener('close',()=>{dlg=null});
+$('#dlg').addEventListener('close',()=>{dlg=null;ARM=null});
 $('#me').value=me();
 const sb=supabase.createClient(CFG.url,CFG.key);
 const clean=o=>Object.fromEntries(Object.entries(o).map(([k,v])=>[k,v===''?null:v]));
@@ -246,7 +264,7 @@ function mkDB(){return{
     async add(d){const r=await sb.from(n).insert(clean(d)).select('id').single();ck(r.error);return r.data},
     onSnapshot(cb,err){let t;const load=async()=>{const r=await sb.from(n).select('*').order('created_at');if(r.error)return err&&err(r.error);cb({docs:r.data.map(x=>({id:x.id,data:()=>{const{id,created_at,...y}=x;return y}}))})};load();
       sb.channel('rt-'+n).on('postgres_changes',{event:'*',schema:'public',table:n},()=>{clearTimeout(t);t=setTimeout(load,150)}).subscribe()}}),
-  doc:p=>{const[n,id]=p.split('/');return{async update(d){ck((await sb.from(n).update(clean(d)).eq('id',id)).error)},async delete(){ck((await sb.from(n).delete().eq('id',id)).error)}}}}}
+  doc:p=>{const[n,id]=p.split('/');return{async update(d){const x=await sb.from(n).update(clean(d)).eq('id',id).select('id');ck(x.error);if(!x.data||!x.data.length)throw new Error('No se pudo guardar: tu usuario no tiene permiso de edición')},async delete(){const x=await sb.from(n).delete().eq('id',id).select('id');ck(x.error);if(!x.data||!x.data.length)throw new Error('No se pudo eliminar: tu usuario no tiene permiso de edición')}}}}}
 function mkAssets(){return{async upload(f){const path=crypto.randomUUID()+'/'+f.name.replace(/[^\w.\-]+/g,'_');ck((await sb.storage.from('adjuntos').upload(path,f)).error);return{id:path,url:'sb:'+path}}}}
 function login(){
   $('#nav').innerHTML='';$('#app').innerHTML='<div class="card" style="max-width:340px;margin:30px auto"><h2 style="margin-top:0">Ingresar</h2><label>Correo</label><input id="em" type="email"><label>Contraseña</label><input id="pw" type="password"><div style="margin-top:12px"><button class="btn" id="go">Entrar</button></div></div>';
