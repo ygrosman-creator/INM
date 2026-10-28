@@ -4,7 +4,7 @@
 -- 1) Listas editables por el equipo (etiquetas, vínculos, tipos de documento)
 create table opciones(
   id uuid primary key default gen_random_uuid(), created_at timestamptz default now(),
-  lista text not null check (lista in ('vinculo','tipo_documento','etiqueta')),
+  lista text not null check (lista in ('vinculo','tipo_documento','etiqueta','forma_pago','tipo_impuesto')),
   valor text not null, orden int default 0, unique (lista, valor));
 insert into opciones(lista, valor, orden) values
  ('vinculo','Donante',1),('vinculo','Donante con usufructo',2),('vinculo','Testador',3),('vinculo','Inquilino',4),
@@ -29,7 +29,23 @@ insert into opciones(lista, valor, orden) values
  ('etiqueta','OCUPADO',15),
  ('etiqueta','USURPADO',16),
  ('etiqueta','SUCESIÓN EN TRÁMITE',17),
- ('etiqueta','TASACIÓN PENDIENTE',18);
+ ('etiqueta','TASACIÓN PENDIENTE',18),
+ ('forma_pago','INQUILINOS - PROPIETARIOS',1),
+ ('forma_pago','TESOMPTC',2),
+ ('forma_pago','DEBITOS FRANCES',3),
+ ('forma_pago','T.C.',4),
+ ('forma_pago','EXENTO',5),
+ ('forma_pago','NO PAGAR',6),
+ ('tipo_impuesto','ABL',1),
+ ('tipo_impuesto','AYSA',2),
+ ('tipo_impuesto','ARBA',3),
+ ('tipo_impuesto','LUZ',4),
+ ('tipo_impuesto','GAS',5),
+ ('tipo_impuesto','EXPENSAS',6),
+ ('tipo_impuesto','TELÉFONO',7),
+ ('tipo_impuesto','TASA MUNICIPAL',8),
+ ('tipo_impuesto','SEGURO',9),
+ ('tipo_impuesto','OTRO',10);
 
 -- 2) Ficha del inmueble. Las etiquetas (varias por inmueble) reemplazan al estado único
 alter table propiedades
