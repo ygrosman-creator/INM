@@ -58,13 +58,13 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=n=>new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(n||0);
 const today=()=>new Date().toISOString().slice(0,10);
-const COL={prop:'propiedades',rep:'reparaciones',pre:'presupuestos',pag:'pagos',prov:'proveedores'};
-const S={prop:[],rep:[],pre:[],pag:[],prov:[]};
+const COL={prop:'propiedades',rep:'reparaciones',pre:'presupuestos',pag:'pagos',prov:'proveedores',opc:'opciones',per:'personas',vin:'vinculos',doc:'documentos',nov:'novedades_legales',sep:'sepelios',imp:'impuestos',ipe:'impuestos_periodos',con:'contratos',cpa:'alquiler_pagos'};
+const S={prop:[],rep:[],pre:[],pag:[],prov:[],opc:[],per:[],vin:[],doc:[],nov:[],sep:[],imp:[],ipe:[],con:[],cpa:[]};
 const ESTADOS=['PENDIENTE DE REVISIÓN','SOLICITADO PRESUPUESTO','EN EJECUCIÓN','FINALIZADO'];
 const PRIO=['Baja','Normal','Alta','Urgente'],CATS=['Plomería','Electricidad','Albañilería','Pintura','Techos','Ascensores','Seguridad','Otros'];
 const PEST=['Recibido','En evaluación','Aprobado','Rechazado','Vencido'],MEDIOS=['Transferencia','Cheque','Efectivo','Otro'],EPROP=['ALQUILADO','EN ALQUILER','A LA VENTA','EN COMODATO','DE AMIA','VARIOS'];
 const DOCC=['Foto del problema','Foto del trabajo terminado','Factura','Comprobante','Otro'],MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-let BUSY=false,ARM=null,DB=null,ASSETS=null,view='kan',selProp=null,dlg=null,dragId=null,F={q:'',p:'',v:'',pr:'',e:'',y:'',rp:''};
+let FT='datos',BUSY=false,ARM=null,DB=null,ASSETS=null,view='kan',selProp=null,dlg=null,dragId=null,F={q:'',p:'',v:'',pr:'',e:'',y:'',rp:''};
 const sum=(a,f)=>a.reduce((t,x)=>t+(+f(x)||0),0),by=(a,id)=>a.find(x=>x.id===id);
 const nx=(a,f,p,n)=>p+String(Math.max(0,...a.map(x=>parseInt(String(x[f]||'').replace(/\D/g,''))||0))+1).padStart(n,'0');
 const me=()=>{try{return localStorage.getItem('me')||''}catch(e){return''}};
@@ -130,8 +130,100 @@ function vPagos(){
   <h2>Trabajos aprobados con saldo</h2><div class="card">${pend.length?pagoTable(pend,true):'<div class="empty">No hay trabajos con saldo pendiente. Un trabajo aparece acá cuando tiene un presupuesto en estado Aprobado (con su importe) y todavía falta pagar.</div>'}</div>
   <h2>Pagos registrados</h2><div class="card">${con.length?pagoTable(con,false):'<div class="empty">Todavía no hay pagos registrados.</div>'}</div>`;
 }
+const fd=d=>d?String(d).slice(0,10).split('-').reverse().join('/'):'';
+const my=d=>d?MESES[+String(d).slice(5,7)-1]+' '+String(d).slice(0,4):'';
+const OPC=l=>S.opc.filter(o=>o.lista===l).sort((a,b)=>(a.orden||0)-(b.orden||0)).map(o=>o.valor);
+const tg=p=>p.etiquetas||[];
+const DEL=(c,id,txt='Eliminar')=>`<button class="btn x" data-act="delc" data-c="${c}" data-id="${id}">${ARM==='delc'+id?'¿Seguro?':txt}</button>`;
 function vProps(){
-  return`<div class="bar2"><button class="btn" data-act="new" data-k="prop">+ Nueva propiedad</button></div>`+(S.prop.length?`<div class="grid">${S.prop.map(p=>{const l=S.rep.filter(r=>r.prop===p.id);return`<div class="card" style="cursor:pointer" data-act="prop" data-id="${p.id}"><b>${esc(p.direccion)}</b> ${p.estado?bd(p.estado):''}<div class="mut">${esc([p.localidad,p.responsable].filter(Boolean).join(' · '))}</div><div style="margin-top:8px">${l.length} reparaciones</div><div>Importe total ${fmt(sum(l,aprobado))}</div><div>Pagado ${fmt(sum(l,paid))} · <span class="${sum(l,r=>Math.max(0,saldo(r)))?'neg':''}">Saldo ${fmt(sum(l,r=>Math.max(0,saldo(r))))}</span></div>${l.some(r=>!aprobado(r)&&pres(r).length&&estOf(r)!==ESTADOS[3])?'<div class="mut">Hay presupuestos sin aprobar</div>':''}</div>`}).join('')}</div>`:'<div class="card empty">Cargá primero las propiedades.</div>');
+  const q=(F.pq||'').toLowerCase(),sel=[...(F.tg||[])],l=S.prop.filter(p=>(!q||(p.direccion||'').toLowerCase().includes(q))&&(!F.pl||p.localidad===F.pl)&&sel.every(t=>tg(p).includes(t))&&(!F.am||p.de_amia)).sort((a,b)=>String(a.direccion).localeCompare(String(b.direccion)));
+  const locs=[...new Set(S.prop.map(p=>p.localidad).filter(Boolean))].sort();
+  return`<div class="bar2"><input data-flt="pq" placeholder="Buscar dirección…" value="${esc(F.pq||'')}"><select data-flt="pl">${opts(locs,F.pl,'Todas las localidades')}</select><label class="chk"><input type="checkbox" data-am="1" ${F.am?'checked':''}> Solo DE AMIA (con título)</label><button class="btn" data-act="new" data-k="prop">+ Nueva propiedad</button></div>
+  <div class="card" style="margin-bottom:10px"><div class="mut" style="margin-bottom:6px">Etiquetas (podés combinar varias):</div>${OPC('etiqueta').map(t=>`<label class="chk"><input type="checkbox" data-tg="${esc(t)}" ${sel.includes(t)?'checked':''}> ${esc(t)}</label>`).join('')}</div>
+  <div class="mut" style="margin-bottom:6px">${l.length} de ${S.prop.length} inmuebles</div>
+  <div class="card wrap"><table style="min-width:640px"><tr><th>Dirección</th><th>Localidad</th><th>Etiquetas</th><th>DE AMIA</th></tr>${l.map(p=>`<tr class="row" data-act="inm" data-id="${p.id}"><td><b>${esc(p.direccion)}</b></td><td>${esc(p.localidad||'')}</td><td>${tg(p).map(t=>bd(t)).join(' ')}</td><td>${p.de_amia?'Sí':''}</td></tr>`).join('')}</table></div>`;
+}
+const FTABS=[['datos','Datos'],['personas','Personas'],['docs','Documentos'],['legal','Legal'],['alq','Alquiler'],['imp','Impuestos'],['rep','Reparaciones']];
+function drawInm(){
+  const p=by(S.prop,dlg.id),d=$('#dlg');if(!p){d.close();return}
+  const body={datos:fDatos,personas:fPersonas,docs:fDocs,legal:fLegal,alq:fAlq,imp:fImp,rep:fRep}[FT](p);
+  d.innerHTML=`<div style="display:flex;justify-content:space-between;gap:8px;align-items:start"><h2 style="margin:0">${esc(p.direccion)}</h2><button class="btn x" data-act="close">✕</button></div><div class="mut">${esc(p.localidad||'')} ${tg(p).map(t=>bd(t)).join(' ')}</div>
+  <nav style="margin-top:10px">${FTABS.map(([v,l])=>`<button class="${FT===v?'on':''}" data-act="ftab" data-v="${v}">${l}</button>`).join('')}</nav>${body}`;
+}
+function fDatos(p){
+  const id=p.id,c='prop',tags=tg(p),all=[...new Set([...OPC('etiqueta'),...tags])];
+  return`<div class="r2">${L('Dirección',I(c,id,'direccion',p.direccion))}${L('Localidad',I(c,id,'localidad',p.localidad))}${L('Tipo (departamento, local, lote…)',I(c,id,'tipo',p.tipo))}${L('Superficie (m²)',I(c,id,'m2',p.m2,'number'))}${L('Nomenclatura catastral',I(c,id,'nomenclatura',p.nomenclatura))}</div>
+  <label class="chk" style="margin-top:8px"><input type="checkbox" data-c="prop" data-id="${id}" data-f="de_amia" ${p.de_amia?'checked':''}> DE AMIA (tenemos el título)</label>
+  <h2>Etiquetas</h2><div>${all.map(t=>`<label class="chk"><input type="checkbox" data-etq="${esc(t)}" ${tags.includes(t)?'checked':''}> ${esc(t)}</label>`).join('')}</div>
+  <div class="bar2"><input id="newtag" placeholder="Nueva etiqueta…"><button class="btn s" data-act="newtag">Agregar etiqueta</button></div>
+  ${tags.includes('VENDIDO')?`<h2>Venta</h2><div class="r2">${L('Año de venta',I(c,id,'anio_venta',p.anio_venta,'number'))}${L('Valor de venta (USD)',I(c,id,'valor_venta',p.valor_venta,'number'))}</div>`:''}
+  <h2>Notas</h2><textarea data-c="prop" data-id="${id}" data-f="obs" rows="4">${esc(p.obs||'')}</textarea>
+  <div class="bar2" style="margin-top:12px"><button class="btn d" data-act="delinm">${ARM==='delinm'+id?'Hacé clic otra vez para confirmar':'Eliminar inmueble'}</button></div>`;
+}
+function fPersonas(p){
+  const vs=S.vin.filter(v=>v.inmueble===p.id);
+  return`<div class="bar2" style="margin-top:8px"><button class="btn" data-act="addper">+ Persona</button></div>`+(vs.length?vs.map(v=>{const x=by(S.per,v.persona)||{},pid=x.id||'';return`<div class="sub"><div class="r2">${L('Vínculo',SE('vin',v.id,'vinculo',v.vinculo,OPC('vinculo'),''))}${L('Nombre',I('per',pid,'nombre',x.nombre))}${L('Apellido',I('per',pid,'apellido',x.apellido))}${L('DNI',I('per',pid,'dni',x.dni))}${L('CUIT',I('per',pid,'cuit',x.cuit))}${L('Fecha de nacimiento',I('per',pid,'nacimiento',x.nacimiento,'date'))}${L('Fecha de fallecimiento',I('per',pid,'fallecimiento',x.fallecimiento,'date'))}${L('Mail',I('per',pid,'mail',x.mail))}${L('Teléfono',I('per',pid,'telefono',x.telefono))}</div>${L('Otros datos de contacto',I('per',pid,'otros',x.otros))}<div class="bar2" style="margin-top:6px">${DEL('vin',v.id,'Quitar del inmueble')}</div></div>`}).join(''):'<div class="empty">Todavía no hay personas vinculadas.</div>');
+}
+function fDocs(p){
+  const ds=S.doc.filter(d=>d.inmueble===p.id).sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  return`<div class="bar2" style="margin-top:8px;align-items:center">${ASSETS?`<select id="dtipo">${opts(OPC('tipo_documento'))}</select><input type="file" id="dfile" multiple>`:'<span class="mut">Adjuntar requiere permiso de edición.</span>'}<button class="btn s" data-act="adddoc">+ Documento pendiente</button></div>`+(ds.length?`<div class="docs">${ds.map(d=>`<div class="doc" style="max-width:260px">${SE('doc',d.id,'tipo',d.tipo,OPC('tipo_documento'),'')}${SE('doc',d.id,'estado',d.estado||'Disponible',['Disponible','Pendiente'])}${I('doc',d.id,'nombre',d.nombre)}${att(d.archivo)}${!d.archivo&&ASSETS?`<input type="file" data-up="doc" data-id="${d.id}">`:''}<div class="mut">${fd(d.fecha)}</div>${DEL('doc',d.id)}</div>`).join('')}</div>`:'<div class="empty">Sin documentos ni fotos.</div>');
+}
+function fLegal(p){
+  const ns=S.nov.filter(n=>n.inmueble===p.id).sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||'')),ss=S.sep.filter(x=>x.inmueble===p.id);
+  return`<div class="mut" style="margin-top:8px">Última actualización legal: <b>${p.legal_actualizado?new Date(p.legal_actualizado).toLocaleString('es-AR'):'—'}</b> (se completa sola)</div>
+  <h2>Situación legal y notas</h2><textarea data-c="prop" data-id="${p.id}" data-f="situacion_legal" rows="8">${esc(p.situacion_legal||'')}</textarea>
+  <h2>Novedades y gestiones</h2><button class="btn s" data-act="addnov">+ Novedad</button>${ns.map(n=>`<div class="sub"><div class="r2">${L('Fecha',I('nov',n.id,'fecha',n.fecha,'date'))}${L('Tipo',I('nov',n.id,'tipo',n.tipo))}${L('Cargó',I('nov',n.id,'por',n.por))}</div>${L('Detalle',`<textarea data-c="nov" data-id="${n.id}" data-f="texto" rows="2">${esc(n.texto||'')}</textarea>`)}<div class="bar2" style="margin-top:6px">${DEL('nov',n.id)}</div></div>`).join('')}
+  <h2>Sepelios</h2><div class="mut">Servicio o beneficio acordado en una donación, testamento u otra situación.</div><button class="btn s" data-act="addsep">+ Servicio de sepelio</button>${ss.map(x=>`<div class="sub"><div class="r2">${L('Origen (donación, testamento…)',I('sep',x.id,'origen',x.origen))}${L('Servicio acordado',I('sep',x.id,'servicio',x.servicio))}</div>${L('Observaciones',I('sep',x.id,'obs',x.obs))}<div class="bar2" style="margin-top:6px">${DEL('sep',x.id)}</div></div>`).join('')}`;
+}
+function conCard(c){
+  const x=by(S.per,c.inquilino)||{},pid=x.id||'',ps=S.cpa.filter(y=>y.contrato===c.id).sort((a,b)=>a.periodo.localeCompare(b.periodo)),sv=c.servicios_inquilino||{};
+  return`<div class="card" style="margin-top:10px">${c.activo===false||(c.fin&&c.fin<today())?bd('Finalizado'):bd('Vigente','o')}
+  <div class="r2">${L('Inquilino / razón social',I('per',pid,'nombre',x.nombre))}${L('CUIT',I('per',pid,'cuit',x.cuit))}${L('Mail',I('per',pid,'mail',x.mail))}${L('Teléfono',I('per',pid,'telefono',x.telefono))}</div>
+  <div class="r2">${L('Inicio del contrato',I('con',c.id,'inicio',c.inicio,'date'))}${L('Fin del contrato',I('con',c.id,'fin',c.fin,'date'))}${L('Duración (meses)',I('con',c.id,'meses',c.meses,'number'))}${L('Alquiler actual',I('con',c.id,'monto',c.monto,'number'))}${L('Moneda',SE('con',c.id,'moneda',c.moneda||'ARS',['ARS','USD']))}${L('Forma de incremento (IPC, ICL…)',I('con',c.id,'forma_incremento',c.forma_incremento))}${L('Depósito en garantía',I('con',c.id,'deposito',c.deposito))}${L('Inmobiliaria',I('con',c.id,'inmobiliaria',c.inmobiliaria))}</div>
+  <div class="mut" style="margin-top:4px">${c.inicio||c.fin?`Contrato: ${my(c.inicio)} a ${my(c.fin)}`:''}</div>${L('Descripción',I('con',c.id,'descripcion',c.descripcion))}
+  <div class="mut" style="margin-top:6px">Servicios a cargo del inquilino:</div>${['LUZ','GAS','ABL','ARBA','EXPENSAS','OTROS'].map(k=>`<label class="chk"><input type="checkbox" data-sv="${c.id}:${k}" ${sv[k]?'checked':''}> ${k}</label>`).join('')}
+  <h2>Pagos mes a mes</h2><button class="btn s" data-act="addcpa" data-id="${c.id}">+ Mes</button>
+  <div class="wrap"><table style="min-width:560px"><tr><th>Mes</th><th>Importe</th><th>Pagado</th><th>Fecha de pago</th><th>Nota</th><th></th></tr>${ps.map(y=>`<tr><td>${esc(my(y.periodo))}</td><td>${I('cpa',y.id,'importe',y.importe,'number')}</td><td><input type="checkbox" data-c="cpa" data-id="${y.id}" data-f="pagado" ${y.pagado?'checked':''}></td><td>${I('cpa',y.id,'fecha_pago',y.fecha_pago,'date')}</td><td>${I('cpa',y.id,'obs',y.obs)}</td><td>${DEL('cpa',y.id)}</td></tr>`).join('')}</table></div>
+  <div class="bar2" style="margin-top:8px">${DEL('con',c.id,'Eliminar contrato')}</div></div>`;
+}
+function fAlq(p){
+  const cs=S.con.filter(c=>c.inmueble===p.id).sort((a,b)=>(b.inicio||'').localeCompare(a.inicio||''));
+  return`<div class="bar2" style="margin-top:8px"><button class="btn" data-act="addcon">+ Alquiler (contrato nuevo)</button></div><div class="mut">Índices de actualización: IPC en <a href="https://www.indec.gob.ar" target="_blank" rel="noopener">INDEC</a> · ICL en <a href="https://www.bcra.gob.ar" target="_blank" rel="noopener">BCRA</a> (Principales variables).</div>`+(cs.length?cs.map(conCard).join(''):'<div class="empty">Este inmueble no tiene contratos cargados.</div>');
+}
+const proxVto=i=>{const t=today();return S.ipe.filter(x=>x.impuesto===i.id&&x.vencimiento&&x.vencimiento>=t&&!x.pagado).map(x=>x.vencimiento).sort()[0]||null};
+function fImp(p){
+  const is=S.imp.filter(i=>i.inmueble===p.id).sort((a,b)=>String(a.concepto).localeCompare(String(b.concepto)));
+  return`<div class="bar2" style="margin-top:8px"><button class="btn" data-act="addimp">+ Impuesto</button></div>`+(is.length?`<div class="wrap"><table style="min-width:640px"><tr><th>Impuesto</th><th>Nº de cliente</th><th>Forma de pago</th><th>Próximo vencimiento</th></tr>${is.map(i=>`<tr class="row" data-act="impd" data-id="${i.id}"><td><b>${esc(i.concepto||'')}</b><div class="mut">${esc(i.tipo||'')}</div></td><td>${esc(i.nro_cliente||'')}</td><td>${esc(i.forma_pago||'')}</td><td>${fd(proxVto(i))}</td></tr>`).join('')}</table></div>`:'<div class="empty">Este inmueble no tiene impuestos cargados.</div>');
+}
+function fRep(p){return`<div class="bar2" style="margin-top:8px"><button class="btn" data-act="new" data-k="rep" data-p="${p.id}">+ Nueva reparación</button></div><div class="card">${repTable(S.rep.filter(r=>r.prop===p.id))}</div>`}
+function drawImp(){
+  const i=by(S.imp,dlg.id),d=$('#dlg');if(!i){d.close();return}
+  const p=by(S.prop,i.inmueble)||{},cy=new Date().getFullYear(),y=F.iy||String(cy);
+  const rows=[...Array(12)].map((_,m)=>{const per=`${y}-${String(m+1).padStart(2,'0')}-01`,x=S.ipe.find(z=>z.impuesto===i.id&&String(z.periodo).slice(0,10)===per),id=x?x.id:'new',a=`data-c="ipe" data-id="${id}" data-imp="${i.id}" data-per="${per}"`;
+    const IN=(f,v,t)=>`<input ${a} data-f="${f}" type="${t==='number'?'text':t}" ${t==='number'?'inputmode="decimal" data-num="1"':''} value="${esc(v??'')}">`;
+    return`<tr><td>${MESES[m]}</td><td>${IN('importe',x&&x.importe,'number')}</td><td>${IN('vencimiento',x&&x.vencimiento,'date')}</td><td><input type="checkbox" ${a} data-f="pagado" ${x&&x.pagado?'checked':''}></td><td>${IN('fecha_pago',x&&x.fecha_pago,'date')}</td><td>${IN('obs',x&&x.obs,'text')}</td></tr>`}).join('');
+  d.innerHTML=`<div style="display:flex;justify-content:space-between;gap:8px"><button class="btn s" data-act="inm" data-id="${p.id||''}" data-t="imp">← Volver al inmueble</button><button class="btn x" data-act="close">✕</button></div>
+  <h2>${esc(i.concepto||'Impuesto')}</h2><div class="mut">${esc(p.direccion||'')}</div>
+  <div class="r2">${L('Impuesto o servicio',I('imp',i.id,'concepto',i.concepto))}${L('Tipo',SE('imp',i.id,'tipo',i.tipo,OPC('tipo_impuesto'),''))}${L('Nº de cliente / referencia',I('imp',i.id,'nro_cliente',i.nro_cliente))}${L('Forma de pago',SE('imp',i.id,'forma_pago',i.forma_pago,OPC('forma_pago'),''))}</div>${L('Notas',I('imp',i.id,'notas',i.notas))}
+  <div class="bar2" style="margin-top:8px"><select data-flt="iy">${opts([cy-1,cy,cy+1].map(String),y)}</select></div>
+  <div class="wrap"><table style="min-width:640px"><tr><th>Mes</th><th>Importe</th><th>Vencimiento</th><th>Pagado</th><th>Fecha de pago</th><th>Nota</th></tr>${rows}</table></div>
+  <div class="bar2" style="margin-top:12px">${DEL('imp',i.id,'Eliminar impuesto')}</div>`;
+}
+function vImps(){
+  const m=F.im||today().slice(0,7),q=(F.iq||'').toLowerCase(),PM=new Map(S.ipe.map(z=>[z.impuesto+'|'+String(z.periodo).slice(0,7),z]));
+  const dir=i=>(by(S.prop,i.inmueble)||{}).direccion||'';
+  const l=S.imp.filter(i=>(!F.if||i.forma_pago===F.if)&&(!F.it||i.tipo===F.it)&&(!q||[i.concepto,i.nro_cliente,dir(i)].join(' ').toLowerCase().includes(q))).sort((a,b)=>dir(a).localeCompare(dir(b))||String(a.concepto).localeCompare(String(b.concepto)));
+  return`<div class="bar2"><input data-flt="iq" placeholder="Buscar inmueble, impuesto o Nº de cliente…" value="${esc(F.iq||'')}"><select data-flt="if">${opts(OPC('forma_pago'),F.if,'Todas las formas de pago')}</select><select data-flt="it">${opts(OPC('tipo_impuesto'),F.it,'Todos los tipos')}</select><input data-flt="im" type="month" value="${m}"><button class="btn" data-act="newimp">+ Impuesto</button></div>
+  <div class="mut" style="margin-bottom:6px">${l.length} impuestos · importes y vencimientos de ${MESES[+m.slice(5,7)-1]} ${m.slice(0,4)}</div>
+  <div class="card wrap"><table style="min-width:900px"><tr><th>Inmueble</th><th>Impuesto</th><th>Tipo</th><th>Nº de cliente</th><th>Forma de pago</th><th>Importe</th><th>Vencimiento</th><th>Pagado</th></tr>${l.map(i=>{const x=PM.get(i.id+'|'+m);return`<tr class="row" data-act="impd" data-id="${i.id}"><td>${esc(dir(i)||'—')}</td><td>${esc(i.concepto||'')}</td><td>${esc(i.tipo||'')}</td><td>${esc(i.nro_cliente||'')}</td><td>${esc(i.forma_pago||'')}</td><td>${x&&x.importe!=null?fmt(x.importe):'—'}</td><td>${x&&x.vencimiento?fd(x.vencimiento):''}</td><td>${x&&x.pagado?bd('Pagado','o'):''}</td></tr>`}).join('')}</table></div>`;
+}
+function vAlqs(){
+  const q=(F.aq||'').toLowerCase(),h=today(),dir=c=>(by(S.prop,c.inmueble)||{}).direccion||'',nom=c=>(by(S.per,c.inquilino)||{}).nombre||'';
+  let lim=null;if(F.av){const d=new Date();d.setMonth(d.getMonth()+(+F.av));lim=d.toISOString().slice(0,10)}
+  const l=S.con.filter(c=>(!q||(dir(c)+' '+nom(c)).toLowerCase().includes(q))&&(!lim||(c.fin&&c.fin>=h&&c.fin<=lim))).sort((a,b)=>dir(a).localeCompare(dir(b)));
+  return`<div class="bar2"><input data-flt="aq" placeholder="Buscar inmueble o inquilino…" value="${esc(F.aq||'')}"><select data-flt="av">${opts([['3','Vencen en los próximos 3 meses'],['6','Vencen en los próximos 6 meses'],['12','Vencen en los próximos 12 meses']],F.av,'Todos los contratos')}</select><button class="btn" data-act="newalq">+ Alquiler</button></div>
+  <div class="mut" style="margin-bottom:6px">${l.length} contratos</div>
+  <div class="card wrap"><table style="min-width:860px"><tr><th>Inmueble</th><th>Inquilino</th><th>Inicio</th><th>Fin</th><th>Alquiler</th><th>Incremento</th><th>Estado</th></tr>${l.map(c=>`<tr class="row" data-act="inm" data-id="${c.inmueble}" data-t="alq"><td><b>${esc(dir(c))}</b></td><td>${esc(nom(c))}</td><td>${esc(my(c.inicio))}</td><td>${esc(my(c.fin))}</td><td>${c.monto!=null?(c.moneda==='USD'?'USD ':'$ ')+new Intl.NumberFormat('es-AR').format(c.monto):'—'}</td><td>${esc(c.forma_incremento||'')}</td><td>${c.fin&&c.fin<h?bd('Vencido','u'):bd('Vigente','o')}</td></tr>`).join('')}</table></div>`;
 }
 function vProp(){
   const p=by(S.prop,selProp);if(!p){view='props';return vProps()}const l=S.rep.filter(r=>r.prop===p.id).sort((a,b)=>(b.fechaSol||'').localeCompare(a.fechaSol||''));
@@ -179,23 +271,25 @@ function vRes(){
   <h2>Informes en Excel</h2><div class="card"><div class="mut" style="margin-bottom:8px">Elegí uno o varios informes, mirá la vista previa y después descargá un solo archivo (usa el año e inmueble elegidos arriba).</div>${OPS.map(([k,l])=>`<label class="chk"><input type="checkbox" data-chk="${k}" ${SEL.has(k)?'checked':''}> ${l}</label>`).join('')}<div class="bar2" style="margin-top:6px"><button class="btn" data-act="prev">Vista previa</button>${PREV&&PREV.length?'<button class="btn s" data-act="dl">Descargar Excel</button>':''}</div>
   ${PREV?(PREV.length?PREV.map(p=>`<h2>${p.label}</h2>${tbl(p.res)}<div class="mut">El Excel incluye además una hoja de detalle con ${p.det.length} renglones.</div>`).join(''):'<div class="empty">No hay datos para ese año.</div>'):''}</div>`;
 }
-const TABS=[['kan','Tablero',vKan],['reps','Reparaciones',vReps],['pagos','Control de pagos',vPagos],['props','Inmuebles',vProps],['prov','Proveedores',vProvs],['res','Resumen económico',vRes]];
+const TABS=[['kan','Tablero',vKan],['reps','Reparaciones',vReps],['pagos','Control de pagos',vPagos],['props','Inmuebles',vProps],['alqs','Alquileres',vAlqs],['imps','Impuestos',vImps],['provs','Proveedores',vProvs],['res','Resumen económico',vRes]];
 function render(){
   if(!DB){$('#app').innerHTML='<div class="card empty">Cargando…</div>';return}
-  const a=document.activeElement;if(a&&a.dataset&&a.dataset.flt==='q')return;
+  const a=document.activeElement;if(a&&a.dataset&&a.dataset.flt&&a.tagName==='INPUT'&&a.type==='text')return;
   const cur=view==='prop'?'props':view;
   $('#nav').innerHTML=TABS.map(([v,l])=>`<button class="${cur===v?'on':''}" data-act="tab" data-v="${v}">${l}</button>`).join('');
   $('#app').innerHTML=view==='prop'?vProp():TABS.find(t=>t[0]===view)[2]();
-  if(dlg&&dlg.type==='rep'&&!(a&&$('#dlg').contains(a)&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)))drawRep();
+  if(dlg&&DRAW[dlg.type]&&!(a&&$('#dlg').contains(a)&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)))DRAW[dlg.type]();
 }
 const FORMS={
-  prop:{t:'propiedad',f:[['direccion','Dirección'],['localidad','Localidad'],['estado','Estado del inmueble',EPROP],['responsable','Responsable interno'],['obs','Observaciones','area']]},
-  prov:{t:'proveedor',f:[['nombre','Nombre o razón social'],['cuit','CUIT'],['rubro','Rubro o especialidad'],['tel','Teléfono'],['email','Correo electrónico'],['facturacion','Datos de facturación'],['condiciones','Condiciones de pago habituales'],['obs','Observaciones sobre trabajos anteriores','area']]},
+  prop:{t:'propiedad',f:[['direccion','Dirección'],['localidad','Localidad']]},
+  imp:{t:'impuesto',m:1,f:[['inmueble','Inmueble','prop'],['concepto','Impuesto o servicio (EDESUR, AYSA, ABL…)'],['tipo','Tipo',()=>OPC('tipo_impuesto')],['nro_cliente','Nº de cliente o referencia'],['forma_pago','Forma de pago',()=>OPC('forma_pago')]]},
+  alq:{t:'alquiler',m:1,f:[['inmueble','Inmueble','prop'],['inquilino','Inquilino / razón social'],['monto','Alquiler actual (monto)']]},
+  prov:{t:'proveedor',m:1,f:[['nombre','Nombre o razón social'],['cuit','CUIT'],['rubro','Rubro o especialidad'],['tel','Teléfono'],['email','Correo electrónico'],['facturacion','Datos de facturación'],['condiciones','Condiciones de pago habituales'],['obs','Observaciones sobre trabajos anteriores','area']]},
   rep:{t:'reparación',f:[['titulo','Resumen del problema'],['prop','Propiedad','prop'],['solicitante','Solicitante'],['categoria','Categoría',CATS],['prioridad','Prioridad',PRIO]]}
 };
 function drawForm(){
   const{k,id,pre}=dlg,v=id?by(S[k],id)||{}:(pre||{});
-  $('#dlg').innerHTML=`<h2 style="margin-top:0">${id?'Editar':'Nueva'} ${FORMS[k].t}</h2>`+FORMS[k].f.map(([f,l,t])=>{const val=v[f]??(f==='codigo'?nx(S.prop,'codigo','INM-',3):f==='prioridad'?'Normal':'');return`<label>${l}</label>`+(t==='area'?`<textarea data-f="${f}" rows="3">${esc(val)}</textarea>`:t==='prop'?`<select data-f="${f}">${opts(S.prop.map(p=>[p.id,p.direccion]),val,'Elegir…')}</select>`:Array.isArray(t)?`<select data-f="${f}">${opts(t,val,'')}</select>`:`<input data-f="${f}" value="${esc(val)}">`)}).join('')+`<div class="bar2" style="margin-top:14px"><button class="btn" data-act="save">Guardar</button><button class="btn s" data-act="close">Cancelar</button>${id?'<button class="btn d" data-act="delete">Eliminar</button>':''}</div>`;
+  $('#dlg').innerHTML=`<h2 style="margin-top:0">${id?'Editar':(FORMS[k].m?'Nuevo':'Nueva')} ${FORMS[k].t}</h2>`+FORMS[k].f.map(([f,l,t0])=>{const t=typeof t0==='function'?t0():t0;const val=v[f]??(f==='codigo'?nx(S.prop,'codigo','INM-',3):f==='prioridad'?'Normal':'');return`<label>${l}</label>`+(t==='area'?`<textarea data-f="${f}" rows="3">${esc(val)}</textarea>`:t==='prop'?`<select data-f="${f}">${opts(S.prop.map(p=>[p.id,p.direccion]),val,'Elegir…')}</select>`:Array.isArray(t)?`<select data-f="${f}">${opts(t,val,'')}</select>`:`<input data-f="${f}" value="${esc(val)}">`)}).join('')+`<div class="bar2" style="margin-top:14px"><button class="btn" data-act="save">Guardar</button><button class="btn s" data-act="close">Cancelar</button>${id?'<button class="btn d" data-act="delete">Eliminar</button>':''}</div>`;
 }
 const I=(c,id,f,v,t='text',x='')=>`<input data-c="${c}" data-id="${id}" data-f="${f}" type="${t==='number'?'text':t}" ${t==='number'?'inputmode="decimal" data-num="1"':''} value="${esc(v??'')}" ${x}>`;
 const SE=(c,id,f,v,l,b)=>`<select data-c="${c}" data-id="${id}" data-f="${f}">${opts(l,v,b)}</select>`;
@@ -214,14 +308,22 @@ function drawRep(){
   <h2>Novedades</h2><textarea id="nov" rows="2" placeholder="Escribí una novedad…"></textarea><button class="btn s" data-act="nov" style="margin-top:6px">Agregar novedad</button>${[...(r.novedades||[])].reverse().map(n=>`<div class="sub"><span class="mut">${esc(n.f)} · ${esc(n.por||'')}</span><div>${esc(n.t)}</div></div>`).join('')}
   <div class="bar2" style="margin-top:14px"><button class="btn d" data-act="delrep">${ARM==='delrep'+r.id?'Hacé clic otra vez para confirmar':'Eliminar expediente'}</button></div>`;
 }
-function openDlg(o){dlg=o;const d=$('#dlg');o.type==='rep'?drawRep():drawForm();if(!d.open)d.showModal()}
+const DRAW={rep:()=>drawRep(),inm:()=>drawInm(),imp:()=>drawImp()};
+function openDlg(o){dlg=o;const d=$('#dlg');(DRAW[o.type]||drawForm)();if(!d.open)d.showModal()}
 async function save(){
   const{k,id}=dlg,v={};document.querySelectorAll('#dlg [data-f]').forEach(e=>v[e.dataset.f]=e.value);
-  if(!(v.nombre||v.titulo||v.direccion||'').trim())return toast('Completá los datos principales');
+  if(!(v.nombre||v.titulo||v.direccion||v.concepto||v.inquilino||'').trim())return toast('Completá los datos principales');
+  if((k==='imp'||k==='alq')&&!v.inmueble)return toast('Elegí el inmueble');
   if(id){await upd(k,id,v);$('#dlg').close();return}
   if(k==='prop')v.codigo=nx(S.prop,'codigo','INM-',3);
   if(k==='rep')Object.assign(v,{numero:nx(S.rep,'numero','REP-',4),estado:ESTADOS[0],fechaSol:today(),docs:[],novedades:[],responsable:me()});
+  if(k==='alq'){
+    const per=await w(()=>DB.collection('personas').add({nombre:v.inquilino}));if(!per)return;
+    const m=num(v.monto);await w(()=>DB.collection('contratos').add({inmueble:v.inmueble,inquilino:per.id,monto:m||null,moneda:'ARS',activo:true}));
+    await w(()=>DB.collection('vinculos').add({inmueble:v.inmueble,persona:per.id,vinculo:'Inquilino'}));
+    FT='alq';openDlg({type:'inm',id:v.inmueble});return}
   const ref=await w(()=>DB.collection(COL[k]).add(v));
+  if(k==='imp'&&ref){openDlg({type:'imp',id:ref.id});return}
   $('#dlg').close();if(ref&&k==='rep')toast('Reparación guardada');
 }
 async function aprobar(id){
@@ -234,6 +336,25 @@ document.addEventListener('click',async ev=>{
   const sg=ev.target.closest('[data-sign]');if(sg){ev.preventDefault();const{data,error}=await sb.storage.from('adjuntos').createSignedUrl(sg.dataset.sign.replace(/^sb:/,''),120);if(error)return toast(error.message);window.open(data.signedUrl,'_blank','noopener');return}
   const t=ev.target.closest('[data-act]');if(!t)return;const a=t.dataset.act,r=dlg&&dlg.type==='rep'?by(S.rep,dlg.id):null;
   if(a==='tab'){view=t.dataset.v;render()}
+  else if(a==='inm'){if(String(getSelection()).trim())return;FT=t.dataset.t||'datos';openDlg({type:'inm',id:t.dataset.id})}
+  else if(a==='ftab'){FT=t.dataset.v;drawInm()}
+  else if(a==='impd')openDlg({type:'imp',id:t.dataset.id});
+  else if(a==='newimp')openDlg({type:'form',k:'imp'});
+  else if(a==='newalq')openDlg({type:'form',k:'alq'});
+  else if(a==='newtag'){const v=($('#newtag').value||'').trim().toUpperCase();if(!v)return;const p=by(S.prop,dlg.id);if(!OPC('etiqueta').includes(v))await w(()=>DB.collection('opciones').add({lista:'etiqueta',valor:v,orden:99}));await upd('prop',p.id,{etiquetas:[...new Set([...tg(p),v])]})}
+  else if(['addper','adddoc','addnov','addsep','addcon','addcpa','addimp'].includes(a)&&dlg&&dlg.type==='inm'){
+    if(BUSY)return;BUSY=true;const iid=dlg.id;
+    try{
+      if(a==='addper'){const x=await w(()=>DB.collection('personas').add({nombre:''}));if(x)await w(()=>DB.collection('vinculos').add({inmueble:iid,persona:x.id}))}
+      else if(a==='adddoc')await w(()=>DB.collection('documentos').add({inmueble:iid,tipo:OPC('tipo_documento')[0]||'Otro',nombre:'',estado:'Pendiente',fecha:today()}));
+      else if(a==='addnov')await w(()=>DB.collection('novedades_legales').add({inmueble:iid,fecha:today(),por:me()}));
+      else if(a==='addsep')await w(()=>DB.collection('sepelios').add({inmueble:iid}));
+      else if(a==='addcon'){const x=await w(()=>DB.collection('personas').add({nombre:''}));if(x){await w(()=>DB.collection('contratos').add({inmueble:iid,inquilino:x.id,moneda:'ARS',activo:true}));await w(()=>DB.collection('vinculos').add({inmueble:iid,persona:x.id,vinculo:'Inquilino'}))}}
+      else if(a==='addcpa'){const ps=S.cpa.filter(y=>y.contrato===t.dataset.id).map(y=>String(y.periodo).slice(0,10)).sort(),d=new Date();let yy=d.getFullYear(),mm=d.getMonth();if(ps.length){yy=+ps[ps.length-1].slice(0,4);mm=+ps[ps.length-1].slice(5,7)}
+        await w(()=>DB.collection('alquiler_pagos').add({contrato:t.dataset.id,periodo:`${mm===12?yy+1:yy}-${String(mm===12?1:mm+1).padStart(2,'0')}-01`}))}
+      else if(a==='addimp'){const x=await w(()=>DB.collection('impuestos').add({inmueble:iid,concepto:''}));if(x)openDlg({type:'imp',id:x.id})}
+    }finally{BUSY=false}}
+  else if(a==='delinm'){const key='delinm'+dlg.id;if(ARM!==key){ARM=key;t.textContent='Hacé clic otra vez para confirmar';return}ARM=null;const ok=await w(async()=>{await DB.doc('propiedades/'+dlg.id).delete();return true});if(ok){$('#dlg').close();toast('Inmueble eliminado')}}
   else if(a==='prop'){if(String(getSelection()).trim())return;selProp=t.dataset.id;view='prop';render()}
   else if(a==='rep'){if(String(getSelection()).trim())return;openDlg({type:'rep',id:t.dataset.id})}
   else if(a==='new')openDlg({type:'form',k:t.dataset.k,pre:t.dataset.p?{prop:t.dataset.p}:null});
@@ -264,20 +385,28 @@ document.addEventListener('change',async ev=>{
   if(t.id==='me'){try{localStorage.setItem('me',t.value)}catch(e){}render();return}
   if(t.dataset.chk2){t.checked?SEL2.add(t.dataset.chk2):SEL2.delete(t.dataset.chk2);PREV2=null;render();return}
   if(t.dataset.chk){t.checked?SEL.add(t.dataset.chk):SEL.delete(t.dataset.chk);PREV=null;render();return}
+  if(t.dataset.tg){F.tg=F.tg||new Set();t.checked?F.tg.add(t.dataset.tg):F.tg.delete(t.dataset.tg);render();return}
+  if(t.dataset.am){F.am=t.checked;render();return}
+  if(t.dataset.etq&&dlg&&dlg.type==='inm'){const p=by(S.prop,dlg.id),cur=tg(p);upd('prop',p.id,{etiquetas:t.checked?[...new Set([...cur,t.dataset.etq])]:cur.filter(x=>x!==t.dataset.etq)});return}
+  if(t.dataset.sv){const[cid,k]=t.dataset.sv.split(':'),c=by(S.con,cid);upd('con',cid,{servicios_inquilino:{...(c.servicios_inquilino||{}),[k]:t.checked}});return}
+  if(t.id==='dfile'&&t.files.length&&dlg&&dlg.type==='inm'){const tipo=$('#dtipo').value;toast('Subiendo…');for(const f of t.files){const x=await w(()=>ASSETS.upload(f));if(x)await w(()=>DB.collection('documentos').add({inmueble:dlg.id,tipo,nombre:f.name,fecha:today(),estado:'Disponible',archivo:{id:x.id,url:x.url,name:f.name}}))}toast('Archivo adjuntado');return}
   if(t.dataset.flt){F[t.dataset.flt]=t.value;PREV=null;PREV2=null;t.blur();render();return}
-  if(t.dataset.up&&t.files.length){toast('Subiendo…');const x=await w(()=>ASSETS.upload(t.files[0]));if(x){upd(t.dataset.up,t.dataset.id,{archivo:{id:x.id,url:x.url,name:t.files[0].name}});toast('Archivo adjuntado')}return}
-  if(!dlg||dlg.type!=='rep')return;const r=by(S.rep,dlg.id);if(!r)return;
-  if(t.id==='file'&&t.files.length){
+  if(t.dataset.up&&t.files.length){toast('Subiendo…');const x=await w(()=>ASSETS.upload(t.files[0]));if(x){upd(t.dataset.up,t.dataset.id,{archivo:{id:x.id,url:x.url,name:t.files[0].name},...(t.dataset.up==='doc'?{estado:'Disponible'}:{})});toast('Archivo adjuntado')}return}
+  if(!dlg)return;const r=dlg.type==='rep'?by(S.rep,dlg.id):null;if(dlg.type==='rep'&&!r)return;
+  if(t.id==='file'&&r&&t.files.length){
     const cat=$('#cat').value,add=[];toast('Subiendo…');
     for(const f of t.files){const x=await w(()=>ASSETS.upload(f));if(x)add.push({id:x.id,url:x.url,name:f.name,cat,fecha:today()})}
     const cur=by(S.rep,dlg.id);if(add.length&&cur){await upd('rep',cur.id,{docs:[...(cur.docs||[]),...add]});toast('Archivo adjuntado')}return}
   const c=t.dataset.c,f=t.dataset.f,id=t.dataset.id;if(!c)return;
-  const v=t.dataset.num?num(t.value):t.value;
+  const v=t.type==='checkbox'?t.checked:t.dataset.num?(t.value.trim()===''?null:num(t.value)):t.value;
+  if(id==='new'){await w(()=>DB.collection(COL[c]).add({impuesto:t.dataset.imp,periodo:t.dataset.per,[f]:v}));return}
+  if(!id){toast('Primero agregá la persona (botón + Persona) o el dato.');return}
+  if(c==='prop'&&f==='situacion_legal')return upd('prop',id,{situacion_legal:v,legal_actualizado:new Date().toISOString()});
   if(c==='pre'&&f==='estado'&&v==='Aprobado')return aprobar(id);
-  if(c==='pag'&&f==='monto'){const o=by(S.pag,id),a=aprobado(r);if(a>0&&paid(r)-(+o.monto||0)+v>a)toast('El total pagado supera el importe aprobado: requiere aprobación adicional.')}
+  if(c==='pag'&&f==='monto'&&r){const o=by(S.pag,id),a=aprobado(r);if(a>0&&paid(r)-(+o.monto||0)+(v||0)>a)toast('El total pagado supera el importe aprobado: requiere aprobación adicional.')}
   upd(c,id,{[f]:v});
 });
-document.addEventListener('input',ev=>{if(ev.target.dataset.flt==='q'){F.q=ev.target.value;clearTimeout(window._f);window._f=setTimeout(()=>{render();const n=document.querySelector('[data-flt="q"]');if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length)}},250)}});
+document.addEventListener('input',ev=>{const e=ev.target,k=e.dataset.flt;if(k&&e.tagName==='INPUT'&&e.type==='text'){F[k]=e.value;clearTimeout(window._f);window._f=setTimeout(()=>{render();const n=document.querySelector('[data-flt="'+k+'"]');if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length)}},250)}});
 document.addEventListener('dragstart',e=>{const c=e.target.closest('.kc');if(c)dragId=c.dataset.id});
 document.addEventListener('dragover',e=>{if(e.target.closest('.col'))e.preventDefault()});
 document.addEventListener('drop',e=>{const c=e.target.closest('.col');if(c&&dragId){e.preventDefault();upd('rep',dragId,{estado:c.dataset.drop});dragId=null}});
@@ -294,7 +423,7 @@ const LOAD={};
 function mkDB(){return{
   collection:n=>({
     async add(d){const r=await sb.from(n).insert(clean(d)).select('id').single();ck(r.error);await(LOAD[n]&&LOAD[n]());return r.data},
-    onSnapshot(cb,err){let t;const load=async()=>{const r=await sb.from(n).select('*').order('created_at');if(r.error)return err&&err(r.error);cb({docs:r.data.map(x=>({id:x.id,data:()=>{const{id,created_at,...y}=x;return y}}))})};LOAD[n]=load;load();
+    onSnapshot(cb,err){let t;const load=async()=>{let all=[],from=0;for(;;){const r=await sb.from(n).select('*').order('created_at').order('id').range(from,from+999);if(r.error)return err&&err(r.error);all=all.concat(r.data);if(r.data.length<1000)break;from+=1000}cb({docs:all.map(x=>({id:x.id,data:()=>{const{id,created_at,...y}=x;return y}}))})};LOAD[n]=load;load();
       sb.channel('rt-'+n).on('postgres_changes',{event:'*',schema:'public',table:n},()=>{clearTimeout(t);t=setTimeout(load,150)}).subscribe()}}),
   doc:p=>{const[n,id]=p.split('/');return{async update(d){const x=await sb.from(n).update(clean(d)).eq('id',id).select('id');ck(x.error);if(!x.data||!x.data.length)throw new Error('No se pudo guardar: tu usuario no tiene permiso de edición');await(LOAD[n]&&LOAD[n]())},async delete(){const x=await sb.from(n).delete().eq('id',id).select('id');ck(x.error);if(!x.data||!x.data.length)throw new Error('No se pudo eliminar: tu usuario no tiene permiso de edición');await(LOAD[n]&&LOAD[n]())}}}}}
 function mkAssets(){return{async upload(f){const path=crypto.randomUUID()+'/'+f.name.replace(/[^\w.\-]+/g,'_');ck((await sb.storage.from('adjuntos').upload(path,f)).error);return{id:path,url:'sb:'+path}}}}

@@ -1,0 +1,13 @@
+ORDEN PARA EJECUTAR EN SUPABASE (SQL Editor -> New query -> pegar -> Run)
+
+Ya ejecutados:   schema.sql, migracion-2, migracion-3, migracion-4
+
+Falta ejecutar, en este orden y UNA sola vez cada uno:
+  1. migracion-5-alquileres.sql        (crea las tablas de alquileres)
+  2. carga-1-inmuebles.sql             (carga los inmuebles)        -> al final tiene que dar 130 o más
+  3. carga-2-impuestos.sql             (carga los impuestos)        -> tiene que dar 323
+  4. carga-3-periodos-parte1.sql       (importes y vencimientos, parte 1)
+  5. carga-4-periodos-parte2.sql       (importes y vencimientos, parte 2)
+  6. carga-5-alquileres.sql            (inquilinos, contratos y pagos) -> contratos: 49
+
+Después: reemplazar index.html en GitHub por el del zip y esperar el despliegue de Vercel.
