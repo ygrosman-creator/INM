@@ -1,13 +1,11 @@
-ORDEN PARA EJECUTAR EN SUPABASE (SQL Editor -> New query -> pegar -> Run)
+ORDEN PARA EJECUTAR EN SUPABASE (SQL Editor -> New query -> pegar -> Run). Cada archivo UNA sola vez.
 
-Ya ejecutados:   schema.sql, migracion-2, migracion-3, migracion-4
+Ya ejecutados: schema, migracion-2, migracion-3, migracion-4, migracion-5 y las cargas 1 a 5.
 
-Falta ejecutar, en este orden y UNA sola vez cada uno:
-  1. migracion-5-alquileres.sql        (crea las tablas de alquileres)
-  2. carga-1-inmuebles.sql             (carga los inmuebles)        -> al final tiene que dar 130 o más
-  3. carga-2-impuestos.sql             (carga los impuestos)        -> tiene que dar 323
-  4. carga-3-periodos-parte1.sql       (importes y vencimientos, parte 1)
-  5. carga-4-periodos-parte2.sql       (importes y vencimientos, parte 2)
-  6. carga-5-alquileres.sql            (inquilinos, contratos y pagos) -> contratos: 49
+LOTE 2 (lo nuevo), en este orden:
+  1. migracion-6-ajustes.sql      (llaves, fecha de venta, y el texto legal pasa a una nota con fecha)
+  2. carga-6-tipo-superficie.sql  (tipo y m2 de los inmuebles, del informe al 15/9)
+  3. Crear los usuarios nalgaze@amia.org.ar y valfie@amia.org.ar en Authentication -> Users -> Add user
+     (tildar "Auto Confirm User"), y después ejecutar usuarios-roles.sql
 
-Después: reemplazar index.html en GitHub por el del zip y esperar el despliegue de Vercel.
+Por último: reemplazar index.html en GitHub por el del zip, esperar el despliegue de Vercel y recargar con Ctrl + Shift + R.
