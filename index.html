@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>INMUEBLES - REPARACIONES</title>
+<title>INMUEBLES AMIA</title>
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f5f1;--card:#fff;--tx:#1f2328;--mut:#6b7280;--bd:#e3e1da;--ac:#1d6b5a;--acbg:#e2f1ed;--warn:#b45309;--warnbg:#fdf0dc;--ok:#15803d;--okbg:#e1f4e7;--bad:#b91c1c;--badbg:#fbe4e4;--rbg:#fde4e4;--rtx:#b91c1c;--nbg:#ffe8d1;--ntx:#c2410c;--ybg:#fdf3b8;--ytx:#92660a;--vbg:#ede4fb;--vtx:#6d28d9}
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17191a;--card:#212426;--tx:#e8e8e5;--mut:#9aa0a6;--bd:#34383b;--ac:#5fc4ac;--acbg:#1e3a34;--warn:#f0b35a;--warnbg:#3a2d17;--ok:#6fd08c;--okbg:#1c3626;--bad:#f28b82;--badbg:#3d1f1f;--rbg:#4a2323;--rtx:#f28b82;--nbg:#472a14;--ntx:#fdba74;--ybg:#473f12;--ytx:#fde047;--vbg:#33264f;--vtx:#c4b5fd}}
@@ -75,9 +75,10 @@ details.dd .ddb .chk{display:flex;margin:5px 0}
 #up,.dup{width:44px;height:44px;border-radius:50%;border:0;background:var(--ac);color:#fff;font-size:20px;box-shadow:var(--sh);cursor:pointer}
 #up{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));display:none;z-index:90}
 .dup{position:sticky;bottom:8px;float:right}
+h1,h2,nav button,.ttl{text-transform:uppercase}.ttl{font-weight:700}
 @media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}#up,.dup{display:none!important}}
 </style></head><body>
-<div id="root"><header><h1>Inmuebles | Reparaciones y Mantenimiento</h1><input id="me" placeholder="Tu nombre" title="Se usa en pagos y novedades"><button class="btn s" id="out" style="display:none">Salir</button></header><nav id="nav"></nav><div id="app"></div></div>
+<div id="root"><header><h1>INMUEBLES AMIA</h1><input id="me" placeholder="Tu nombre" title="Se usa en pagos y novedades"><button class="btn s" id="out" style="display:none">Salir</button></header><nav id="nav"></nav><div id="app"></div></div>
 <dialog id="dlg"></dialog><datalist id="dlp"></datalist><datalist id="dlper"></datalist><button id="up" data-act="up" title="Volver arriba">↑</button><div id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="config.js"></script>
 <script>
@@ -104,7 +105,7 @@ const open=r=>!['Finalizada','Cancelada'].includes(r.estado);
 const opts=(l,sel,blank)=>(blank!=null?`<option value="">${blank}</option>`:'')+l.map(o=>{const[v,t]=Array.isArray(o)?o:[o,o];return`<option value="${esc(v)}"${v===sel?' selected':''}>${esc(t)}</option>`}).join('');
 let tt;function toast(m,ms=5000){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(tt);tt=setTimeout(()=>t.style.display='none',ms)}
 async function w(fn){try{return await fn()}catch(e){toast(/row-level security/i.test((e&&e.message)||'')?'Tu usuario no tiene permiso de edición.':(e&&e.message)||'Error al guardar',9000)}}
-const upd=(k,id,d)=>w(async()=>{await DB.doc(COL[k]+'/'+id).update(d);return true});
+const upd=async(k,id,d)=>{const row=S[k]&&S[k].find(x=>x.id===id),old=row?{...row}:null;if(row)Object.assign(row,d);const ok=await w(async()=>{await DB.doc(COL[k]+'/'+id).update(d);return true});if(!ok&&row&&old){Object.assign(row,old);render()}return ok};
 const bd=(t,c='')=>`<span class="badge ${c}">${esc(t)}</span>`;
 const ECLS=['r','n','y','o'];
 const estOf=r=>{const e=String(r.estado||'').toUpperCase();if(/FINALIZ|CANCEL/.test(e))return ESTADOS[3];if(/EJECUC|APROBAD/.test(e))return ESTADOS[2];if(/PRESUPUESTO|APROBACI/.test(e))return ESTADOS[1];return ESTADOS[0]};
@@ -162,6 +163,15 @@ const my=d=>d?MESES[+String(d).slice(5,7)-1]+' '+String(d).slice(0,4):'';
 const OPC=l=>S.opc.filter(o=>o.lista===l).sort((a,b)=>l==='etiqueta'?String(a.valor).localeCompare(String(b.valor)):(a.orden||0)-(b.orden||0)).map(o=>o.valor);
 const tg=p=>p.etiquetas||[];
 const DEL=(c,id,txt='Eliminar')=>`<button class="btn x" data-act="delc" data-c="${c}" data-id="${id}">${ARM==='delc'+id?'¿Seguro?':txt}</button>`;
+const liveNum=el=>{
+  const raw=String(el.value).replace(/[^\d.,]/g,'');let intp=raw,dec=null;const lc=raw.lastIndexOf(','),ld=raw.lastIndexOf('.');
+  if(lc>=0&&ld>=0){const i=Math.max(lc,ld);intp=raw.slice(0,i);dec=raw.slice(i+1).replace(/\D/g,'').slice(0,4)}
+  else if(lc>=0){intp=raw.slice(0,lc);dec=raw.slice(lc+1).replace(/\D/g,'').slice(0,4)}
+  else if(/^\d+\.\d{1,2}$/.test(raw)){const i=raw.indexOf('.');intp=raw.slice(0,i);dec=raw.slice(i+1)}
+  intp=intp.replace(/\D/g,'').replace(/^0+(?=\d)/,'');
+  let out=intp.replace(/\B(?=(\d{3})+(?!\d))/g,'.');if(dec!==null)out+=','+dec;
+  if(el.value!==out){el.value=out;try{el.setSelectionRange(out.length,out.length)}catch(e){}}
+};
 const fnum=v=>v==null||v===''?'':new Intl.NumberFormat('es-AR',{maximumFractionDigits:2}).format(v);
 const pLabel=p=>p?(p.direccion||'')+(p.localidad?' · '+p.localidad:''):'';
 const perLabel=x=>x?(x.nombre||'(sin nombre)')+((x.dni||x.cuit)?' · '+(x.dni||x.cuit):''):'';
@@ -311,7 +321,7 @@ let SELI=new Set(),PREVI=null;
 const OPSI=[['forma','Por forma de pago (mes elegido)'],['pend','No pagados por fecha de vencimiento (lo más próximo primero)'],['lista','Listado del mes (con los filtros de arriba)']];
 const impDir=i=>(by(S.prop,i.inmueble)||{}).direccion||'';
 const impPM=()=>new Map(S.ipe.map(z=>[z.impuesto+'|'+String(z.periodo).slice(0,7),z]));
-const impBase=i=>(!F.if||i.forma_pago===F.if)&&(!F.it||i.tipo===F.it)&&qm([i.concepto,i.nro_cliente,impDir(i),(by(S.prop,i.inmueble)||{}).localidad].join(' '),F.iq);
+const impBase=i=>(F.if?i.forma_pago===F.if:!['NO PAGAR','EXENTO'].includes(i.forma_pago))&&(!F.it||i.tipo===F.it)&&qm([i.concepto,i.nro_cliente,impDir(i),(by(S.prop,i.inmueble)||{}).localidad].join(' '),F.iq);
 function impRank(x){const t=today();if(x&&x.pagado)return[3,''];const v=x&&x.vencimiento;if(!v)return[2,''];return v>=t?[0,v]:[1,v]}
 function impRows(m,PM){
   return S.imp.filter(i=>{const x=PM.get(i.id+'|'+m),pg=!!(x&&x.pagado);return impBase(i)&&(!F.ip||(F.ip==='si'?pg:!pg))}).sort((a,b)=>{
@@ -345,7 +355,7 @@ function dlI(){
 function vImps(){
   const m=F.im||today().slice(0,7),PM=impPM(),l=impRows(m,PM);
   return`<div class="bar2"><input list="dlp" data-flt="iq" placeholder="Buscar inmueble, impuesto o Nº de cliente…" value="${esc(F.iq||'')}"><select data-flt="if">${opts(OPC('forma_pago'),F.if,'Todas las formas de pago')}</select><select data-flt="it">${opts(OPC('tipo_impuesto'),F.it,'Todos los tipos')}</select><select data-flt="ip">${opts([['si','Pagados'],['no','No pagados']],F.ip,'Pagados y no pagados')}</select><input data-flt="im" type="month" value="${m}"><button class="btn" data-act="newimp">+ Impuesto</button></div>
-  <div class="mut" style="margin-bottom:6px">${l.length} impuestos · ${MESES[+m.slice(5,7)-1]} ${m.slice(0,4)} · primero lo que vence pronto y todavía no se pagó, después lo vencido, y al final lo pagado</div>
+  <div class="mut" style="margin-bottom:6px">${l.length} impuestos · ${MESES[+m.slice(5,7)-1]} ${m.slice(0,4)} · primero lo que vence pronto y todavía no se pagó, después lo vencido, y al final lo pagado · los impuestos EXENTO y NO PAGAR solo se ven si los filtrás por forma de pago</div>
   <div class="card wrap"><table style="min-width:900px"><tr><th>Inmueble</th><th>Impuesto</th><th>Tipo</th><th>Nº de cliente</th><th>Forma de pago</th><th>Importe</th><th>Vencimiento</th><th>Pagado</th></tr>${l.map(i=>{const x=PM.get(i.id+'|'+m);return`<tr class="row" data-act="impd" data-id="${i.id}"><td>${esc(impDir(i)||'—')}</td><td>${esc(i.concepto||'')}</td><td>${esc(i.tipo||'')}</td><td>${esc(i.nro_cliente||'')}</td><td>${esc(i.forma_pago||'')}</td><td>${x&&x.importe!=null?fmt(x.importe):'—'}</td><td>${x&&x.vencimiento?fd(x.vencimiento):''}</td><td>${siNo(x&&x.pagado)}</td></tr>`}).join('')}</table></div>
   <h2>Informes de impuestos</h2><div class="card"><div class="mut" style="margin-bottom:8px">Usan los filtros y el mes de arriba. Elegí uno o varios, mirá la vista previa y descargá el Excel.</div>${OPSI.map(([k,t])=>`<label class="chk"><input type="checkbox" data-chki="${k}" ${SELI.has(k)?'checked':''}> ${t}</label>`).join('')}<div class="bar2" style="margin-top:6px"><button class="btn" data-act="previ">Vista previa</button>${PREVI&&PREVI.length?'<button class="btn s" data-act="dli">Descargar Excel</button><button class="btn s" data-act="printcard">Imprimir</button>':''}</div>${PREVI?PREVI.map(p=>`<h2>${p.label}</h2>${p.res.length?tbl(p.res):'<div class="empty">No hay datos para mostrar.</div>'}`).join(''):''}</div>`;
 }
@@ -383,7 +393,7 @@ let SELG=new Set(),PREVG=null;
 const OPSG=[['imp','Impuestos por mes'],['rep','Reparaciones por mes'],['tot','Total mensual (impuestos + reparaciones)']];
 function reportGasto(tipo){
   const y=F.gy||String(new Date().getFullYear()),k=i=>y+'-'+String(i+1).padStart(2,'0');
-  const ipeY=S.ipe.filter(z=>String(z.periodo).startsWith(y)),pagY=S.pag.filter(z=>String(z.fecha||'').startsWith(y));
+  const ipeY=S.ipe.filter(z=>String(z.periodo).startsWith(y)&&impAmia(by(S.imp,z.impuesto)||{})),pagY=S.pag.filter(z=>String(z.fecha||'').startsWith(y));
   const dirI=i=>(by(S.prop,i.inmueble)||{}).direccion||'';
   const total=res=>{if(res.length){const k0=Object.keys(res[0])[0],t={[k0]:'TOTAL'};Object.keys(res[0]).slice(1).forEach(c=>t[c]=sum(res,x=>x[c]));res.push(t)}return res};
   if(tipo==='imp'){
@@ -405,6 +415,7 @@ function dlG(){
   PREVG.forEach(p=>{sh(p.res,p.label);if(p.det)sh(p.det,p.detLabel)});
   XLSX.writeFile(wb,`gasto-${y}.xlsx`);
 }
+const impAmia=i=>!['INQUILINOS - PROPIETARIOS','EXENTO','NO PAGAR'].includes(i.forma_pago);
 const GAL=['JUDICIALIZADO','OCUPADO','USURPADO','USUCAPIÓN'];
 function vGraf(){
   const cy=new Date().getFullYear(),h=today(),vig=S.con.filter(vigente),y=F.gy||String(cy),cnt=t=>S.prop.filter(p=>tg(p).includes(t)).length;
@@ -413,7 +424,7 @@ function vGraf(){
   const lim=new Date();lim.setMonth(lim.getMonth()+3);const l3=lim.toISOString().slice(0,10),por90=S.con.filter(c=>c.fin&&c.fin>=h&&c.fin<=l3).length;
   const top=cur=>vig.filter(c=>(c.moneda==='USD')===(cur==='USD')&&c.monto).sort((a,b)=>b.monto-a.monto).slice(0,8).map(c=>({label:((by(S.prop,c.inmueble)||{}).direccion||'—').slice(0,34),value:+c.monto}));
   const monedaCpa=z=>(by(S.con,z.contrato)||{}).moneda==='USD'?'USD':'ARS';
-  const meses=MESES.map((mm,i)=>{const k=y+'-'+String(i+1).padStart(2,'0'),cp=S.cpa.filter(z=>String(z.periodo).startsWith(k));return{mes:mm.slice(0,3),a:sum(S.ipe.filter(z=>String(z.periodo).startsWith(k)),z=>z.importe),b:sum(S.pag.filter(z=>String(z.fecha||'').startsWith(k)),z=>z.monto),c:sum(cp.filter(z=>monedaCpa(z)==='ARS'),z=>z.importe),u:sum(cp.filter(z=>monedaCpa(z)==='USD'),z=>z.importe)}});
+  const meses=MESES.map((mm,i)=>{const k=y+'-'+String(i+1).padStart(2,'0'),cp=S.cpa.filter(z=>String(z.periodo).startsWith(k));return{mes:mm.slice(0,3),a:sum(S.ipe.filter(z=>String(z.periodo).startsWith(k)&&impAmia(by(S.imp,z.impuesto)||{})),z=>z.importe),b:sum(S.pag.filter(z=>String(z.fecha||'').startsWith(k)),z=>z.monto),c:sum(cp.filter(z=>monedaCpa(z)==='ARS'),z=>z.importe),u:sum(cp.filter(z=>monedaCpa(z)==='USD'),z=>z.importe)}});
   const T={imp:sum(meses,x=>x.a),rep:sum(meses,x=>x.b),alq:sum(meses,x=>x.c),usd:sum(meses,x=>x.u)};
   const tl=S.con.filter(c=>c.fin&&c.fin>=h&&c.fin<='2028-12-31').sort((a,b)=>a.fin.localeCompare(b.fin));
   const gl=F.gl||new Set(GAL),alr=S.prop.filter(p=>[...gl].some(t=>tg(p).includes(t))).sort((a,b)=>String(a.direccion).localeCompare(String(b.direccion)));
@@ -425,11 +436,10 @@ function vGraf(){
   <h2>Estado de la cartera</h2><div class="card" style="display:flex;gap:20px;flex-wrap:wrap;align-items:center">${donut(cats.map(c=>({label:c[1],value:cnt(c[0]),tag:c[0]})))}
    <div class="wrap" style="flex:1;min-width:280px"><table style="min-width:280px"><tr><th>Categoría</th><th>Cantidad</th><th class="noprint">Acción</th></tr>${cats.map((c,i)=>`<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${PAL[i%PAL.length]};margin-right:6px"></span>${c[1]}</td><td><b>${cnt(c[0])}</b></td><td class="noprint"><button class="btn x" data-act="gtag" data-t="${esc(c[0])}">Ver inmuebles</button></td></tr>`).join('')}</table></div></div>
   <div class="mut">Un inmueble puede tener varias etiquetas, por eso la suma puede superar el total. Tocá un sector del gráfico para ver esos inmuebles.</div>
-  <h2>Ranking de alquileres mensuales</h2><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))"><div class="card"><b>En pesos</b>${hbar(top('ARS'),v=>'$ '+fnum(v))}</div><div class="card"><b>En dólares</b>${hbar(top('USD'),v=>'USD '+fnum(v))}</div></div>
   <h2>Vencimientos de contratos 2026 – 2028</h2><div class="card wrap">${tl.length?`<table style="min-width:520px"><tr><th>Vence</th><th>Dirección</th><th>Alquiler</th><th>Meses que faltan</th></tr>${tl.map(c=>{const mm=Math.max(0,Math.round((new Date(c.fin)-new Date(h))/2629800000));return`<tr class="row" data-act="inm" data-id="${c.inmueble}" data-t="alq"><td>${esc(my(c.fin))}</td><td>${esc((by(S.prop,c.inmueble)||{}).direccion||'')}</td><td>${c.monto!=null?(c.moneda==='USD'?'USD ':'$ ')+fnum(c.monto):'—'}</td><td>${bd(mm+' meses',mm<=3?'u':mm<=6?'w':'')}</td></tr>`}).join('')}</table>`:'<div class="empty">No hay contratos con vencimiento en esos años.</div>'}</div>
-  <h2>Ingresos vs. egresos ${y}</h2><div class="card" style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start"><div style="flex:2;min-width:300px">${stack(meses)}<div class="mut"><span class="badge" style="background:${PAL[0]};color:#fff">Impuestos</span> <span class="badge" style="background:${PAL[1]};color:#fff">Reparaciones pagadas</span> <span class="badge" style="background:${PAL[2]};color:#fff">Alquileres (ingresos)</span></div></div>
-  <div style="flex:1;min-width:260px"><b>Totales ${y}</b><table style="min-width:0;margin-top:6px"><tr><th></th><th>Pesos</th><th>Dólares</th></tr><tr><td>Impuestos</td><td>$ ${fnum(T.imp)}</td><td>—</td></tr><tr><td>Alquileres</td><td>$ ${fnum(T.alq)}</td><td>USD ${fnum(T.usd)}</td></tr><tr><td>Arreglos</td><td>$ ${fnum(T.rep)}</td><td>—</td></tr><tr><th>Ingresos − egresos</th><th colspan="2">$ ${fnum(T.alq-T.imp-T.rep)}</th></tr></table><div class="mut" style="margin-top:6px">Los alquileres en dólares se muestran aparte, sin convertir.</div></div></div>
-  <div class="card" style="margin-top:10px"><b>Informe del gasto mensual ${y}</b><div class="mut noprint" style="margin:4px 0 8px">Elegí uno o varios: impuestos, reparaciones o el total de ambos. Mirá la vista previa y descargá el Excel (cada opción en su propia hoja).</div>${OPSG.map(([k,t])=>`<label class="chk noprint"><input type="checkbox" data-chkg="${k}" ${SELG.has(k)?'checked':''}> ${t}</label>`).join('')}<div class="bar2 noprint" style="margin-top:6px"><button class="btn" data-act="prevg">Vista previa</button>${PREVG&&PREVG.length?'<button class="btn s" data-act="dlgasto">Descargar Excel</button><button class="btn s" data-act="printcard">Imprimir</button>':''}</div>${PREVG?PREVG.map(p=>`<h2>${p.label}</h2>${tbl(p.res)}${p.det?`<div class="mut">El Excel incluye además la hoja “${p.detLabel}” con ${p.det.length} renglones.</div>`:''}`).join(''):''}</div>
+  <h2>INGRESOS VS. EGRESOS ${y}</h2><div class="card" style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start"><div style="flex:2;min-width:300px">${stack(meses)}<div class="mut"><span class="badge" style="background:${PAL[0]};color:#fff">Impuestos</span> <span class="badge" style="background:${PAL[1]};color:#fff">Reparaciones pagadas</span> <span class="badge" style="background:${PAL[2]};color:#fff">Alquileres (ingresos)</span></div></div>
+  <div style="flex:1;min-width:260px"><b class="ttl">Totales ${y}</b><table style="min-width:0;margin-top:6px"><tr><th></th><th>Pesos</th><th>Dólares</th></tr><tr><td>Impuestos (a cargo de AMIA)</td><td>$ ${fnum(T.imp)}</td><td>—</td></tr><tr><td>Alquileres</td><td>$ ${fnum(T.alq)}</td><td>USD ${fnum(T.usd)}</td></tr><tr><td>Arreglos</td><td>$ ${fnum(T.rep)}</td><td>—</td></tr><tr><th>Ingresos − egresos</th><th colspan="2">$ ${fnum(T.alq-T.imp-T.rep)}</th></tr></table><div class="mut" style="margin-top:6px">Los alquileres en dólares se muestran aparte, sin convertir.</div></div></div>
+  <div class="card" style="margin-top:10px"><b class="ttl">Informe del gasto mensual ${y}</b><div class="mut noprint" style="margin:4px 0 8px">Elegí uno o varios: impuestos, reparaciones o el total de ambos. Mirá la vista previa y descargá el Excel (cada opción en su propia hoja).</div>${OPSG.map(([k,t])=>`<label class="chk noprint"><input type="checkbox" data-chkg="${k}" ${SELG.has(k)?'checked':''}> ${t}</label>`).join('')}<div class="bar2 noprint" style="margin-top:6px"><button class="btn" data-act="prevg">Vista previa</button>${PREVG&&PREVG.length?'<button class="btn s" data-act="dlgasto">Descargar Excel</button><button class="btn s" data-act="printcard">Imprimir</button>':''}</div>${PREVG?PREVG.map(p=>`<h2>${p.label}</h2>${tbl(p.res)}${p.det?`<div class="mut">El Excel incluye además la hoja “${p.detLabel}” con ${p.det.length} renglones.</div>`:''}`).join(''):''}</div>
   <h2>Alertas legales</h2><div class="card"><div class="noprint">${GAL.map(t=>`<label class="chk"><input type="checkbox" data-gl="${esc(t)}" ${gl.has(t)?'checked':''}> ${t}</label>`).join('')}</div>
   <div class="wrap">${alr.length?`<table style="min-width:640px"><tr><th>Dirección</th><th>Etiquetas</th><th>Última nota legal</th></tr>${alr.map(p=>{const n=ult(p);return`<tr class="row" data-act="inm" data-id="${p.id}" data-t="legal"><td><b>${esc(p.direccion)}</b></td><td>${tg(p).filter(t=>GAL.includes(t)).map(t=>bd(t,'u')).join(' ')}</td><td>${n?'<span class="mut">'+fd(n.fecha)+'</span> '+esc(String(n.texto||'').slice(0,220)):'<span class="mut">Sin notas</span>'}</td></tr>`}).join('')}</table>`:'<div class="empty">No hay inmuebles con esas alertas.</div>'}</div></div>`;
 }
@@ -473,26 +483,26 @@ const tbl=d=>{const k=Object.keys(d[0]);return`<div class="wrap"><table style="m
 function vRes(){
   const cy=new Date().getFullYear(),y=F.y||String(cy),th='<tr><th></th><th>Presupuestado</th><th>Aprobado</th><th>Pagado</th></tr>',row=(n,a)=>`<tr><td>${esc(n)}</td>${a.map(x=>`<td>${fmt(x)}</td>`).join('')}</tr>`;
   const ms=MESES.map((m,i)=>[m,agg(y+'-'+String(i+1).padStart(2,'0'),F.rp)]),tot=[0,1,2].map(i=>sum(ms,m=>m[1][i]));
-  const panel=`<div class="card" style="margin-bottom:12px"><b>Informes en Excel</b><div class="mut" style="margin:4px 0 8px">Elegí uno o varios, mirá la vista previa y descargá un solo archivo (usa el año e inmueble de arriba). Para un informe que cruce inmuebles, alquileres, impuestos y reparaciones, usá la solapa <a href="#" data-act="tab" data-v="inf">Informes</a>.</div>${OPS.map(([k,l])=>`<label class="chk"><input type="checkbox" data-chk="${k}" ${SEL.has(k)?'checked':''}> ${l}</label>`).join('')}<div class="bar2 noprint" style="margin-top:6px"><button class="btn" data-act="prev">Vista previa</button>${PREV&&PREV.length?'<button class="btn s" data-act="dl">Descargar Excel</button><button class="btn s" data-act="printcard">Imprimir</button>':''}</div>
+  const panel=`<div class="card" style="margin-bottom:12px"><b class="ttl">Informes en Excel</b><div class="mut" style="margin:4px 0 8px">Elegí uno o varios, mirá la vista previa y descargá un solo archivo (usa el año e inmueble de arriba). Para un informe que cruce inmuebles, alquileres, impuestos y reparaciones, usá la solapa <a href="#" data-act="tab" data-v="inf">Informes</a>.</div>${OPS.map(([k,l])=>`<label class="chk"><input type="checkbox" data-chk="${k}" ${SEL.has(k)?'checked':''}> ${l}</label>`).join('')}<div class="bar2 noprint" style="margin-top:6px"><button class="btn" data-act="prev">Vista previa</button>${PREV&&PREV.length?'<button class="btn s" data-act="dl">Descargar Excel</button><button class="btn s" data-act="printcard">Imprimir</button>':''}</div>
   ${PREV?(PREV.length?PREV.map(p=>`<h2>${p.label}</h2>${tbl(p.res)}<div class="mut">El Excel incluye además una hoja de detalle con ${p.det.length} renglones.</div>`).join(''):'<div class="empty">No hay datos para ese año.</div>'):''}</div>`;
   return`<div class="bar2"><select data-flt="y">${opts([cy-2,cy-1,cy,cy+1].map(String),y)}</select>${PS('data-flt="rp"',F.rp,'Filtrar por inmueble…')}</div>${panel}
   <div class="card wrap"><table>${th}${ms.map(m=>row(m[0],m[1])).join('')}<tr><th>Total ${y}</th>${tot.map(x=>`<th>${fmt(x)}</th>`).join('')}</tr></table></div>
   <h2>Por inmueble en ${y}</h2><div class="card wrap"><table>${th}${S.prop.filter(p=>!tg(p).includes('VENDIDO')).map(p=>row(p.direccion,agg(y,p.id))).join('')}</table></div><div class="mut">Presupuestado = por fecha del presupuesto; aprobado = por fecha de aprobación; pagado = por fecha del pago. No incluye inmuebles vendidos.</div>`;
 }
 let INF={tg:new Set(),tm:'todas',tipo:'',loc:'',av:'',amia:'',smin:'',smax:'',ay:'',g:new Set(['datos','alquiler']),sub:false,prev:null};
-const GRUPOS=[['datos','Datos del inmueble: etiquetas, localidad, tipo, m² y DE AMIA'],['alquiler','Alquiler: último monto, inquilino, inicio y fin del contrato'],['venta','Venta: año, fecha e importe'],['impuestos','Impuestos del año: cantidad, total, no pagado y próximo vencimiento'],['reparaciones','Reparaciones: cantidad, importe total, pagado y saldo'],['legal','Legal: última nota y fecha'],['personas','Personas vinculadas y su vínculo']];
+const GRUPOS=[['datos','Datos del inmueble: etiquetas, superficie y DE AMIA'],['alquiler','Alquiler: último monto, inquilino, inicio y fin del contrato'],['venta','Venta: año e importe'],['impuestos','Impuestos del año: cantidad, total, no pagado y próximo vencimiento'],['reparaciones','Reparaciones: cantidad, importe total, pagado y saldo'],['legal','Legal: última nota y fecha'],['personas','Personas vinculadas y su vínculo']];
 const anioVenta=p=>p.anio_venta||(p.fecha_venta?+String(p.fecha_venta).slice(0,4):null);
 function infList(){
   const sel=[...INF.tg],alg=INF.tm==='alguna',mn=INF.smin===''?null:num(INF.smin),mx=INF.smax===''?null:num(INF.smax);
-  return S.prop.filter(p=>(!sel.length||(alg?sel.some(t=>tg(p).includes(t)):sel.every(t=>tg(p).includes(t))))&&(!INF.tipo||p.tipo===INF.tipo)&&(!INF.loc||p.localidad===INF.loc)&&(!INF.av||String(anioVenta(p))===INF.av)&&(!INF.amia||(INF.amia==='si'?p.de_amia:!p.de_amia))&&(mn==null||(p.m2!=null&&+p.m2>=mn))&&(mx==null||(p.m2!=null&&+p.m2<=mx))).sort((a,b)=>String(a.direccion).localeCompare(String(b.direccion)));
+  return S.prop.filter(p=>(!tg(p).includes('VENDIDO')||INF.tg.has('VENDIDO')||INF.av)&&(!tg(p).includes('TESTAMENTO')||INF.tg.has('TESTAMENTO'))&&(!INF.g.has('legal')||S.nov.some(n=>n.inmueble===p.id)||tg(p).some(t=>['JUDICIALIZADO','USUCAPIÓN','USURPADO'].includes(t)))&&(!sel.length||(alg?sel.some(t=>tg(p).includes(t)):sel.every(t=>tg(p).includes(t))))&&(!INF.tipo||p.tipo===INF.tipo)&&(!INF.loc||p.localidad===INF.loc)&&(!INF.av||String(anioVenta(p))===INF.av)&&(!INF.amia||(INF.amia==='si'?p.de_amia:!p.de_amia))&&(mn==null||(p.m2!=null&&+p.m2>=mn))&&(mx==null||(p.m2!=null&&+p.m2<=mx))).sort((a,b)=>String(a.direccion).localeCompare(String(b.direccion)));
 }
 function buildInf(){
   const y=INF.ay||String(new Date().getFullYear()),g=INF.g,t=today();
   let rows=infList().map(p=>{
     const o={'Dirección':p.direccion};
-    if(g.has('datos')){o['Etiquetas']=tg(p).join(', ');o['Localidad']=p.localidad||'';o['Tipo']=p.tipo||'';o['Superficie (m²)']=p.m2==null?'':+p.m2;o['DE AMIA']=p.de_amia?'Sí':'No'}
+    if(g.has('datos')){o['Etiquetas']=tg(p).join(', ');o['Superficie (m²)']=p.m2==null?'':+p.m2;o['DE AMIA']=p.de_amia?'Sí':'No'}
     if(g.has('alquiler')){const c=conUlt(p);o['Último alquiler']=c&&c.monto!=null?+c.monto:'';o['Moneda']=c&&c.monto!=null?(c.moneda||'ARS'):'';o['Inquilino']=c?((by(S.per,c.inquilino)||{}).nombre||''):'';o['Inicio del contrato']=c?my(c.inicio):'';o['Fin del contrato']=c?my(c.fin):''}
-    if(g.has('venta')){o['Año de venta']=anioVenta(p)||'';o['Fecha de venta']=p.fecha_venta?fd(p.fecha_venta):'';o['Importe de venta (USD)']=p.valor_venta==null?'':+p.valor_venta}
+    if(g.has('venta')){o['Año de venta']=anioVenta(p)||'';o['Importe de venta (USD)']=p.valor_venta==null?'':+p.valor_venta}
     if(g.has('impuestos')){const im=S.imp.filter(i=>i.inmueble===p.id),ids=new Set(im.map(i=>i.id)),pr=S.ipe.filter(z=>ids.has(z.impuesto)&&String(z.periodo).startsWith(y));o['Impuestos (cantidad)']=im.length;o['Impuestos '+y+' (total)']=sum(pr,z=>z.importe);o['Impuestos '+y+' (no pagado)']=sum(pr.filter(z=>!z.pagado),z=>z.importe);o['Próximo vencimiento sin pagar']=fd(pr.filter(z=>!z.pagado&&z.vencimiento>=t).map(z=>z.vencimiento).sort()[0])}
     if(g.has('reparaciones')){const rs=S.rep.filter(r=>r.prop===p.id);o['Reparaciones (cantidad)']=rs.length;o['Reparaciones: importe total']=sum(rs,aprobado);o['Reparaciones: pagado']=sum(rs,paid);o['Reparaciones: saldo']=sum(rs,r=>Math.max(0,saldo(r)))}
     if(g.has('legal')){const n=S.nov.filter(n=>n.inmueble===p.id).sort(novOrd)[0];o['Última nota legal (fecha)']=n?fd(n.fecha):'';o['Última nota legal']=n?String(n.texto||'').slice(0,300):''}
@@ -518,7 +528,8 @@ function dlInf(){
 function vInf(){
   const cy=new Date().getFullYear(),y=INF.ay||String(cy),locs=[...new Set(S.prop.map(p=>p.localidad).filter(Boolean))].sort(),tipos=[...new Set(S.prop.map(p=>p.tipo).filter(Boolean))].sort(),anios=[...new Set(S.prop.map(anioVenta).filter(Boolean))].sort((a,b)=>b-a).map(String);
   return`<div class="card"><h1 style="font-size:18px">Informe consolidado</h1><div class="mut">Un solo informe que cruza todo lo que elijas, en una única tabla. Si tildás una sola opción de contenido, ves solamente esa información.</div>
-  <h2>1. Qué inmuebles incluir</h2><div class="bar2" style="align-items:center">${DD('itg','Etiquetas',OPC('etiqueta'),INF.tg,'data-itg')}<select data-inf="tm" style="max-width:250px">${opts([['todas','Con TODAS las etiquetas elegidas'],['alguna','Con ALGUNA de las etiquetas elegidas']],INF.tm)}</select><select data-inf="tipo">${opts(tipos,INF.tipo,'Todos los tipos')}</select><select data-inf="loc">${opts(locs,INF.loc,'Todas las localidades')}</select><select data-inf="av">${opts(anios,INF.av,'Cualquier año de venta')}</select><select data-inf="amia">${opts([['si','DE AMIA (con título)'],['no','No son de AMIA']],INF.amia,'DE AMIA y no DE AMIA')}</select><input data-inf="smin" placeholder="Superficie mín. (m²)" value="${esc(INF.smin)}" style="max-width:170px"><input data-inf="smax" placeholder="Superficie máx. (m²)" value="${esc(INF.smax)}" style="max-width:170px"></div>
+  <h2>1. Qué inmuebles incluir</h2><div class="bar2" style="align-items:center">${DD('itg','Etiquetas',OPC('etiqueta'),INF.tg,'data-itg')}<select data-inf="tm" style="max-width:250px">${opts([['todas','Con TODAS las etiquetas elegidas'],['alguna','Con ALGUNA de las etiquetas elegidas']],INF.tm)}</select><select data-inf="av">${opts(anios,INF.av,'Cualquier año de venta')}</select><select data-inf="amia">${opts([['si','DE AMIA (con título)'],['no','No son de AMIA']],INF.amia,'DE AMIA y no DE AMIA')}</select><input data-inf="smin" data-num="1" inputmode="decimal" placeholder="Superficie mín. (m²)" value="${esc(INF.smin)}" style="max-width:170px"><input data-inf="smax" data-num="1" inputmode="decimal" placeholder="Superficie máx. (m²)" value="${esc(INF.smax)}" style="max-width:170px"></div>
+  <div class="mut">Por defecto no se incluyen los inmuebles vendidos ni los de testamento: para verlos, elegí esas etiquetas. Si elegís el contenido “Legal”, salen solo los inmuebles con tema legal.</div>
   <h2>2. Qué contenido incluir</h2>${GRUPOS.map(([k,t])=>`<label class="chk"><input type="checkbox" data-ig="${k}" ${INF.g.has(k)?'checked':''}> ${t}</label>`).join('<br>')}
   <div class="bar2" style="margin-top:10px;align-items:center"><span class="mut">Año para impuestos:</span><select data-inf="ay" style="max-width:110px">${opts([cy-1,cy,cy+1].map(String),y)}</select>${INF.g.has('venta')?`<label class="chk"><input type="checkbox" data-infchk="sub" ${INF.sub?'checked':''}> Subtotales por año de venta</label>`:''}</div>
   <div class="bar2 noprint" style="margin-top:6px"><button class="btn" data-act="infprev">Vista previa</button><button class="btn s" data-act="infvend">Vendidos por año</button>${INF.prev&&INF.prev.length?'<button class="btn s" data-act="infdl">Descargar Excel</button><button class="btn s" data-act="printcard">Imprimir</button>':''}</div>
@@ -538,13 +549,13 @@ function render(){
 const FORMS={
   prop:{t:'propiedad',f:[['direccion','Dirección'],['localidad','Localidad']]},
   imp:{t:'impuesto',m:1,f:[['inmueble','Inmueble','prop'],['concepto','Impuesto o servicio (EDESUR, AYSA, ABL…)'],['tipo','Tipo',()=>OPC('tipo_impuesto')],['nro_cliente','Nº de cliente o referencia'],['forma_pago','Forma de pago',()=>OPC('forma_pago')]]},
-  alq:{t:'alquiler',m:1,f:[['inmueble','Inmueble','prop'],['inquilino','Inquilino (elegilo de la lista de Personas)','per'],['monto','Alquiler actual (monto)']]},
+  alq:{t:'alquiler',m:1,f:[['inmueble','Inmueble','prop'],['inquilino','Inquilino (elegilo de la lista de Personas)','per'],['monto','Alquiler actual (monto)','num']]},
   prov:{t:'proveedor',m:1,f:[['nombre','Nombre o razón social'],['cuit','CUIT'],['rubro','Rubro o especialidad'],['tel','Teléfono'],['email','Correo electrónico'],['facturacion','Datos de facturación'],['condiciones','Condiciones de pago habituales'],['obs','Observaciones sobre trabajos anteriores','area']]},
   rep:{t:'reparación',f:[['titulo','Resumen del problema'],['prop','Propiedad','prop'],['solicitante','Solicitante'],['categoria','Categoría',CATS],['prioridad','Prioridad',PRIO]]}
 };
 function drawForm(){
   const{k,id,pre}=dlg,v=id?by(S[k],id)||{}:(pre||{});
-  $('#dlg').innerHTML=`<h2 style="margin-top:0">${id?'Editar':(FORMS[k].m?'Nuevo':'Nueva')} ${FORMS[k].t}</h2>`+FORMS[k].f.map(([f,l,t0])=>{const t=typeof t0==='function'?t0():t0;const val=v[f]??(f==='codigo'?nx(S.prop,'codigo','INM-',3):f==='prioridad'?'Normal':'');return`<label>${l}</label>`+(t==='area'?`<textarea data-f="${f}" rows="3">${esc(val)}</textarea>`:t==='prop'?PS(`data-f="${f}"`,val):t==='per'?PP(`data-f="${f}"`,val):Array.isArray(t)?`<select data-f="${f}">${opts(t,val,'')}</select>`:`<input data-f="${f}" value="${esc(val)}">`)}).join('')+`<div class="bar2" style="margin-top:14px"><button class="btn" data-act="save">Guardar</button><button class="btn s" data-act="close">Cancelar</button>${id?'<button class="btn d" data-act="delete">Eliminar</button>':''}</div>`;
+  $('#dlg').innerHTML=`<h2 style="margin-top:0">${id?'Editar':(FORMS[k].m?'Nuevo':'Nueva')} ${FORMS[k].t}</h2>`+FORMS[k].f.map(([f,l,t0])=>{const t=typeof t0==='function'?t0():t0;const val=v[f]??(f==='codigo'?nx(S.prop,'codigo','INM-',3):f==='prioridad'?'Normal':'');return`<label>${l}</label>`+(t==='area'?`<textarea data-f="${f}" rows="3">${esc(val)}</textarea>`:t==='prop'?PS(`data-f="${f}"`,val):t==='per'?PP(`data-f="${f}"`,val):t==='num'?`<input data-f="${f}" data-num="1" inputmode="decimal" value="${esc(val)}">`:Array.isArray(t)?`<select data-f="${f}">${opts(t,val,'')}</select>`:`<input data-f="${f}" value="${esc(val)}">`)}).join('')+`<div class="bar2" style="margin-top:14px"><button class="btn" data-act="save">Guardar</button><button class="btn s" data-act="close">Cancelar</button>${id?'<button class="btn d" data-act="delete">Eliminar</button>':''}</div>`;
 }
 const I=(c,id,f,v,t='text',x='')=>`<input data-c="${c}" data-id="${id}" data-f="${f}" type="${t==='number'?'text':t}" ${t==='number'?'inputmode="decimal" data-num="1"':''} value="${esc(t==='number'?fnum(v):(v??''))}" ${x}>`;
 const SE=(c,id,f,v,l,b)=>`<select data-c="${c}" data-id="${id}" data-f="${f}">${opts(l,v,b)}</select>`;
@@ -587,6 +598,17 @@ async function aprobar(id){
   const ok=await upd('pre',id,{estado:'Aprobado',aprobadoOriginal:p.monto,fechaAprob:p.fechaAprob||today(),aprobadoPor:p.aprobadoPor||me()});if(!ok){drawRep();return}
   upd('rep',r.id,{prov:p.prov||r.prov||null,...(ESTADOS.indexOf(estOf(r))<2?{estado:ESTADOS[2]}:{})});
 }
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;const el=e.target,k=el&&el.dataset&&el.dataset.flt;
+  if(!k||el.tagName!=='INPUT'||el.type!=='text'||el.dataset.ps!==undefined||el.dataset.pp!==undefined)return;
+  const val=el.value.trim();if(!val)return;F[k]=val;let go=null;
+  if(k==='pq'){const l=inmList(),m=S.prop.find(p=>pLabel(p)===val)||(l.length===1?l[0]:null);if(m)go=()=>{FT='datos';openDlg({type:'inm',id:m.id})}}
+  else if(k==='eq'){const dirDe=v=>(by(S.prop,v.inmueble)||{}).direccion||'',l=S.per.filter(x=>qm([x.nombre,x.dni,x.cuit,x.mail,x.telefono,...S.vin.filter(v=>v.persona===x.id).map(dirDe)].join(' '),val)),m=S.per.find(x=>perLabel(x)===val)||(l.length===1?l[0]:null);if(m)go=()=>openDlg({type:'per',id:m.id})}
+  else if(k==='aq'){const dir=c=>(by(S.prop,c.inmueble)||{}).direccion||'',nom=c=>(by(S.per,c.inquilino)||{}).nombre||'',l=S.con.filter(c=>qm(dir(c)+' '+nom(c)+' '+((by(S.prop,c.inmueble)||{}).localidad||''),val)),m=S.con.find(c=>pLabel(by(S.prop,c.inmueble))===val)||(l.length===1?l[0]:null);if(m)go=()=>{FT='alq';openDlg({type:'inm',id:m.inmueble})}}
+  else if(k==='iq'){const l=S.imp.filter(impBase);if(l.length===1)go=()=>openDlg({type:'imp',id:l[0].id})}
+  else if(k==='q'){const l=repList();if(l.length===1)go=()=>openDlg({type:'rep',id:l[0].id})}
+  if(go){e.preventDefault();F[k]='';el.value='';go();render()}
+});
 document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.dataset.dd){F.dd=F.dd||{};F.dd[d.dataset.dd]=d.open}},true);
 if(window.addEventListener)window.addEventListener('scroll',()=>{$('#up').style.display=window.scrollY>500?'block':'none'});
 document.addEventListener('click',async ev=>{
@@ -696,14 +718,14 @@ document.addEventListener('change',async ev=>{
     const cur=by(S.rep,dlg.id);if(add.length&&cur){await upd('rep',cur.id,{docs:[...(cur.docs||[]),...add]});toast('Archivo adjuntado')}return}
   const c=t.dataset.c,f=t.dataset.f,id=t.dataset.id;if(!c)return;
   const v=t.type==='checkbox'?t.checked:t.dataset.num?(t.value.trim()===''?null:num(t.value)):t.value;
-  if(id==='new'){await w(()=>DB.collection(COL[c]).add({impuesto:t.dataset.imp,periodo:t.dataset.per,[f]:v}));return}
+  if(id==='new'){const ok=await w(async()=>{await DB.collection(COL[c]).upsert({impuesto:t.dataset.imp,periodo:t.dataset.per,[f]:v},'impuesto,periodo');return true});if(ok)toast('Guardado ✓',1600);return}
   if(!id){toast('Primero agregá la persona (botón + Persona) o el dato.');return}
   if(c==='prop'&&f==='situacion_legal')return upd('prop',id,{situacion_legal:v,legal_actualizado:new Date().toISOString()});
   if(c==='pre'&&f==='estado'&&v==='Aprobado')return aprobar(id);
   if(c==='pag'&&f==='monto'&&r){const o=by(S.pag,id),a=aprobado(r);if(a>0&&paid(r)-(+o.monto||0)+(v||0)>a)toast('El total pagado supera el importe aprobado: requiere aprobación adicional.')}
-  upd(c,id,{[f]:v});
+  const okU=await upd(c,id,{[f]:v});if(okU&&t.type==='checkbox')toast('Guardado ✓',1600);
 });
-document.addEventListener('input',ev=>{const e=ev.target,k=e.dataset.flt;if(k&&e.tagName==='INPUT'&&e.type==='text'&&e.dataset.ps===undefined&&e.dataset.pp===undefined){F[k]=e.value;PREV3=null;PREVI=null;clearTimeout(window._f);window._f=setTimeout(()=>{render();const n=document.querySelector('[data-flt="'+k+'"]');if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length)}},250)}});
+document.addEventListener('input',ev=>{const e=ev.target,k=e.dataset.flt;if(e.dataset&&e.dataset.num!==undefined){liveNum(e);return}if(k&&e.tagName==='INPUT'&&e.type==='text'&&e.dataset.ps===undefined&&e.dataset.pp===undefined){F[k]=e.value;PREV3=null;PREVI=null;clearTimeout(window._f);window._f=setTimeout(()=>{render();const n=document.querySelector('[data-flt="'+k+'"]');if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length)}},250)}});
 document.addEventListener('dragstart',e=>{const c=e.target.closest('.kc');if(c)dragId=c.dataset.id});
 document.addEventListener('dragover',e=>{if(e.target.closest('.col'))e.preventDefault()});
 document.addEventListener('drop',e=>{const c=e.target.closest('.col');if(c&&dragId){e.preventDefault();upd('rep',dragId,{estado:c.dataset.drop});dragId=null}});
@@ -720,7 +742,8 @@ const LOAD={};
 function mkDB(){return{
   collection:n=>({
     async add(d){const r=await sb.from(n).insert(clean(d)).select('id').single();ck(r.error);await(LOAD[n]&&LOAD[n]());return r.data},
-    onSnapshot(cb,err){let t;const load=async()=>{let all=[],from=0;for(;;){const r=await sb.from(n).select('*').order('created_at').order('id').range(from,from+999);if(r.error)return err&&err(r.error);all=all.concat(r.data);if(r.data.length<1000)break;from+=1000}cb({docs:all.map(x=>({id:x.id,data:()=>{const{id,created_at,...y}=x;return y}}))})};LOAD[n]=load;load();
+    async upsert(d,cf){const r=await sb.from(n).upsert(clean(d),{onConflict:cf}).select('id');ck(r.error);await(LOAD[n]&&LOAD[n]());return r.data&&r.data[0]},
+    onSnapshot(cb,err){let t;const load=async()=>{let all=[],from=0;for(;;){const r=await sb.from(n).select('*').order('created_at').order('id').range(from,from+999);if(r.error)return err&&err(r.error);all=all.concat(r.data);if(!r.data.length||from>=200000)break;from+=r.data.length}cb({docs:all.map(x=>({id:x.id,data:()=>{const{id,created_at,...y}=x;return y}}))})};LOAD[n]=load;load();
       sb.channel('rt-'+n).on('postgres_changes',{event:'*',schema:'public',table:n},()=>{clearTimeout(t);t=setTimeout(load,150)}).subscribe()}}),
   doc:p=>{const[n,id]=p.split('/');return{async update(d){const x=await sb.from(n).update(clean(d)).eq('id',id).select('id');ck(x.error);if(!x.data||!x.data.length)throw new Error('No se pudo guardar: tu usuario no tiene permiso de edición');await(LOAD[n]&&LOAD[n]())},async delete(){const x=await sb.from(n).delete().eq('id',id).select('id');ck(x.error);if(!x.data||!x.data.length)throw new Error('No se pudo eliminar: tu usuario no tiene permiso de edición');await(LOAD[n]&&LOAD[n]())}}}}}
 function mkAssets(){return{async upload(f){const path=crypto.randomUUID()+'/'+f.name.replace(/[^\w.\-]+/g,'_');ck((await sb.storage.from('adjuntos').upload(path,f)).error);return{id:path,url:'sb:'+path}}}}
