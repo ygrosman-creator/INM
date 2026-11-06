@@ -79,9 +79,14 @@ details.dd .ddb .chk{display:flex;margin:5px 0}
 .dup2{height:44px;border-radius:22px;padding:0 16px;border:0;background:var(--ac);color:#fff;font-weight:600;box-shadow:var(--sh);cursor:pointer}
 :root{--fbg:#fae8ff;--ftx:#a21caf}@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--fbg:#3b1d45;--ftx:#f0abfc}}:root[data-theme="dark"]{--fbg:#3b1d45;--ftx:#f0abfc}.badge.f{background:var(--fbg);color:var(--ftx)}
 h1,h2,nav button,.ttl{text-transform:uppercase}.ttl{font-weight:700}
+.r2.sm{grid-template-columns:repeat(auto-fill,minmax(150px,210px))}
+nav button{font-size:12.5px;padding:6px 12px;letter-spacing:.02em}
+#undo{width:30px;height:30px;padding:0;border-radius:50%;font-size:16px;line-height:30px;text-align:center;flex:0 0 auto}
+.zebra tr.row:nth-child(odd) td{background:color-mix(in srgb,var(--acbg) 55%,var(--card))}
+.zebra tr.row:hover td{background:var(--acbg)}
 @media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}#up,.dup,.dup2,.dupbar,#undo{display:none!important}}
 </style></head><body>
-<div id="root"><header><h1>INMUEBLES AMIA</h1><button class="btn s" id="undo" data-act="undo" disabled title="Deshacer el último cambio (Ctrl + Z)">↶ Deshacer</button><input id="me" placeholder="Tu nombre" title="Se usa en pagos y novedades"><button class="btn s" id="out" style="display:none">Salir</button></header><nav id="nav"></nav><div id="app"></div></div>
+<div id="root"><header><h1>INMUEBLES AMIA</h1><button class="btn s" id="undo" data-act="undo" disabled title="Deshacer el último cambio (Ctrl + Z)" aria-label="Deshacer">↶</button><input id="me" placeholder="Tu nombre" title="Se usa en pagos y novedades"><button class="btn s" id="out" style="display:none">Salir</button></header><nav id="nav"></nav><div id="app"></div></div>
 <dialog id="dlg"></dialog><datalist id="dlp"></datalist><datalist id="dlper"></datalist><button id="up" data-act="up" title="Volver arriba">↑</button><div id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="config.js"></script>
 <script>
@@ -199,7 +204,7 @@ function inmListR(){
 }
 function inmList(){
   const sel=[...(F.tg||[])],alg=F.tm==='alguna';
-  return S.prop.filter(p=>qm(p.direccion+' '+(p.localidad||''),F.pq)&&(!F.pl||p.localidad===F.pl)&&(!sel.length||(alg?sel.some(t=>tg(p).includes(t)):sel.every(t=>tg(p).includes(t))))&&(!F.am||p.de_amia)).sort((a,b)=>String(a.direccion).localeCompare(String(b.direccion)));
+  return S.prop.filter(p=>qm(p.direccion+' '+(p.localidad||''),F.pq)&&(!sel.length||(alg?sel.some(t=>tg(p).includes(t)):sel.every(t=>tg(p).includes(t))))&&(!F.am||p.de_amia)).sort((a,b)=>String(a.direccion).localeCompare(String(b.direccion)));
 }
 function reportInm(tipo){
   const conOf=p=>S.con.filter(c=>c.inmueble===p.id).sort((a,b)=>(b.inicio||'').localeCompare(a.inicio||''))[0];
@@ -225,10 +230,10 @@ function dl3(){
   XLSX.writeFile(wb,'informe-inmuebles.xlsx');
 }
 function vProps(){
-  const sel=new Set(F.tg||[]),l=inmList(),locs=[...new Set(S.prop.map(p=>p.localidad).filter(Boolean))].sort();
+  const sel=new Set(F.tg||[]),l=inmList();
   const vacio=l.length?'':`<div class="card">${sel.size&&F.tm!=='alguna'?'Ningún inmueble tiene TODAS esas etiquetas a la vez. Probá con la opción “ALGUNA de las etiquetas elegidas”.':'No hay inmuebles con esos filtros.'}</div>`;
   const pers=p=>S.vin.filter(v=>v.inmueble===p.id).map(v=>({v:v.vinculo,n:(by(S.per,v.persona)||{}).nombre})).filter(x=>x.n);
-  return`<div class="bar2" style="align-items:center"><input list="dlp" data-flt="pq" placeholder="Buscar por dirección, localidad o número…" value="${esc(F.pq||'')}"><select data-flt="pl">${opts(locs,F.pl,'Todas las localidades')}</select>${DD('tg','Etiquetas',OPC('etiqueta'),sel,'data-tg')}<select data-flt="tm" style="max-width:300px">${opts([['todas','Que tengan TODAS las etiquetas'],['alguna','Que tengan ALGUNA de las etiquetas']],F.tm||'todas')}</select><label class="chk"><input type="checkbox" data-am="1" ${F.am?'checked':''}> DE AMIA (con título)</label><button class="btn" data-act="new" data-k="prop">+ Nueva propiedad</button></div>
+  return`<div class="bar2" style="align-items:center"><input list="dlp" data-flt="pq" placeholder="Buscar por dirección, localidad o número…" value="${esc(F.pq||'')}">${DD('tg','Etiquetas',OPC('etiqueta'),sel,'data-tg')}<select data-flt="tm" style="max-width:300px">${opts([['todas','Que tengan TODAS las etiquetas'],['alguna','Que tengan ALGUNA de las etiquetas']],F.tm||'todas')}</select><label class="chk"><input type="checkbox" data-am="1" ${F.am?'checked':''}> DE AMIA (con título)</label><button class="btn" data-act="new" data-k="prop">+ Nueva propiedad</button></div>
   <div class="mut" style="margin-bottom:8px">${l.length} de ${S.prop.length} inmuebles · <span class="badge u">VENDIDO</span> en rojo · <span class="badge n">TESTAMENTO</span> en naranja</div>
   <div class="grid">${l.map(p=>`<div class="card ${tg(p).includes('VENDIDO')?'cv':tg(p).includes('TESTAMENTO')?'ct':''}" style="cursor:pointer" data-act="inm" data-id="${p.id}"><b>${esc(p.direccion)}</b><div class="mut">${esc([p.localidad,p.tipo,p.m2?fnum(p.m2)+' m²':''].filter(Boolean).join(' · '))}</div><div style="margin-top:6px">${tg(p).map(t=>bd(t,t==='VENDIDO'?'u':t==='TESTAMENTO'?'n':'')).join(' ')}${p.de_amia?' '+bd('DE AMIA (con título)','f'):''}</div>${pers(p).length?`<div class="mut" style="margin-top:6px">${pers(p).map(x=>esc((x.v?x.v+': ':'')+x.n)).join('<br>')}</div>`:''}</div>`).join('')}</div>${vacio}`;
 }
@@ -244,8 +249,8 @@ function fDatos(p){
   return`<div class="r2">${L('Dirección',I(c,id,'direccion',p.direccion))}${L('Localidad',I(c,id,'localidad',p.localidad))}${L('Tipo (departamento, local, lote…)',I(c,id,'tipo',p.tipo))}${L('Superficie (m²)',I(c,id,'m2',p.m2,'number'))}${L('Nomenclatura catastral',I(c,id,'nomenclatura',p.nomenclatura))}</div>
   <label class="chk" style="margin-top:8px"><input type="checkbox" data-c="prop" data-id="${id}" data-f="de_amia" ${p.de_amia?'checked':''}> DE AMIA (tenemos el título)</label>
   <h2>Ingreso del inmueble</h2><div class="r2">${L('Fecha de ingreso',I(c,id,'fecha_ingreso',p.fecha_ingreso,'date'))}<div style="grid-column:span 2">${L('Notas',I(c,id,'notas_ingreso',p.notas_ingreso))}</div></div>
-  <h2>Usucapión</h2><div class="r2">${L('Años de usucapión',`<input data-c="prop" data-id="${id}" data-f="usucapion_anios" data-int="1" inputmode="numeric" value="${p.usucapion_anios??''}">`)}${L('Año en que se puede hacer la usucapión',`<input value="${anioUsu(p)||''}" disabled>`)}</div><div class="mut">Se calcula con la fecha de ingreso más los años de usucapión. Si cargás directamente un año (por ejemplo 2031), se toma ese año.</div>
-  ${tags.includes('COMODATO')||p.comodato_vence?`<h2>Comodato</h2><div class="r2">${L('Vencimiento del comodato',I(c,id,'comodato_vence',p.comodato_vence,'date'))}</div>`:''}
+  <h2>Usucapión</h2><div class="r2 sm">${L('Años de usucapión',`<input data-c="prop" data-id="${id}" data-f="usucapion_anios" data-int="1" inputmode="numeric" value="${p.usucapion_anios??''}">`)}${L('Año en que se puede hacer la usucapión',`<input value="${anioUsu(p)||''}" disabled>`)}</div><div class="mut">Se calcula con la fecha de ingreso más los años de usucapión. Si cargás directamente un año (por ejemplo 2031), se toma ese año.</div>
+  ${tags.includes('COMODATO')||p.comodato_vence?`<h2>Comodato</h2><div class="r2 sm">${L('Vencimiento del comodato',I(c,id,'comodato_vence',p.comodato_vence,'date'))}</div>`:''}
   <h2>Etiquetas</h2><div>${all.map(t=>`<label class="chk"><input type="checkbox" data-etq="${esc(t)}" ${tags.includes(t)?'checked':''}> ${esc(t)}</label>`).join('')}</div>
   <div class="bar2"><input id="newtag" placeholder="Nueva etiqueta…"><button class="btn s" data-act="newtag">Agregar etiqueta</button></div>
   ${tags.includes('VENDIDO')?`<h2>Venta</h2><div class="r2">${L('Fecha de venta',I(c,id,'fecha_venta',p.fecha_venta,'date'))}${L('Año de venta',I(c,id,'anio_venta',p.anio_venta,'number'))}${L('Importe de venta (USD)',I(c,id,'valor_venta',p.valor_venta,'number'))}</div>`:''}
@@ -371,10 +376,11 @@ function vAlqs(){
   let lim=null;if(['3','6','12'].includes(F.av)){const d=new Date();d.setMonth(d.getMonth()+(+F.av));lim=d.toISOString().slice(0,10)}
   const PC=new Map(S.cpa.map(y=>[y.contrato+'|'+String(y.periodo).slice(0,7),y]));
   const l=S.con.filter(c=>qm(dir(c)+' '+nom(c)+' '+((by(S.prop,c.inmueble)||{}).localidad||''),F.aq)&&(F.av==='vig'?vigente(c):F.av==='ven'?!vigente(c):!lim||(c.fin&&c.fin>=h&&c.fin<=lim))).sort((a,b)=>dir(a).localeCompare(dir(b)));
+  {const pg=c=>{const y=PC.get(c.id+'|'+m);return!!(y&&y.pagado)};if(F.ap==='si'||F.ap==='no'){const q=F.ap==='si';for(let i=l.length-1;i>=0;i--)if(pg(l[i])!==q)l.splice(i,1)}else if(F.ap==='nop')l.sort((a,b)=>pg(a)-pg(b));else if(F.ap==='sip')l.sort((a,b)=>pg(b)-pg(a))}
   const tot={ARS:0,USD:0};l.forEach(c=>{if(c.monto!=null)tot[c.moneda==='USD'?'USD':'ARS']+=+c.monto});
-  return`<div class="bar2"><input list="dlp" data-flt="aq" placeholder="Buscar dirección, localidad o inquilino…" value="${esc(F.aq||'')}"><select data-flt="av">${opts([['vig','Contratos vigentes'],['ven','Contratos vencidos'],['3','Vencen en los próximos 3 meses'],['6','Vencen en los próximos 6 meses'],['12','Vencen en los próximos 12 meses']],F.av,'Todos los contratos')}</select><input data-flt="am2" type="month" value="${m}"><button class="btn" data-act="newalq">+ Alquiler</button><button class="btn s" data-act="alqxl">Descargar Excel</button><button class="btn s" data-act="alqpr">Imprimir</button></div>
+  return`<div class="bar2"><input list="dlp" data-flt="aq" placeholder="Buscar dirección, localidad o inquilino…" value="${esc(F.aq||'')}"><select data-flt="av">${opts([['vig','Contratos vigentes'],['ven','Contratos vencidos'],['3','Vencen en los próximos 3 meses'],['6','Vencen en los próximos 6 meses'],['12','Vencen en los próximos 12 meses']],F.av,'Todos los contratos')}</select><input data-flt="am2" type="month" value="${m}"><select data-flt="ap">${opts([['no','Solo los que NO pagaron'],['si','Solo los que pagaron'],['nop','Todos: primero los que NO pagaron'],['sip','Todos: primero los que pagaron']],F.ap,'Pagaron y no pagaron')}</select><button class="btn" data-act="newalq">+ Alquiler</button><button class="btn s" data-act="alqxl">Descargar Excel</button><button class="btn s" data-act="alqpr">Imprimir</button></div>
   <div class="mut" style="margin-bottom:6px">${l.length} contratos · columna “Pagado” de ${MESES[+m.slice(5,7)-1]} ${m.slice(0,4)}</div>
-  <div class="card wrap"><table style="min-width:760px"><tr><th>Dirección</th><th>Monto actual del alquiler</th><th>Inicio</th><th>Finalización</th><th>Pagado</th></tr>${l.map(c=>{const y=PC.get(c.id+'|'+m);return`<tr class="row" data-act="inm" data-id="${c.inmueble}" data-t="alq"><td><b>${esc(dir(c))}</b></td><td>${c.monto!=null?(c.moneda==='USD'?'USD ':'$ ')+fnum(c.monto):'—'}</td><td>${esc(my(c.inicio))}</td><td>${esc(my(c.fin))}</td><td>${siNo(y&&y.pagado)}</td></tr>`}).join('')}
+  <div class="card wrap"><table class="zebra" style="min-width:760px"><tr><th>Dirección</th><th>Monto actual del alquiler</th><th>Inicio</th><th>Finalización</th><th>Pagado</th></tr>${l.map(c=>{const y=PC.get(c.id+'|'+m);return`<tr class="row" data-act="inm" data-id="${c.inmueble}" data-t="alq"><td><b>${esc(dir(c))}</b></td><td>${c.monto!=null?(c.moneda==='USD'?'USD ':'$ ')+fnum(c.monto):'—'}</td><td>${esc(my(c.inicio))}</td><td>${esc(my(c.fin))}</td><td>${siNo(y&&y.pagado)}</td></tr>`}).join('')}
   <tr><th>Total mensual</th><th colspan="4">$ ${fnum(tot.ARS)} &nbsp;·&nbsp; USD ${fnum(tot.USD)}</th></tr></table></div>`;
 }
 const PAL=['#1d6b5a','#c2410c','#2563eb','#92660a','#6d28d9','#b91c1c','#0e7490','#4d7c0f','#9d174d','#475569'];
@@ -552,6 +558,7 @@ function alqRows(imprimir){
   let lim=null;if(['3','6','12'].includes(F.av)){const d=new Date();d.setMonth(d.getMonth()+(+F.av));lim=d.toISOString().slice(0,10)}
   const PC=new Map(S.cpa.map(y=>[y.contrato+'|'+String(y.periodo).slice(0,7),y]));
   const l=S.con.filter(c=>qm(dir(c)+' '+nom(c)+' '+((by(S.prop,c.inmueble)||{}).localidad||''),F.aq)&&(F.av==='vig'?vigente(c):F.av==='ven'?!vigente(c):!lim||(c.fin&&c.fin>=h&&c.fin<=lim))).sort((a,b)=>dir(a).localeCompare(dir(b)));
+  {const pg=c=>{const y=PC.get(c.id+'|'+m);return!!(y&&y.pagado)};if(F.ap==='si'||F.ap==='no'){const q=F.ap==='si';for(let i=l.length-1;i>=0;i--)if(pg(l[i])!==q)l.splice(i,1)}else if(F.ap==='nop')l.sort((a,b)=>pg(a)-pg(b));else if(F.ap==='sip')l.sort((a,b)=>pg(b)-pg(a))}
   const col='Pagado '+my(m+'-01'),mon=c=>c.monto==null?'':(imprimir?((c.moneda==='USD'?'USD ':'$ ')+fnum(c.monto)):+c.monto);
   const rows=l.map(c=>{const y=PC.get(c.id+'|'+m);return{'Dirección':dir(c),'Inquilino':nom(c),'Monto actual del alquiler':mon(c),'Moneda':c.moneda||'ARS','Inicio':my(c.inicio),'Finalización':my(c.fin),[col]:y&&y.pagado?'Sí':'No'}});
   const ars=sum(l.filter(c=>c.moneda!=='USD'),c=>c.monto),usd=sum(l.filter(c=>c.moneda==='USD'),c=>c.monto);
@@ -783,7 +790,7 @@ const sb=supabase.createClient(CFG.url,CFG.key);
 const clean=o=>Object.fromEntries(Object.entries(o).map(([k,v])=>[k,v===''?null:v]));
 const ck=e=>{if(e)throw e};
 const LOAD={},CACHE={},UNDO=[];
-function updUndo(){const b=$('#undo');if(b){b.disabled=!UNDO.length;b.textContent='↶ Deshacer'+(UNDO.length?' ('+UNDO.length+')':'')}}
+function updUndo(){const b=$('#undo');if(b){b.disabled=!UNDO.length;b.title='Deshacer el último cambio (Ctrl + Z)'+(UNDO.length?' · '+UNDO.length+' pendiente'+(UNDO.length>1?'s':''):'')}}
 const pushU=e=>{UNDO.push(e);if(UNDO.length>50)UNDO.shift();updUndo()};
 const WARN_TBL=['propiedades','contratos','impuestos','reparaciones','personas'];
 async function doUndo(){
