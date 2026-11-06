@@ -127,27 +127,26 @@ dialog::backdrop{background:rgba(24,24,27,.28)}
 #cmdk .grp{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);padding:8px 10px 4px}
 .kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin-bottom:16px}
 .kpis .card{cursor:pointer}.kpis .card span{display:block;color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.05em}.kpis .card b{display:block;font-size:24px;letter-spacing:-.02em;margin:4px 0 2px}.kpis .card small{color:var(--mut)}
-#nav .ic,#nav .navt{display:none}
-@media(min-width:1100px){
-  #root{display:grid;grid-template-columns:58px minmax(0,1fr);column-gap:20px;align-items:start;transition:grid-template-columns .2s ease}
-  #root.navx{grid-template-columns:220px minmax(0,1fr)}
-  #nav .ic{display:block;flex:0 0 auto}#nav .navt{display:flex;color:var(--mut)}
-  #nav button{display:flex;align-items:center;gap:12px;white-space:nowrap;overflow:hidden}
-  #root:not(.navx) #nav button{justify-content:center;padding:9px 0}
-  #root:not(.navx) #nav button span{display:none}
-  #nav .navt{border-bottom:1px solid var(--bd)!important;border-radius:8px 8px 0 0;margin-bottom:4px}
-  #root>header{grid-column:1/-1}
-  #nav{grid-column:1;flex-direction:column;flex-wrap:nowrap;position:sticky;top:16px;background:var(--card);border:1px solid var(--bd);border-radius:var(--rad);padding:8px;gap:2px;box-shadow:var(--sh);margin:0}
-  #nav button{border:0;background:none;text-align:left;border-radius:8px;padding:9px 12px;font-size:12px}
-  #nav button:hover{background:var(--acbg)}
-  #nav button.on{background:var(--ac);color:var(--onac)}
-  #app{grid-column:2;min-width:0}
-}
+/* Menú: las rayitas junto al título lo abren al pasar el mouse (o con un clic en el celular) */
+header{position:sticky;top:8px;z-index:40}
+header h1:before{display:none}
+.brand{display:flex;align-items:center;gap:8px}
+.mwrap{position:relative}
+.mwrap:hover:after{content:'';position:absolute;left:0;top:100%;width:240px;height:10px}
+.hamb{width:36px;height:36px;border:0;border-radius:8px;background:none;color:var(--tx);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.hamb .ic{width:22px;height:22px}.hamb:hover,.mwrap:hover .hamb,#root.navx .hamb{background:var(--acbg)}
+#nav{display:none;position:absolute;top:calc(100% + 8px);left:-4px;z-index:50;flex-direction:column;flex-wrap:nowrap;min-width:240px;margin:0;padding:8px;gap:2px;background:var(--card);border:1px solid var(--bd);border-radius:var(--rad);box-shadow:0 14px 36px rgba(0,0,0,.16)}
+.mwrap:hover #nav,#root.navx #nav{display:flex}.mwrap.shut #nav{display:none!important}
+#nav button{display:flex;align-items:center;gap:12px;border:0;background:none;box-shadow:none;text-align:left;border-radius:8px;padding:9px 12px;font-size:12px;white-space:nowrap;color:var(--mut)}
+#nav button:hover{background:var(--acbg);color:var(--tx)}#nav button.on{background:var(--ac);color:var(--onac)}#nav .ic{flex:0 0 auto}
+.ptitle{display:flex;align-items:center;gap:6px;margin:2px 0 12px}.ptitle h2{margin:0;font-size:16px}
+#undo{width:auto;height:auto;padding:2px 6px;border:0;border-radius:6px;background:none;color:var(--mut);font-size:18px;line-height:1;cursor:pointer;box-shadow:none}
+#undo:hover:not(:disabled){background:var(--acbg);color:var(--tx);transform:none}#undo:disabled{opacity:.3;cursor:default}
 @media(max-width:700px){#dlg{width:100vw;border-radius:0;padding:16px}.srch kbd{display:none}}
 @media print{#cmdk,.srch,.kpis{display:none!important}#root{display:block}}
 @media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}#up,.dup,.dup2,.dupbar,#undo{display:none!important}}
 </style></head><body>
-<div id="root"><header><h1>INMUEBLES AMIA</h1><button class="srch noprint" id="srch" title="Buscar inmuebles, personas, reparaciones… (Ctrl + K)"><span>🔍 Buscar…</span><kbd>Ctrl K</kbd></button><button class="btn s" id="undo" data-act="undo" disabled title="Deshacer el último cambio (Ctrl + Z)" aria-label="Deshacer">↶</button><input id="me" placeholder="Tu nombre" title="Se usa en pagos y novedades"><button class="btn s" id="out" style="display:none">Salir</button></header><nav id="nav"></nav><div id="app"></div></div>
+<div id="root"><header><div class="brand"><div class="mwrap noprint"><button class="hamb" data-act="navt" title="Menú" aria-label="Menú"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><nav id="nav"></nav></div><h1>INMUEBLES AMIA</h1></div><button class="srch noprint" id="srch" title="Buscar inmuebles, personas, reparaciones… (Ctrl + K)"><span>🔍 Buscar…</span><kbd>Ctrl K</kbd></button><input id="me" placeholder="Tu nombre" title="Se usa en pagos y novedades"><button class="btn s" id="out" style="display:none">Salir</button></header><div id="app"></div></div>
 <dialog id="dlg"></dialog><dialog id="cmdk"><input id="cmdq" placeholder="Buscar inmueble, persona, inquilino, reparación o sección…" autocomplete="off"><div class="res" id="cmdr"></div></dialog><datalist id="dlp"></datalist><datalist id="dlper"></datalist><button id="up" data-act="up" title="Volver arriba">↑</button><div id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="config.js"></script>
 <script>
@@ -656,8 +655,9 @@ function render(){
   const a=document.activeElement;if(a&&a.dataset&&a.dataset.flt&&a.tagName==='INPUT'&&a.type==='text')return;
   const cur=view==='prop'?'props':view;
   $('#root').classList.toggle('navx',NAVX);
-  $('#nav').innerHTML=`<button class="navt" data-act="navt" title="${NAVX?'Achicar el menú':'Abrir el menú'}">${ico('menu')}<span>Menú</span></button>`+TABS.map(([v,l])=>`<button class="${cur===v?'on':''}" data-act="tab" data-v="${v}" title="${l}">${ico(v)}<span>${l}</span></button>`).join('');
-  $('#app').innerHTML=view==='prop'?vProp():TABS.find(t=>t[0]===view)[2]();
+  $('#nav').innerHTML=TABS.map(([v,l])=>`<button class="${cur===v?'on':''}" data-act="tab" data-v="${v}">${ico(v)}<span>${l}</span></button>`).join('');
+  $('#app').innerHTML=`<div class="ptitle"><h2>${esc(TABS.find(t=>t[0]===cur)[1])}</h2><button id="undo" class="noprint" data-act="undo" title="Deshacer el último cambio (Ctrl + Z)" aria-label="Deshacer">↶</button></div>`+(view==='prop'?vProp():TABS.find(t=>t[0]===view)[2]());
+  updUndo();
   $('#dlp').innerHTML=[...S.prop].sort((x,y)=>String(x.direccion).localeCompare(String(y.direccion))).map(p=>`<option value="${esc(pLabel(p))}"></option>`).join('');
   $('#dlper').innerHTML=[...S.per].sort((x,y)=>String(x.nombre).localeCompare(String(y.nombre))).map(x=>`<option value="${esc(perLabel(x))}"></option>`).join('');
   if(dlg&&DRAW[dlg.type]&&!(a&&$('#dlg').contains(a)&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)))DRAW[dlg.type]();
@@ -727,8 +727,8 @@ document.addEventListener('click',async ev=>{
   document.querySelectorAll('details.dd[open]').forEach(d=>{if(!d.contains(ev.target))d.open=false});
   const sg=ev.target.closest('[data-sign]');if(sg){ev.preventDefault();const{data,error}=await sb.storage.from('adjuntos').createSignedUrl(sg.dataset.sign.replace(/^sb:/,''),120);if(error)return toast(error.message);window.open(data.signedUrl,'_blank','noopener');return}
   const t=ev.target.closest('[data-act]');if(!t)return;const a=t.dataset.act,r=dlg&&dlg.type==='rep'?by(S.rep,dlg.id):null;
-  if(a==='tab'){view=t.dataset.v;NAVX=false;render()}
-  else if(a==='navt'){NAVX=!NAVX;render()}
+  if(a==='tab'){view=t.dataset.v;NAVX=false;if(t.closest('.mwrap'))$('.mwrap').classList.add('shut');render();scrollTo(0,0)}
+  else if(a==='navt'){NAVX=!NAVX;$('.mwrap').classList.remove('shut');$('#root').classList.toggle('navx',NAVX)}
   else if(a==='inm'){if(String(getSelection()).trim())return;FT=t.dataset.t||'datos';openDlg({type:'inm',id:t.dataset.id})}
   else if(a==='ftab'){FT=t.dataset.v;drawInm()}
   else if(a==='impd')openDlg({type:'imp',id:t.dataset.id});
@@ -888,7 +888,8 @@ const ICO={menu:'<path d="M3 6h18M3 12h18M3 18h18"/>',
   graf:'<path d="M21.2 15.9A10 10 0 1 1 8 2.8"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>'};
 const ico=k=>`<svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[k]||''}</svg>`;
 let NAVX=false;
-document.addEventListener('click',e=>{if(NAVX&&e.target.isConnected&&!e.target.closest('#nav')){NAVX=false;$('#root').classList.remove('navx');const b=$('#nav .navt');if(b)b.title='Abrir el menú'}});
+document.addEventListener('click',e=>{if(NAVX&&e.target.isConnected&&!e.target.closest('.mwrap')){NAVX=false;$('#root').classList.remove('navx')}});
+$('.mwrap').addEventListener('mouseleave',()=>$('.mwrap').classList.remove('shut'));
 // Buscador global (Ctrl + K)
 const CMD={i:0};
 function cmdOpen(){if(!DB)return;const d=$('#cmdk');$('#cmdq').value='';cmdDraw();if(!d.open)d.showModal();setTimeout(()=>$('#cmdq').focus(),0)}
