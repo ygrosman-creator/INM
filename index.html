@@ -693,7 +693,7 @@ function drawRep(){
 }
 const dupBtn=()=>{const d=$('#dlg');d.innerHTML+='<div class="dupbar noprint"><button class="dup" data-act="up" title="Volver arriba">↑</button></div>';const h=d.querySelector('h2');if(h)h.insertAdjacentHTML('beforeend',`<button class="uarr noprint" data-act="undo" title="Deshacer el último cambio (Ctrl + Z)" aria-label="Deshacer"${UNDO.length?'':' disabled'}>↶</button>`)};
 const DRAW={rep:()=>{drawRep();dupBtn()},inm:()=>{drawInm();dupBtn()},imp:()=>{drawImp();dupBtn()},per:()=>{drawPer();dupBtn()}};
-function openDlg(o){dlg=o;const d=$('#dlg');if(DRAW[o.type])DRAW[o.type]();else{drawForm();dupBtn()}if(!d.open)d.showModal()}
+function openDlg(o){dlg=o;const d=$('#dlg');if(DRAW[o.type])DRAW[o.type]();else{drawForm();dupBtn()}if(!d.open){d.showModal();const f=document.activeElement;if(f&&f.matches&&f.matches('.uarr,[data-act="close"]'))f.blur()}}
 async function save(){
   const{k,id}=dlg,v={};document.querySelectorAll('#dlg [data-f]').forEach(e=>v[e.dataset.f]=(e.dataset.ps!==undefined||e.dataset.pp!==undefined)?e.dataset.pid:e.value);
   if(!(v.nombre||v.titulo||v.direccion||v.concepto||v.inquilino||(k==='alq'?v.inmueble:'')||'').trim())return toast('Completá los datos principales');
