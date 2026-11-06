@@ -583,7 +583,7 @@ function vInf(){
   <div class="bar2 noprint" style="margin-top:6px"><button class="btn" data-act="infprev">Vista previa</button><button class="btn s" data-act="infvend">Vendidos por año</button><button class="btn s" data-act="infusu">Usucapión</button><button class="btn s" data-act="infcom">Comodatos</button>${INF.prev&&INF.prev.length?'<button class="btn s" data-act="infdl">Descargar Excel</button><button class="btn s" data-act="printcard" data-title="Informe de inmuebles">Imprimir</button>':''}</div>
   ${INF.prev?(INF.prev.length?`<h2>Informe de inmuebles · ${INF.cnt||0} inmuebles</h2>${tbl(INF.prev)}`:'<div class="empty">No hay inmuebles con esos filtros.</div>'):''}</div>`;
 }
-const TABS=[['kan','Tablero',vKan],['reps','Reparaciones',vReps],['pagos','Control de pagos',vPagos],['res','Resumen económico',vRes],['provs','Proveedores',vProvs],['props','Inmuebles',vProps],['pers','Personas',vPers],['alqs','Alquileres',vAlqs],['imps','Impuestos',vImps],['inf','Informes',vInf],['graf','Gráficos e informes',vGraf]];
+const TABS=[['kan','Tablero',vKan],['reps','Reparaciones',vReps],['pagos','Control de pagos',vPagos],['res','Resumen económico',vRes],['provs','Proveedores',vProvs],['props','Inmuebles',vProps],['pers','Personas',vPers],['alqs','Alquileres',vAlqs],['imps','Impuestos',vImps],['inf','Informes',vInf],['graf','Gráficos',vGraf]];
 function render(){
   if(!DB){$('#app').innerHTML='<div class="card empty">Cargando…</div>';return}
   const a=document.activeElement;if(a&&a.dataset&&a.dataset.flt&&a.tagName==='INPUT'&&a.type==='text')return;
