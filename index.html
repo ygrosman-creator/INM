@@ -79,7 +79,7 @@ details.dd .ddb .chk{display:flex;margin:5px 0}
 .dup2{height:44px;border-radius:22px;padding:0 16px;border:0;background:var(--ac);color:#fff;font-weight:600;box-shadow:var(--sh);cursor:pointer}
 :root{--fbg:#fae8ff;--ftx:#a21caf}@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--fbg:#3b1d45;--ftx:#f0abfc}}:root[data-theme="dark"]{--fbg:#3b1d45;--ftx:#f0abfc}.badge.f{background:var(--fbg);color:var(--ftx)}
 h1,h2,nav button,.ttl{text-transform:uppercase}.ttl{font-weight:700}
-.r2.sm{grid-template-columns:repeat(auto-fill,minmax(150px,210px))}
+.r2.sm{grid-template-columns:repeat(auto-fill,minmax(150px,210px));align-items:end}
 nav button{font-size:12.5px;padding:6px 12px;letter-spacing:.02em}
 #undo{width:30px;height:30px;padding:0;border-radius:50%;font-size:16px;line-height:30px;text-align:center;flex:0 0 auto}
 .zebra tr.row:nth-child(odd) td{background:color-mix(in srgb,var(--acbg) 55%,var(--card))}
@@ -250,7 +250,7 @@ function fDatos(p){
   <label class="chk" style="margin-top:8px"><input type="checkbox" data-c="prop" data-id="${id}" data-f="de_amia" ${p.de_amia?'checked':''}> DE AMIA (tenemos el título)</label>
   <h2>Ingreso del inmueble</h2><div class="r2">${L('Fecha de ingreso',I(c,id,'fecha_ingreso',p.fecha_ingreso,'date'))}<div style="grid-column:span 2">${L('Notas',I(c,id,'notas_ingreso',p.notas_ingreso))}</div></div>
   <h2>Usucapión</h2><div class="r2 sm">${L('Años de usucapión',`<input data-c="prop" data-id="${id}" data-f="usucapion_anios" data-int="1" inputmode="numeric" value="${p.usucapion_anios??''}">`)}${L('Año en que se puede hacer la usucapión',`<input value="${anioUsu(p)||''}" disabled>`)}</div><div class="mut">Se calcula con la fecha de ingreso más los años de usucapión. Si cargás directamente un año (por ejemplo 2031), se toma ese año.</div>
-  ${tags.includes('COMODATO')||p.comodato_vence?`<h2>Comodato</h2><div class="r2 sm">${L('Vencimiento del comodato',I(c,id,'comodato_vence',p.comodato_vence,'date'))}</div>`:''}
+  ${tags.includes('COMODATO')||p.comodato_vence||p.comodato_sin_vencimiento?`<h2>Comodato</h2><div class="r2 sm">${L('Vencimiento del comodato',I(c,id,'comodato_vence',p.comodato_vence,'date',p.comodato_sin_vencimiento?'disabled':''))}</div><label class="chk" style="margin-top:8px"><input type="checkbox" data-c="prop" data-id="${id}" data-f="comodato_sin_vencimiento" ${p.comodato_sin_vencimiento?'checked':''}> Sin fecha de vencimiento (se considera vigente)</label>`:''}
   <h2>Etiquetas</h2><div>${all.map(t=>`<label class="chk"><input type="checkbox" data-etq="${esc(t)}" ${tags.includes(t)?'checked':''}> ${esc(t)}</label>`).join('')}</div>
   <div class="bar2"><input id="newtag" placeholder="Nueva etiqueta…"><button class="btn s" data-act="newtag">Agregar etiqueta</button></div>
   ${tags.includes('VENDIDO')?`<h2>Venta</h2><div class="r2">${L('Fecha de venta',I(c,id,'fecha_venta',p.fecha_venta,'date'))}${L('Año de venta',I(c,id,'anio_venta',p.anio_venta,'number'))}${L('Importe de venta (USD)',I(c,id,'valor_venta',p.valor_venta,'number'))}</div>`:''}
@@ -520,9 +520,9 @@ function buildInf(){
     if(g.has('reparaciones')){const rs=S.rep.filter(r=>r.prop===p.id);o['Reparaciones (cantidad)']=rs.length;o['Reparaciones: importe total']=sum(rs,aprobado);o['Reparaciones: pagado']=sum(rs,paid);o['Reparaciones: saldo']=sum(rs,r=>Math.max(0,saldo(r)))}
     if(g.has('legal')){const n=S.nov.filter(n=>n.inmueble===p.id).sort(novOrd)[0];o['Última nota legal (fecha)']=n?fd(n.fecha):'';o['Última nota legal']=n?String(n.texto||'').slice(0,300):''}
     if(g.has('usucapion')){o['Años de usucapión']=p.usucapion_anios||'';o['Año en que se puede hacer la usucapión']=anioUsu(p)||'';o['Notas judiciales']=S.nov.filter(n=>n.inmueble===p.id).sort(novOrd).map(n=>fd(n.fecha)+': '+(n.texto||'')).join('\n')}
-    if(g.has('comodato')){const v=p.comodato_vence;o['Vencimiento del comodato']=v?fd(v):'';o['Estado del comodato']=v?(v<t?'Vencido':'Vigente'):'Sin fecha'}
+    if(g.has('comodato')){const v=p.comodato_vence;o['Vencimiento del comodato']=p.comodato_sin_vencimiento?'Sin vencimiento':v?fd(v):'';o['Estado del comodato']=p.comodato_sin_vencimiento?'Vigente':v?(v<t?'Vencido':'Vigente'):'Sin fecha'}
     if(g.has('personas'))o['Personas vinculadas']=S.vin.filter(v=>v.inmueble===p.id).map(v=>(v.vinculo?v.vinculo+': ':'')+((by(S.per,v.persona)||{}).nombre||'')).join(' | ');
-    o._a=anioVenta(p)||0;o._f=p.fecha_venta||'';o._u=anioUsu(p)||9999;o._c=p.comodato_vence||'9999-12-31';return o});
+    o._a=anioVenta(p)||0;o._f=p.fecha_venta||'';o._u=anioUsu(p)||9999;o._c=p.comodato_sin_vencimiento?'9999-12-30':p.comodato_vence||'9999-12-31';return o});
   if(g.has('venta')&&(INF.sub||INF.tg.has('VENDIDO')||INF.av))rows.sort((a,b)=>b._a-a._a||String(b._f).localeCompare(String(a._f))||String(a['Dirección']).localeCompare(String(b['Dirección'])));
   if(g.has('usucapion')&&!g.has('venta'))rows.sort((a,b)=>a._u-b._u||String(a['Dirección']).localeCompare(String(b['Dirección'])));
   else if(g.has('comodato')&&!g.has('venta'))rows.sort((a,b)=>String(a._c).localeCompare(String(b._c))||String(a['Dirección']).localeCompare(String(b['Dirección'])));

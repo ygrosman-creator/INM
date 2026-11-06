@@ -8,4 +8,7 @@ LOTE 2 (lo nuevo), en este orden:
   3. Crear los usuarios nalgaze@amia.org.ar y valfie@amia.org.ar en Authentication -> Users -> Add user
      (tildar "Auto Confirm User"), y después ejecutar usuarios-roles.sql
 
+LOTE 3 (comodato sin vencimiento), ANTES de subir el index.html nuevo:
+  1. migracion-9-comodato.sql    (columna comodato_sin_vencimiento; tiene que dar 1)
+
 Por último: reemplazar index.html en GitHub por el del zip, esperar el despliegue de Vercel y recargar con Ctrl + Shift + R.
