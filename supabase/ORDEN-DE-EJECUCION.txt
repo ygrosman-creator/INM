@@ -1,17 +1,17 @@
 ORDEN PARA EJECUTAR EN SUPABASE (SQL Editor -> New query -> pegar -> Run). Cada archivo UNA sola vez.
 
-Ya ejecutados: schema, migracion-2, migracion-3, migracion-4, migracion-5 y las cargas 1 a 5.
+Ya ejecutados: schema, migracion-2 a migracion-8, las cargas 1 a 6 y usuarios-roles.
+Si todavía NO ejecutaste migracion-9-comodato.sql (comodato sin vencimiento), ejecutalo antes del lote 4.
 
-LOTE 2 (lo nuevo), en este orden:
-  1. migracion-6-ajustes.sql      (llaves, fecha de venta, y el texto legal pasa a una nota con fecha)
-  2. carga-6-tipo-superficie.sql  (tipo y m2 de los inmuebles, del informe al 15/9)
-  3. Crear los usuarios nalgaze@amia.org.ar y valfie@amia.org.ar en Authentication -> Users -> Add user
-     (tildar "Auto Confirm User"), y después ejecutar usuarios-roles.sql
+LOTE 4 · AJUSTE DE ALQUILERES POR IPC / ICL (en este orden):
+  1. respaldo-antes-de-cambios.sql       Copia de seguridad de todas las tablas (esquema "respaldo"). Al final lista cada copia con sus filas.
+  2. migracion-10-ajustes-alquiler.sql   Agrega índice, meses y "rige desde" a cada contrato, la tabla de ajustes aplicados,
+                                         y completa esos datos a partir del texto de "forma de incremento".
+                                         Al final muestra una tabla: GUARDAR UNA CAPTURA para revisarla.
+  3. Subir index.html a GitHub, esperar el despliegue de Vercel y recargar con Ctrl + Shift + R.
+  4. Revisar en la app (pantalla Alquileres y ficha de cada contrato, solapa Alquiler):
+     - contratos "sin datos de ajuste": completar índice y cada cuántos meses;
+     - en cada contrato, que "El monto actual rige desde" sea la fecha real del último aumento;
+     - comparar uno o dos montos sugeridos con la cuenta manual antes de tocar "Aplicar".
 
-LOTE 3 (comodato sin vencimiento), ANTES de subir el index.html nuevo:
-  1. migracion-9-comodato.sql    (columna comodato_sin_vencimiento; tiene que dar 1)
-
-PENDIENTE (todavía NO ejecutar): el ajuste de alquileres por IPC / ICL está apartado en la carpeta
-  pendiente-ajustes-alquiler (index-con-ajustes-alquiler.html + migracion-10-ajustes-alquiler.sql) hasta revisarlo.
-
-Por último: reemplazar index.html en GitHub por el del zip, esperar el despliegue de Vercel y recargar con Ctrl + Shift + R.
+IMPORTANTE: subir el index.html recién DESPUÉS del paso 2 (si no, la app avisa un error porque no encuentra la tabla nueva).

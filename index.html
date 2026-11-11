@@ -161,8 +161,8 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=n=>new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',minimumFractionDigits:0,maximumFractionDigits:2}).format(n||0);
 const today=()=>new Date().toISOString().slice(0,10);
-const COL={prop:'propiedades',rep:'reparaciones',pre:'presupuestos',pag:'pagos',prov:'proveedores',opc:'opciones',per:'personas',vin:'vinculos',doc:'documentos',nov:'novedades_legales',sep:'sepelios',imp:'impuestos',ipe:'impuestos_periodos',con:'contratos',cpa:'alquiler_pagos',llv:'llaves'};
-const S={prop:[],rep:[],pre:[],pag:[],prov:[],opc:[],per:[],vin:[],doc:[],nov:[],sep:[],imp:[],ipe:[],con:[],cpa:[],llv:[]};
+const COL={prop:'propiedades',rep:'reparaciones',pre:'presupuestos',pag:'pagos',prov:'proveedores',opc:'opciones',per:'personas',vin:'vinculos',doc:'documentos',nov:'novedades_legales',sep:'sepelios',imp:'impuestos',ipe:'impuestos_periodos',con:'contratos',cpa:'alquiler_pagos',llv:'llaves',caj:'contratos_ajustes'};
+const S={prop:[],rep:[],pre:[],pag:[],prov:[],opc:[],per:[],vin:[],doc:[],nov:[],sep:[],imp:[],ipe:[],con:[],cpa:[],llv:[],caj:[]};
 const ESTADOS=['PENDIENTE DE REVISIÓN','SOLICITADO PRESUPUESTO','EN EJECUCIÓN','FINALIZADO'];
 const PRIO=['Baja','Normal','Alta','Urgente'],CATS=['Plomería','Electricidad','Albañilería','Pintura','Techos','Ascensores','Seguridad','Otros'];
 const PEST=['Recibido','En evaluación','Aprobado','Rechazado','Vencido'],MEDIOS=['Transferencia','Cheque','Efectivo','Otro'],EPROP=['ALQUILADO','EN ALQUILER','A LA VENTA','EN COMODATO','DE AMIA','VARIOS'];
@@ -350,7 +350,7 @@ function conCard(c){
   return`<div class="card" style="margin-top:10px">${vigente(c)?bd('Vigente','o'):bd('Vencido','u')}
   <div class="r2"><div><label>Inquilino (persona)</label>${PP(`data-pc="${c.id}"`,c.inquilino)}</div>${L('Contacto',`<input value="${esc([x.mail,x.telefono].filter(Boolean).join(' · '))}" disabled>`)}</div>
   <div class="bar2" style="margin-top:6px"><button class="btn x" data-act="perd" data-id="${x.id||''}">Ver / editar persona</button><button class="btn x" data-act="newperc" data-id="${c.id}">+ Nueva persona</button></div>
-  <div class="r2">${L('Inicio del contrato',I('con',c.id,'inicio',c.inicio,'date'))}${L('Fin del contrato',I('con',c.id,'fin',c.fin,'date'))}${L('Duración (meses)',I('con',c.id,'meses',c.meses,'number'))}${L('Alquiler actual',I('con',c.id,'monto',c.monto,'number'))}${L('Moneda',SE('con',c.id,'moneda',c.moneda||'ARS',['ARS','USD']))}${L('Forma de incremento (IPC, ICL…)',I('con',c.id,'forma_incremento',c.forma_incremento))}${L('Depósito en garantía',I('con',c.id,'deposito',c.deposito))}${L('Inmobiliaria',I('con',c.id,'inmobiliaria',c.inmobiliaria))}</div>
+  <div class="r2">${L('Inicio del contrato',I('con',c.id,'inicio',c.inicio,'date'))}${L('Fin del contrato',I('con',c.id,'fin',c.fin,'date'))}${L('Duración (meses)',I('con',c.id,'meses',c.meses,'number'))}${L('Alquiler actual',I('con',c.id,'monto',c.monto,'number'))}${L('Moneda',SE('con',c.id,'moneda',c.moneda||'ARS',['ARS','USD']))}${L('Forma de incremento (IPC, ICL…)',I('con',c.id,'forma_incremento',c.forma_incremento))}${L('Depósito en garantía',I('con',c.id,'deposito',c.deposito))}${L('Inmobiliaria',I('con',c.id,'inmobiliaria',c.inmobiliaria))}</div>${ajFicha(c)}
   <div class="mut" style="margin-top:4px">${c.inicio||c.fin?`Contrato: ${my(c.inicio)} a ${my(c.fin)}`:''}</div>${L('Descripción',I('con',c.id,'descripcion',c.descripcion))}
   <div class="mut" style="margin-top:6px">Servicios a cargo del inquilino:</div>${['LUZ','GAS','AGUA','ABL','ARBA','EXPENSAS','OTRO'].map(k=>`<label class="chk"><input type="checkbox" data-sv="${c.id}:${k}" ${sv[k]?'checked':''}> ${k}</label>`).join('')}
   ${sv.OTRO?`<div style="max-width:420px">${L('¿Cuál? (nombre del impuesto o servicio)',`<input data-svn="${c.id}" value="${esc(sv.OTRO_NOMBRE||'')}">`)}</div>`:''}
@@ -451,7 +451,7 @@ function vAlqs(){
   const l=S.con.filter(c=>qm(dir(c)+' '+nom(c)+' '+((by(S.prop,c.inmueble)||{}).localidad||''),F.aq)&&(F.av==='vig'?vigente(c):F.av==='ven'?!vigente(c):!lim||(c.fin&&c.fin>=h&&c.fin<=lim))).sort((a,b)=>dir(a).localeCompare(dir(b)));
   {const pg=c=>{const y=PC.get(c.id+'|'+m);return!!(y&&y.pagado)};if(F.ap==='si'||F.ap==='no'){const q=F.ap==='si';for(let i=l.length-1;i>=0;i--)if(pg(l[i])!==q)l.splice(i,1)}else if(F.ap==='nop')l.sort((a,b)=>pg(a)-pg(b));else if(F.ap==='sip')l.sort((a,b)=>pg(b)-pg(a))}
   const tot={ARS:0,USD:0};l.forEach(c=>{if(c.monto!=null)tot[c.moneda==='USD'?'USD':'ARS']+=+c.monto});
-  return`<div class="bar2"><input list="dlp" data-flt="aq" placeholder="Buscar dirección, localidad o inquilino…" value="${esc(F.aq||'')}"><select data-flt="av">${opts([['vig','Contratos vigentes'],['ven','Contratos vencidos'],['3','Vencen en los próximos 3 meses'],['6','Vencen en los próximos 6 meses'],['12','Vencen en los próximos 12 meses']],F.av,'Todos los contratos')}</select><input data-flt="am2" type="month" value="${m}"><select data-flt="ap">${opts([['no','Solo los que NO pagaron'],['si','Solo los que pagaron'],['nop','Todos: primero los que NO pagaron'],['sip','Todos: primero los que pagaron']],F.ap,'Pagaron y no pagaron')}</select><button class="btn" data-act="newalq">+ Alquiler</button><button class="btn s" data-act="alqxl">Descargar Excel</button><button class="btn s" data-act="alqpr">Imprimir</button></div>
+  return ajPanel()+`<div class="bar2"><input list="dlp" data-flt="aq" placeholder="Buscar dirección, localidad o inquilino…" value="${esc(F.aq||'')}"><select data-flt="av">${opts([['vig','Contratos vigentes'],['ven','Contratos vencidos'],['3','Vencen en los próximos 3 meses'],['6','Vencen en los próximos 6 meses'],['12','Vencen en los próximos 12 meses']],F.av,'Todos los contratos')}</select><input data-flt="am2" type="month" value="${m}"><select data-flt="ap">${opts([['no','Solo los que NO pagaron'],['si','Solo los que pagaron'],['nop','Todos: primero los que NO pagaron'],['sip','Todos: primero los que pagaron']],F.ap,'Pagaron y no pagaron')}</select><button class="btn" data-act="newalq">+ Alquiler</button><button class="btn s" data-act="alqxl">Descargar Excel</button><button class="btn s" data-act="alqpr">Imprimir</button></div>
   <div class="mut" style="margin-bottom:6px">${l.length} contratos · columna “Pagado” de ${MESES[+m.slice(5,7)-1]} ${m.slice(0,4)}</div>
   <div class="card wrap"><table class="zebra" style="min-width:760px"><tr><th>Dirección</th><th>Monto actual del alquiler</th><th>Inicio</th><th>Finalización</th><th>Pagado</th></tr>${l.map(c=>{const y=PC.get(c.id+'|'+m);return`<tr class="row" data-act="inm" data-id="${c.inmueble}" data-t="alq"><td><b>${esc(dir(c))}</b></td><td>${c.monto!=null?(c.moneda==='USD'?'USD ':'$ ')+fnum(c.monto):'—'}</td><td>${esc(my(c.inicio))}</td><td>${esc(my(c.fin))}</td><td>${siNo(y&&y.pagado)}</td></tr>`}).join('')}
   <tr><th>Total mensual</th><th colspan="4">$ ${fnum(tot.ARS)} &nbsp;·&nbsp; USD ${fnum(tot.USD)}</th></tr></table></div>`;
@@ -794,6 +794,8 @@ document.addEventListener('click',async ev=>{
     if(BUSY)return;BUSY=true;t.disabled=true;
     await w(()=>a==='addpre'?DB.collection(COL.pre).add({rep:r.id,estado:'Recibido',fecha:today(),monto:0}):DB.collection(COL.pag).add({rep:r.id,numero:nx(S.pag,'numero','PAG-',4),fecha:today(),monto:0,medio:'Transferencia',prov:provId(r)||'',por:me()}));
     BUSY=false}
+  else if(a==='ajap'){if(BUSY)return;BUSY=true;t.disabled=true;try{await ajAplicar(t.dataset.id)}finally{BUSY=false}}
+  else if(a==='ajidx'){IDX.icl=null;IDX.err=null;loadIdx(true)}
   else if(a==='delc'){const key='delc'+t.dataset.id;if(ARM!==key){ARM=key;t.textContent='¿Seguro?';return}ARM=null;await w(()=>DB.doc(COL[t.dataset.c]+'/'+t.dataset.id).delete())}
   else if(a==='deldoc'&&r)upd('rep',r.id,{docs:(r.docs||[]).filter((_,i)=>i!==+t.dataset.i)});
   else if(a==='nov'&&r){const x=$('#nov').value.trim();if(x)upd('rep',r.id,{novedades:[...(r.novedades||[]),{f:today(),t:x,por:me()}]})}
@@ -880,6 +882,75 @@ async function doUndo(){
   }catch(err){toast('No se pudo deshacer: '+((err&&err.message)||''),6000)}
 }
 const sameK=(a,b)=>String(a)===String(b)||(/^\d{4}-\d\d-\d\d/.test(String(b))&&String(a).slice(0,10)===String(b).slice(0,10));
+// ===== Ajuste de alquileres por IPC / ICL (el sistema sugiere, una persona confirma) =====
+// Índices del BCRA: variable 40 = ICL (diario), variable 27 = inflación mensual del INDEC (%).
+const IDX={icl:null,iclD:[],ipc:null,err:null,loading:false};
+// IPC: se usan los meses del período (para un ajuste de abril: enero, febrero y marzo). Decidido el 11/11/2026.
+const IPCLAG=0;
+async function bcra(id,desde){
+  let out=[],off=0;
+  for(let n=0;n<20;n++){
+    const r=await fetch(`https://api.bcra.gob.ar/estadisticas/v4.0/monetarias/${id}?desde=${desde}&hasta=${today()}&limit=1000&offset=${off}`);
+    if(!r.ok)throw new Error('el Banco Central respondió '+r.status);
+    const j=await r.json(),d=((j.results||[])[0]||{}).detalle||[],cnt=((j.metadata||{}).resultset||{}).count||0;
+    out=out.concat(d);off+=d.length;if(!d.length||off>=cnt)break}
+  return out}
+function setIdx(icl,ipc){IDX.icl=new Map(icl.map(x=>[String(x.fecha).slice(0,10),+x.valor]));IDX.iclD=[...IDX.icl.keys()].sort();IDX.ipc=new Map(ipc.map(x=>[String(x.fecha).slice(0,7),+x.valor]))}
+async function loadIdx(force){
+  if(IDX.loading)return;const key='idx-'+today();
+  if(!force){try{const c=JSON.parse(sessionStorage.getItem(key)||'null');if(c){setIdx(c.icl,c.ipc);render();return}}catch(e){}}
+  IDX.loading=true;
+  try{const[icl,ipc]=await Promise.all([bcra(40,'2020-06-01'),bcra(27,'2019-01-01')]);setIdx(icl,ipc);IDX.err=null;try{sessionStorage.setItem(key,JSON.stringify({icl,ipc}))}catch(e){}}
+  catch(e){IDX.err=(e&&e.message)||'sin conexión'}
+  finally{IDX.loading=false;render()}}
+const iclAt=d=>{const a=IDX.iclD;let lo=0,hi=a.length-1,r=-1;while(lo<=hi){const m=(lo+hi)>>1;if(a[m]<=d){r=m;lo=m+1}else hi=m-1}return r<0?null:IDX.icl.get(a[r])};
+const addM=(d,n)=>{const[y,m,dd]=String(d).slice(0,10).split('-').map(Number),t=new Date(Date.UTC(y,m-1+n,1)),last=new Date(Date.UTC(t.getUTCFullYear(),t.getUTCMonth()+1,0)).getUTCDate();return`${t.getUTCFullYear()}-${String(t.getUTCMonth()+1).padStart(2,'0')}-${String(Math.min(dd,last)).padStart(2,'0')}`};
+const AJI={IPC:'IPC',ICL:'ICL',PROMEDIO:'Promedio IPC + ICL',MANUAL:'Manual (sin ajuste automático)'};
+function ajCalc(c){
+  if(c.ajuste_indice==='MANUAL')return{estado:'manual'};
+  if(!c.ajuste_indice||!c.ajuste_meses||!c.base_fecha||c.monto==null)return{estado:'datos'};
+  const prox=addM(c.base_fecha,c.ajuste_meses),res={prox};
+  if(c.fin&&prox>String(c.fin).slice(0,10))return{...res,estado:'fin'};
+  if(!IDX.icl)return{...res,estado:IDX.err?'error':'cargando'};
+  let ci=null,cp=null;const det=[];
+  if(c.ajuste_indice!=='IPC'){const a=iclAt(c.base_fecha),b=iclAt(prox);if(a==null||b==null||IDX.iclD[IDX.iclD.length-1]<prox)return{...res,estado:'espera',falta:'ICL del '+fd(prox)};ci=b/a;det.push(`ICL ${fd(c.base_fecha)}: ${fnum(a)} → ${fd(prox)}: ${fnum(b)}`)}
+  if(c.ajuste_indice!=='ICL'){const ms=[...Array(+c.ajuste_meses)].map((_,i)=>addM(String(c.base_fecha).slice(0,7)+'-01',i-IPCLAG).slice(0,7)),miss=ms.filter(m=>!IDX.ipc.has(m));
+    if(miss.length)return{...res,estado:'espera',falta:'IPC de '+miss.map(m=>my(m+'-01').toLowerCase()).join(', ')};
+    cp=ms.reduce((t,m)=>t*(1+IDX.ipc.get(m)/100),1);det.push('IPC '+ms.map(m=>MESES[+m.slice(5)-1].slice(0,3).toLowerCase()+' '+fnum(IDX.ipc.get(m))+'%').join(', '))}
+  const coef=ci!=null&&cp!=null?(ci+cp)/2:(ci!=null?ci:cp);
+  return{...res,estado:'listo',coef,nuevo:Math.round((+c.monto)*coef),detalle:det.join(' · ')+(ci!=null&&cp!=null?` · promedio de ${fnum((ci-1)*100)}% y ${fnum((cp-1)*100)}%`:'')};
+}
+async function ajAplicar(id){
+  const c=by(S.con,id),r=c&&ajCalc(c);if(!r||r.estado!=='listo')return toast('Todavía no se puede calcular este ajuste.');
+  const ok=await w(()=>DB.collection('contratos_ajustes').add({contrato:c.id,fecha:r.prox,indice:c.ajuste_indice,detalle:r.detalle,coef:Math.round(r.coef*1e6)/1e6,monto_anterior:+c.monto,monto_nuevo:r.nuevo,por:me()}));if(!ok)return;
+  if(await upd('con',c.id,{monto:r.nuevo,base_fecha:r.prox}))toast(`Ajuste aplicado: ${(by(S.prop,c.inmueble)||{}).direccion||''} pasa a ${c.moneda==='USD'?'USD ':'$ '}${fnum(r.nuevo)}`,6000);
+}
+function ajPanel(){
+  if(!IDX.icl&&!IDX.loading&&!IDX.err)setTimeout(()=>loadIdx(),0);
+  const h=today(),fm=addM(h.slice(0,7)+'-01',1),dir=c=>(by(S.prop,c.inmueble)||{}).direccion||'';
+  const rows=S.con.filter(c=>c.activo!==false&&(!c.fin||String(c.fin).slice(0,10)>=h)).map(c=>({c,r:ajCalc(c)}));
+  const due=rows.filter(x=>x.r.prox&&x.r.prox<fm&&['listo','espera','cargando','error'].includes(x.r.estado)).sort((a,b)=>a.r.prox.localeCompare(b.r.prox)||dir(a.c).localeCompare(dir(b.c)));
+  const sd=rows.filter(x=>x.r.estado==='datos').sort((a,b)=>dir(a.c).localeCompare(dir(b.c)));
+  const st=IDX.loading?'Buscando índices en el Banco Central…':IDX.err?`No se pudieron traer los índices (${esc(IDX.err)}). <button class="btn x" data-act="ajidx">Reintentar</button>`:IDX.icl?`Índices del Banco Central: ICL al ${fd(IDX.iclD[IDX.iclD.length-1])} · inflación hasta ${my([...IDX.ipc.keys()].sort().pop()+'-01').toLowerCase()} <button class="btn x" data-act="ajidx" title="Volver a consultar">↻</button>`:'';
+  const mon=c=>c.moneda==='USD'?'USD ':'$ ';
+  const tr=({c,r})=>`<tr><td><b class="row" data-act="inm" data-id="${c.inmueble}" data-t="alq" style="cursor:pointer">${esc(dir(c))}</b><div class="mut">${esc((by(S.per,c.inquilino)||{}).nombre||'')}</div></td><td>${esc(AJI[c.ajuste_indice]||'')}<div class="mut">cada ${c.ajuste_meses} meses</div></td><td>${fd(r.prox)}${r.prox<=h?' '+bd('ya corresponde','w'):''}</td><td>${mon(c)}${fnum(c.monto)}</td>`+
+    (r.estado==='listo'?`<td>${bd('+'+fnum((r.coef-1)*100)+'%','o')}<div class="mut" style="font-size:12px">${esc(r.detalle)}</div></td><td><b>${mon(c)}${fnum(r.nuevo)}</b></td><td><button class="btn s" data-act="ajap" data-id="${c.id}">Aplicar</button></td>`
+    :`<td colspan="3" class="mut">${r.estado==='espera'?'Falta el '+esc(r.falta):r.estado==='cargando'?'Calculando…':'Sin índices'}</td>`)+'</tr>';
+  return`<div class="card noprint" style="margin-bottom:14px"><h2 style="margin-top:0">Ajustes de alquiler de ${MESES[+h.slice(5,7)-1].toLowerCase()}</h2>
+  <div class="mut" style="margin-bottom:8px">${st}</div>
+  ${due.length?`<div class="wrap"><table style="min-width:820px"><tr><th>Inmueble</th><th>Índice</th><th>Ajusta el</th><th>Monto actual</th><th>Aumento</th><th>Monto sugerido</th><th></th></tr>${due.map(tr).join('')}</table></div>`:'<div class="empty">No hay ajustes pendientes este mes.</div>'}
+  <div class="mut" style="margin-top:8px">IPC: se usan los meses del período (para un ajuste de abril, enero, febrero y marzo). Si falta publicar algún mes, el ajuste espera.</div>
+  <div class="mut">Revisá el monto antes de aplicar: el cálculo sigue la regla general y algún contrato puede tener una cláusula distinta. Cada ajuste queda registrado en el contrato.</div>
+  ${sd.length?`<details style="margin-top:8px"><summary class="mut" style="cursor:pointer">${sd.length} contratos sin datos de ajuste (completalos en la ficha, solapa Alquiler)</summary>${sd.map(({c})=>`<div><a href="#" data-act="inm" data-id="${c.inmueble}" data-t="alq">${esc(dir(c))}</a> <span class="mut">${esc(c.forma_incremento||'sin forma de incremento')}</span></div>`).join('')}</details>`:''}</div>`;
+}
+function ajFicha(c){
+  const r=ajCalc(c),mon=c.moneda==='USD'?'USD ':'$ ',hs=S.caj.filter(x=>x.contrato===c.id).sort((a,b)=>String(b.fecha||'').localeCompare(String(a.fecha||''))||String(b.created_at||'').localeCompare(String(a.created_at||'')));
+  const pr=r.estado==='manual'?'Manual: el monto se cambia a mano':r.estado==='datos'?'Completá índice, meses y fecha':r.estado==='fin'?'El contrato termina antes del próximo ajuste':fd(r.prox)+(r.estado==='listo'?` · sugerido ${mon}${fnum(r.nuevo)} (+${fnum((r.coef-1)*100)}%)`:r.estado==='espera'&&r.prox<=today()?' · falta el '+r.falta:'');
+  const sel=(f,list,v,x='')=>`<select data-c="con" data-id="${c.id}" data-f="${f}" ${x}>${v?'':'<option value="" selected disabled>Elegir…</option>'}${opts(list,v)}</select>`;
+  return`<h2>Ajuste automático del alquiler</h2><div class="r2">${L('Índice de ajuste',sel('ajuste_indice',Object.entries(AJI),c.ajuste_indice||''))}${L('Cada cuántos meses',sel('ajuste_meses',[1,2,3,4,6,12].map(n=>[String(n),n===1?'Todos los meses':'Cada '+n+' meses']),c.ajuste_meses?String(c.ajuste_meses):'','data-int="1"'))}${L('El monto actual rige desde',I('con',c.id,'base_fecha',c.base_fecha,'date'))}</div>
+  <div class="mut" style="margin-top:6px">Próximo ajuste: <b>${esc(pr)}</b>${c.forma_incremento?' · según la planilla: '+esc(c.forma_incremento):''}</div>
+  ${hs.length?`<div class="mut" style="margin-top:6px">Ajustes aplicados:</div>${hs.map(x=>`<div style="font-size:13px">${fd(x.fecha)} · ${esc(AJI[x.indice]||x.indice||'')} · ${mon}${fnum(x.monto_anterior)} → <b>${mon}${fnum(x.monto_nuevo)}</b>${x.coef?' (+'+fnum((x.coef-1)*100)+'%)':''}${x.por?' · '+esc(x.por):''}</div>`).join('')}`:''}`;
+}
 // Menú lateral plegable: achicado mientras se trabaja, se abre con un clic
 const ICO={menu:'<path d="M3 6h18M3 12h18M3 18h18"/>',
   kan:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
