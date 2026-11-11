@@ -135,8 +135,14 @@ header h1:before{display:none}
 .mwrap:hover:after{content:'';position:absolute;left:0;top:100%;width:240px;height:10px}
 .hamb{width:36px;height:36px;border:0;border-radius:8px;background:none;color:var(--tx);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
 .hamb .ic{width:22px;height:22px}.hamb:hover,.mwrap:hover .hamb,#root.navx .hamb{background:var(--acbg)}
-#nav{display:none;position:absolute;top:calc(100% + 8px);left:-4px;z-index:50;flex-direction:column;flex-wrap:nowrap;min-width:240px;margin:0;padding:8px;gap:2px;background:var(--card);border:1px solid var(--bd);border-radius:var(--rad);box-shadow:0 14px 36px rgba(0,0,0,.16)}
-.mwrap:hover #nav,#root.navx #nav{display:flex}.mwrap.shut #nav{display:none!important}
+#nav{display:flex;visibility:hidden;opacity:0;pointer-events:none;transition:opacity .12s ease .2s,visibility 0s linear .32s;position:absolute;top:calc(100% + 8px);left:-4px;z-index:50;flex-direction:column;flex-wrap:nowrap;min-width:240px;margin:0;padding:8px;gap:2px;background:var(--card);border:1px solid var(--bd);border-radius:var(--rad);box-shadow:0 14px 36px rgba(0,0,0,.16)}
+/* se abre si el mouse se queda un momento sobre las rayitas (no al pasar de largo) y se cierra solo al elegir */
+.mwrap:hover #nav,#root.navx #nav{visibility:visible;opacity:1;pointer-events:auto;transition:opacity .12s ease .18s,visibility 0s linear .18s}
+#root.navx #nav{transition:none}
+.mwrap.shut #nav{visibility:hidden!important;opacity:0!important;pointer-events:none!important;transition:none!important}
+/* La ficha abierta (panel de la derecha) va oscura con letra clara; el resto de la app queda clara */
+#dlg{color-scheme:dark;--bg:#22232E;--card:#2B2D3A;--tx:#ECECF1;--mut:#A9ABBD;--bd:#454859;--bd2:#383A4A;--head:#33354A;--stripe:#30323F;--ac:#A5A8C8;--onac:#18181B;--acbg:#3B3E55;--nb:#3C3E50;--nt:#E4E4E7;--warn:#FBBF24;--warnbg:#3A2E12;--ok:#6EE7B7;--okbg:#10302A;--bad:#FCA5A5;--badbg:#3B1D1D;--rbg:#3B1D1D;--rtx:#FCA5A5;--nbg:#3A2416;--ntx:#FDBA74;--ybg:#3A3412;--ytx:#FDE047;--vbg:#2E2547;--vtx:#C4B5FD;--fbg:#3B1D45;--ftx:#F0ABFC;--sh:0 1px 3px rgba(0,0,0,.4);background:var(--card);color:var(--tx);border-left-color:#454859}
+#dlg a{color:#C7C9F2}#dlg .card,#dlg .sub,#dlg .doc{background:var(--bg);border-color:var(--bd)}
 #nav button{display:flex;align-items:center;gap:12px;border:0;background:none;box-shadow:none;text-align:left;border-radius:8px;padding:9px 12px;font-size:12px;white-space:nowrap;color:var(--mut)}
 #nav button:hover{background:var(--acbg);color:var(--tx)}#nav button.on{background:var(--ac);color:var(--onac)}#nav .ic{flex:0 0 auto}
 .ptitle{display:flex;align-items:center;gap:6px;margin:2px 0 12px}.ptitle h2{margin:0;font-size:16px}
@@ -728,7 +734,7 @@ document.addEventListener('click',async ev=>{
   document.querySelectorAll('details.dd[open]').forEach(d=>{if(!d.contains(ev.target))d.open=false});
   const sg=ev.target.closest('[data-sign]');if(sg){ev.preventDefault();const{data,error}=await sb.storage.from('adjuntos').createSignedUrl(sg.dataset.sign.replace(/^sb:/,''),120);if(error)return toast(error.message);window.open(data.signedUrl,'_blank','noopener');return}
   const t=ev.target.closest('[data-act]');if(!t)return;const a=t.dataset.act,r=dlg&&dlg.type==='rep'?by(S.rep,dlg.id):null;
-  if(a==='tab'){view=t.dataset.v;NAVX=false;if(t.closest('.mwrap'))$('.mwrap').classList.add('shut');render();scrollTo(0,0)}
+  if(a==='tab'){view=t.dataset.v;NAVX=false;$('#root').classList.remove('navx');if(t.closest('.mwrap')){$('.mwrap').classList.add('shut');try{t.blur()}catch(x){}}render();scrollTo(0,0)}
   else if(a==='navt'){NAVX=!NAVX;$('.mwrap').classList.remove('shut');$('#root').classList.toggle('navx',NAVX)}
   else if(a==='inm'){if(String(getSelection()).trim())return;FT=t.dataset.t||'datos';openDlg({type:'inm',id:t.dataset.id})}
   else if(a==='ftab'){FT=t.dataset.v;drawInm()}

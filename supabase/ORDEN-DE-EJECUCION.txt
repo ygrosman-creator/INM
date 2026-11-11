@@ -11,4 +11,7 @@ LOTE 2 (lo nuevo), en este orden:
 LOTE 3 (comodato sin vencimiento), ANTES de subir el index.html nuevo:
   1. migracion-9-comodato.sql    (columna comodato_sin_vencimiento; tiene que dar 1)
 
+PENDIENTE (todavía NO ejecutar): el ajuste de alquileres por IPC / ICL está apartado en la carpeta
+  pendiente-ajustes-alquiler (index-con-ajustes-alquiler.html + migracion-10-ajustes-alquiler.sql) hasta revisarlo.
+
 Por último: reemplazar index.html en GitHub por el del zip, esperar el despliegue de Vercel y recargar con Ctrl + Shift + R.
