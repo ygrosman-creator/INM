@@ -668,7 +668,7 @@ function vRes(){
   <h2>Por inmueble en ${y}</h2><div class="card wrap"><table>${th}${S.prop.filter(p=>!tg(p).includes('VENDIDO')).map(p=>row(p.direccion,agg(y,p.id))).join('')}</table></div><div class="mut">Presupuestado = por fecha del presupuesto; aprobado = por fecha de aprobación; pagado = por fecha del pago. No incluye inmuebles vendidos.</div>`;
 }
 let INF={ai:'',tg:new Set(),tm:'todas',tipo:'',loc:'',av:'',amia:'',ay:'',g:new Set(['datos','alquiler']),sub:false,prev:null};
-const GRUPOS=[['datos','Datos del inmueble: etiquetas, superficie y DE AMIA (junto con Alquiler: solo superficie y DE AMIA)'],['alquiler','Alquiler: último monto, inquilino, inicio y fin del contrato'],['venta','Venta: año e importe'],['impuestos','Impuestos del año: cantidad, total, no pagado y próximo vencimiento'],['reparaciones','Reparaciones: cantidad, importe total, pagado y saldo'],['legal','Legal: última nota y fecha'],['personas','Personas vinculadas y su vínculo'],['usucapion','Usucapión: años, año en que se puede hacer y notas judiciales'],['comodato','Comodato: fecha de vencimiento y estado']];
+const GRUPOS=[['datos','Datos del inmueble: superficie, etiquetas, DE AMIA y tipo'],['alquiler','Alquiler: último monto, inquilino, inicio y fin del contrato'],['venta','Venta: año e importe'],['impuestos','Impuestos del año: cantidad, total, no pagado y próximo vencimiento'],['reparaciones','Reparaciones: cantidad, importe total, pagado y saldo'],['legal','Legal: última nota y fecha'],['personas','Personas vinculadas y su vínculo'],['usucapion','Usucapión: años, año en que se puede hacer y notas judiciales'],['comodato','Comodato: fecha de vencimiento y estado']];
 const anioVenta=p=>p.anio_venta||(p.fecha_venta?+String(p.fecha_venta).slice(0,4):null);
 function infList(){
   const sel=[...INF.tg],alg=INF.tm==='alguna';
@@ -678,8 +678,8 @@ function buildInf(){
   const y=INF.ay||String(new Date().getFullYear()),g=INF.g,t=today();
   let rows=infList().map(p=>{
     const o={'Dirección':p.direccion};
-    // Con "Alquiler" tildado (informe de alquilados) no se muestran etiquetas ni fecha / notas de ingreso
-    if(g.has('datos')){const alq=g.has('alquiler');if(!alq)o['Etiquetas']=tg(p).join(', ');o['Superficie (m²)']=p.m2==null?'':+p.m2;o['DE AMIA']=p.de_amia?'Sí':'No';if(!alq){o['Fecha de ingreso']=p.fecha_ingreso?fd(p.fecha_ingreso):'';o['Notas de ingreso']=p.notas_ingreso||''}}
+    // Datos: superficie, etiquetas, DE AMIA y tipo. Con "Alquiler" tildado no se muestran fecha / notas de ingreso
+    if(g.has('datos')){const alq=g.has('alquiler');o['Superficie (m²)']=p.m2==null?'':+p.m2;o['Etiquetas']=tg(p).join(', ');o['DE AMIA']=p.de_amia?'Sí':'No';o['Tipo']=p.tipo||'';if(!alq){o['Fecha de ingreso']=p.fecha_ingreso?fd(p.fecha_ingreso):'';o['Notas de ingreso']=p.notas_ingreso||''}}
     if(g.has('alquiler')){const c=conUlt(p);o['Último alquiler']=c&&c.monto!=null?+c.monto:'';o['Moneda']=c&&c.monto!=null?(c.moneda||'ARS'):'';o['Inquilino']=c?((by(S.per,c.inquilino)||{}).nombre||''):'';o['Inicio del contrato']=c?my(c.inicio):'';o['Fin del contrato']=c?my(c.fin):''}
     if(g.has('venta')){o['Año de venta']=anioVenta(p)||'';o['Importe de venta (USD)']=p.valor_venta==null?'':+p.valor_venta}
     if(g.has('impuestos')){const im=S.imp.filter(i=>i.inmueble===p.id),ids=new Set(im.map(i=>i.id)),pr=S.ipe.filter(z=>ids.has(z.impuesto)&&String(z.periodo).startsWith(y));o['Impuestos (cantidad)']=im.length;o['Impuestos '+y+' (total)']=sum(pr,z=>z.importe);o['Impuestos '+y+' (no pagado)']=sum(pr.filter(z=>!z.pagado),z=>z.importe);o['Próximo vencimiento sin pagar']=fd(pr.filter(z=>!z.pagado&&z.vencimiento>=t).map(z=>z.vencimiento).sort()[0])}
