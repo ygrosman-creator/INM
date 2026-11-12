@@ -678,8 +678,8 @@ function buildInf(){
   const y=INF.ay||String(new Date().getFullYear()),g=INF.g,t=today();
   let rows=infList().map(p=>{
     const o={'Dirección':p.direccion};
-    // Datos: superficie, etiquetas, DE AMIA y tipo. Con "Alquiler" tildado no se muestran fecha / notas de ingreso
-    if(g.has('datos')){const alq=g.has('alquiler');o['Superficie (m²)']=p.m2==null?'':+p.m2;o['Etiquetas']=tg(p).join(', ');o['DE AMIA']=p.de_amia?'Sí':'No';o['Tipo']=p.tipo||'';if(!alq){o['Fecha de ingreso']=p.fecha_ingreso?fd(p.fecha_ingreso):'';o['Notas de ingreso']=p.notas_ingreso||''}}
+    // Datos: superficie, etiquetas, DE AMIA y tipo (sin fecha ni notas de ingreso)
+    if(g.has('datos')){o['Superficie (m²)']=p.m2==null?'':+p.m2;o['Etiquetas']=tg(p).join(', ');o['DE AMIA']=p.de_amia?'Sí':'No';o['Tipo']=p.tipo||''}
     if(g.has('alquiler')){const c=conUlt(p);o['Último alquiler']=c&&c.monto!=null?+c.monto:'';o['Moneda']=c&&c.monto!=null?(c.moneda||'ARS'):'';o['Inquilino']=c?((by(S.per,c.inquilino)||{}).nombre||''):'';o['Inicio del contrato']=c?my(c.inicio):'';o['Fin del contrato']=c?my(c.fin):''}
     if(g.has('venta')){o['Año de venta']=anioVenta(p)||'';o['Importe de venta (USD)']=p.valor_venta==null?'':+p.valor_venta}
     if(g.has('impuestos')){const im=S.imp.filter(i=>i.inmueble===p.id),ids=new Set(im.map(i=>i.id)),pr=S.ipe.filter(z=>ids.has(z.impuesto)&&String(z.periodo).startsWith(y));o['Impuestos (cantidad)']=im.length;o['Impuestos '+y+' (total)']=sum(pr,z=>z.importe);o['Impuestos '+y+' (no pagado)']=sum(pr.filter(z=>!z.pagado),z=>z.importe);o['Próximo vencimiento sin pagar']=fd(pr.filter(z=>!z.pagado&&z.vencimiento>=t).map(z=>z.vencimiento).sort()[0])}
