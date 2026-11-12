@@ -82,12 +82,10 @@ h1,h2,nav button,.ttl{text-transform:uppercase}.ttl{font-weight:700}
 .r2.sm{grid-template-columns:repeat(auto-fill,minmax(150px,210px));align-items:end}
 nav button{font-size:12.5px;padding:6px 12px;letter-spacing:.02em}
 #undo{width:30px;height:30px;padding:0;border-radius:50%;font-size:16px;line-height:30px;text-align:center;flex:0 0 auto}
-.zebra tr.row:nth-child(odd) td{background:color-mix(in srgb,var(--acbg) 55%,var(--card))}
-.zebra tr.row:hover td{background:var(--acbg)}
 /* ===== Rediseño neutro (greige + grafito). El diseño anterior está en respaldo/ ===== */
-:root{--bg:#F4F3EF;--card:#FFFFFF;--tx:#27272A;--mut:#71717A;--bd:#E4E4E7;--bd2:#F1F1F3;--head:#FAFAF9;--stripe:#F6F6F3;--ac:#4A4E69;--onac:#FFFFFF;--acbg:#EEEEF3;--nb:#F4F4F5;--nt:#3F3F46;--warn:#B45309;--warnbg:#FEF3C7;--ok:#047857;--okbg:#ECFDF5;--bad:#B91C1C;--badbg:#FEF2F2;--rbg:#FEF2F2;--rtx:#B91C1C;--nbg:#FFF7ED;--ntx:#C2410C;--ybg:#FEF9C3;--ytx:#A16207;--vbg:#F5F3FF;--vtx:#6D28D9;--fbg:#FDF4FF;--ftx:#A21CAF;--sh:0 1px 3px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.03);--rad:12px}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#18181B;--card:#222226;--tx:#E4E4E7;--mut:#A1A1AA;--bd:#34343A;--bd2:#2A2A2F;--head:#26262B;--stripe:#27272C;--ac:#A5A8C8;--onac:#18181B;--acbg:#2E2F3D;--nb:#2E2E33;--nt:#D4D4D8;--warn:#FBBF24;--warnbg:#3A2E12;--ok:#6EE7B7;--okbg:#10302A;--bad:#FCA5A5;--badbg:#3B1D1D;--rbg:#3B1D1D;--rtx:#FCA5A5;--nbg:#3A2416;--ntx:#FDBA74;--ybg:#3A3412;--ytx:#FDE047;--vbg:#2E2547;--vtx:#C4B5FD;--fbg:#3B1D45;--ftx:#F0ABFC;--sh:0 1px 3px rgba(0,0,0,.4)}}
-:root[data-theme="dark"]{--bg:#18181B;--card:#222226;--tx:#E4E4E7;--mut:#A1A1AA;--bd:#34343A;--bd2:#2A2A2F;--head:#26262B;--stripe:#27272C;--ac:#A5A8C8;--onac:#18181B;--acbg:#2E2F3D;--nb:#2E2E33;--nt:#D4D4D8;--warn:#FBBF24;--warnbg:#3A2E12;--ok:#6EE7B7;--okbg:#10302A;--bad:#FCA5A5;--badbg:#3B1D1D;--rbg:#3B1D1D;--rtx:#FCA5A5;--nbg:#3A2416;--ntx:#FDBA74;--ybg:#3A3412;--ytx:#FDE047;--vbg:#2E2547;--vtx:#C4B5FD;--fbg:#3B1D45;--ftx:#F0ABFC;--sh:0 1px 3px rgba(0,0,0,.4)}
+:root{--bg:#F4F3EF;--card:#FFFFFF;--tx:#27272A;--mut:#71717A;--bd:#E4E4E7;--bd2:#F1F1F3;--head:#FAFAF9;--stripe:#EFEFE7;--ac:#4A4E69;--onac:#FFFFFF;--acbg:#EEEEF3;--nb:#F4F4F5;--nt:#3F3F46;--warn:#B45309;--warnbg:#FEF3C7;--ok:#047857;--okbg:#ECFDF5;--bad:#B91C1C;--badbg:#FEF2F2;--rbg:#FEF2F2;--rtx:#B91C1C;--nbg:#FFF7ED;--ntx:#C2410C;--ybg:#FEF9C3;--ytx:#A16207;--vbg:#F5F3FF;--vtx:#6D28D9;--fbg:#FDF4FF;--ftx:#A21CAF;--sh:0 1px 3px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.03);--rad:12px}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#18181B;--card:#222226;--tx:#E4E4E7;--mut:#A1A1AA;--bd:#34343A;--bd2:#2A2A2F;--head:#26262B;--stripe:#2C2C33;--ac:#A5A8C8;--onac:#18181B;--acbg:#2E2F3D;--nb:#2E2E33;--nt:#D4D4D8;--warn:#FBBF24;--warnbg:#3A2E12;--ok:#6EE7B7;--okbg:#10302A;--bad:#FCA5A5;--badbg:#3B1D1D;--rbg:#3B1D1D;--rtx:#FCA5A5;--nbg:#3A2416;--ntx:#FDBA74;--ybg:#3A3412;--ytx:#FDE047;--vbg:#2E2547;--vtx:#C4B5FD;--fbg:#3B1D45;--ftx:#F0ABFC;--sh:0 1px 3px rgba(0,0,0,.4)}}
+:root[data-theme="dark"]{--bg:#18181B;--card:#222226;--tx:#E4E4E7;--mut:#A1A1AA;--bd:#34343A;--bd2:#2A2A2F;--head:#26262B;--stripe:#2C2C33;--ac:#A5A8C8;--onac:#18181B;--acbg:#2E2F3D;--nb:#2E2E33;--nt:#D4D4D8;--warn:#FBBF24;--warnbg:#3A2E12;--ok:#6EE7B7;--okbg:#10302A;--bad:#FCA5A5;--badbg:#3B1D1D;--rbg:#3B1D1D;--rtx:#FCA5A5;--nbg:#3A2416;--ntx:#FDBA74;--ybg:#3A3412;--ytx:#FDE047;--vbg:#2E2547;--vtx:#C4B5FD;--fbg:#3B1D45;--ftx:#F0ABFC;--sh:0 1px 3px rgba(0,0,0,.4)}
 body{background:var(--bg);font-family:Inter,"Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
 #root{max-width:1500px}
 header{background:var(--card);border:1px solid var(--bd);border-radius:var(--rad);padding:10px 14px;box-shadow:var(--sh);margin-bottom:14px}
@@ -108,7 +106,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 
 th{background:var(--head);color:var(--mut);font-size:11px;letter-spacing:.05em;border-bottom:1px solid var(--bd)}
 td{border-bottom:1px solid var(--bd2)}
 tr.row:hover td{background:var(--acbg)}
-.zebra tr.row:nth-child(odd) td{background:var(--stripe)}.zebra tr.row:hover td{background:var(--acbg)}
+/* Todas las tablas (listados, informes, gráficos, fichas): una fila de cada dos con un tono más, para leer de corrido */
+#app table tr:nth-child(even)>td,#dlg table tr:nth-child(even)>td{background:var(--stripe)}
+#app table tr.row:hover>td,#dlg table tr.row:hover>td{background:var(--acbg)}
 .badge{background:var(--nb);color:var(--nt);font-weight:600}
 .badge.w{background:var(--warnbg);color:var(--warn)}.badge.o{background:var(--okbg);color:var(--ok)}.badge.u{background:var(--badbg);color:var(--bad)}
 .col{background:var(--head);border:1px solid var(--bd)}.kc{box-shadow:var(--sh)}
@@ -141,7 +141,7 @@ header h1:before{display:none}
 #root.navx #nav{transition:none}
 .mwrap.shut #nav{visibility:hidden!important;opacity:0!important;pointer-events:none!important;transition:none!important}
 /* La ficha abierta (panel de la derecha) va oscura con letra clara; el resto de la app queda clara */
-#dlg{color-scheme:dark;--bg:#22232E;--card:#2B2D3A;--tx:#ECECF1;--mut:#A9ABBD;--bd:#454859;--bd2:#383A4A;--head:#33354A;--stripe:#30323F;--ac:#A5A8C8;--onac:#18181B;--acbg:#3B3E55;--nb:#3C3E50;--nt:#E4E4E7;--warn:#FBBF24;--warnbg:#3A2E12;--ok:#6EE7B7;--okbg:#10302A;--bad:#FCA5A5;--badbg:#3B1D1D;--rbg:#3B1D1D;--rtx:#FCA5A5;--nbg:#3A2416;--ntx:#FDBA74;--ybg:#3A3412;--ytx:#FDE047;--vbg:#2E2547;--vtx:#C4B5FD;--fbg:#3B1D45;--ftx:#F0ABFC;--sh:0 1px 3px rgba(0,0,0,.4);background:var(--card);color:var(--tx);border-left-color:#454859}
+#dlg{color-scheme:dark;--bg:#22232E;--card:#2B2D3A;--tx:#ECECF1;--mut:#A9ABBD;--bd:#454859;--bd2:#383A4A;--head:#33354A;--stripe:#353849;--ac:#A5A8C8;--onac:#18181B;--acbg:#3B3E55;--nb:#3C3E50;--nt:#E4E4E7;--warn:#FBBF24;--warnbg:#3A2E12;--ok:#6EE7B7;--okbg:#10302A;--bad:#FCA5A5;--badbg:#3B1D1D;--rbg:#3B1D1D;--rtx:#FCA5A5;--nbg:#3A2416;--ntx:#FDBA74;--ybg:#3A3412;--ytx:#FDE047;--vbg:#2E2547;--vtx:#C4B5FD;--fbg:#3B1D45;--ftx:#F0ABFC;--sh:0 1px 3px rgba(0,0,0,.4);background:var(--card);color:var(--tx);border-left-color:#454859}
 #dlg a{color:#C7C9F2}#dlg .card,#dlg .sub,#dlg .doc{background:var(--bg);border-color:var(--bd)}
 #nav button{display:flex;align-items:center;gap:12px;border:0;background:none;box-shadow:none;text-align:left;border-radius:8px;padding:9px 12px;font-size:12px;white-space:nowrap;color:var(--mut)}
 #nav button:hover{background:var(--acbg);color:var(--tx)}#nav button.on{background:var(--ac);color:var(--onac)}#nav .ic{flex:0 0 auto}
@@ -153,7 +153,7 @@ header h1:before{display:none}
 @media print{#cmdk,.srch,.kpis{display:none!important}#root{display:block}}
 @media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}#up,.dup,.dup2,.dupbar,#undo{display:none!important}}
 /* ===== Diseño opcional "Vidrio oscuro" (botón ◐ arriba a la derecha). El diseño clásico sigue siendo el normal. ===== */
-:root[data-skin="vidrio"]{color-scheme:dark;--bg:#0B0E14;--card:rgba(255,255,255,.055);--tx:#E8EAF0;--mut:#9AA3B5;--bd:rgba(255,255,255,.11);--bd2:rgba(255,255,255,.06);--head:rgba(255,255,255,.045);--stripe:rgba(255,255,255,.03);--ac:#22D3EE;--onac:#06121A;--acbg:rgba(34,211,238,.13);--nb:rgba(255,255,255,.09);--nt:#D6DAE3;--warn:#FBBF24;--warnbg:rgba(251,191,36,.14);--ok:#34D399;--okbg:rgba(52,211,153,.14);--bad:#FB7185;--badbg:rgba(251,113,133,.15);--rbg:rgba(251,113,133,.15);--rtx:#FB7185;--nbg:rgba(251,146,60,.15);--ntx:#FDBA74;--ybg:rgba(250,204,21,.13);--ytx:#FDE047;--vbg:rgba(167,139,250,.16);--vtx:#C4B5FD;--fbg:rgba(232,121,249,.15);--ftx:#F0ABFC;--sh:0 8px 30px rgba(0,0,0,.35);--rad:18px;--glass:blur(16px) saturate(140%)}
+:root[data-skin="vidrio"]{color-scheme:dark;--bg:#0B0E14;--card:rgba(255,255,255,.055);--tx:#E8EAF0;--mut:#9AA3B5;--bd:rgba(255,255,255,.11);--bd2:rgba(255,255,255,.06);--head:rgba(255,255,255,.045);--stripe:rgba(255,255,255,.07);--ac:#22D3EE;--onac:#06121A;--acbg:rgba(34,211,238,.13);--nb:rgba(255,255,255,.09);--nt:#D6DAE3;--warn:#FBBF24;--warnbg:rgba(251,191,36,.14);--ok:#34D399;--okbg:rgba(52,211,153,.14);--bad:#FB7185;--badbg:rgba(251,113,133,.15);--rbg:rgba(251,113,133,.15);--rtx:#FB7185;--nbg:rgba(251,146,60,.15);--ntx:#FDBA74;--ybg:rgba(250,204,21,.13);--ytx:#FDE047;--vbg:rgba(167,139,250,.16);--vtx:#C4B5FD;--fbg:rgba(232,121,249,.15);--ftx:#F0ABFC;--sh:0 8px 30px rgba(0,0,0,.35);--rad:18px;--glass:blur(16px) saturate(140%)}
 :root[data-skin="vidrio"] body{background:#0B0E14 fixed;background-image:radial-gradient(700px 480px at 6% -6%,rgba(139,92,246,.30),transparent 60%),radial-gradient(640px 460px at 98% 12%,rgba(34,211,238,.20),transparent 60%),radial-gradient(760px 520px at 70% 108%,rgba(251,113,133,.16),transparent 60%);background-attachment:fixed}
 :root[data-skin="vidrio"] .card,:root[data-skin="vidrio"] header,:root[data-skin="vidrio"] .col{backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);border:1px solid var(--bd);box-shadow:var(--sh)}
 :root[data-skin="vidrio"] header{background:rgba(16,19,28,.72)}
@@ -184,6 +184,29 @@ header h1:before{display:none}
 :root[data-skin="vidrio"] #dlg nav button.on{background:linear-gradient(135deg,#22D3EE,#8B5CF6);color:#fff;border-color:transparent}
 :root[data-skin="vidrio"] #dlg{--ac:#22D3EE;--onac:#06121A;--acbg:rgba(34,211,238,.13);--bg:#0F121A;--card:#151925;background:#151925;border-left:1px solid rgba(255,255,255,.1)}
 :root[data-skin="vidrio"] #up,:root[data-skin="vidrio"] .dup{background:linear-gradient(135deg,#22D3EE,#8B5CF6);color:#fff}
+/* Anillos de progreso (los dos diseños) */
+.rings{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin:-4px 0 16px}
+.ring{display:flex;align-items:center;gap:14px;cursor:pointer;padding:12px 14px}
+.ring span{display:block;color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.05em}.ring b{display:block;font-size:20px;margin:2px 0}.ring small{color:var(--mut)}
+.ring svg circle:last-of-type{transition:stroke-dasharray .6s ease}
+@media print{.rings{display:none!important}}
+/* Vidrio oscuro con más profundidad: esferas de color de fondo y tarjetas que se despegan */
+:root[data-skin="vidrio"]{--bg:#07090E;--card:rgba(255,255,255,.075);--bd:rgba(255,255,255,.14);--sh:0 18px 45px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.10)}
+:root[data-skin="vidrio"] body{background-color:#07090E}
+:root[data-skin="vidrio"] body:before,:root[data-skin="vidrio"] body:after{content:'';position:fixed;z-index:-1;border-radius:50%;filter:blur(70px);opacity:.55;pointer-events:none}
+:root[data-skin="vidrio"] body:before{width:520px;height:520px;left:-140px;top:-160px;background:radial-gradient(circle at 35% 35%,#8B5CF6,#3B0764 70%)}
+:root[data-skin="vidrio"] body:after{width:600px;height:600px;right:-180px;bottom:-220px;background:radial-gradient(circle at 40% 40%,#22D3EE,#0E7490 55%,#BE185D 100%)}
+:root[data-skin="vidrio"] .card,:root[data-skin="vidrio"] .col{background:linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.035) 55%);border:1px solid rgba(255,255,255,.13);border-top-color:rgba(255,255,255,.22)}
+:root[data-skin="vidrio"] .card .card,:root[data-skin="vidrio"] .card .sub{background:rgba(255,255,255,.05);box-shadow:none}
+:root[data-skin="vidrio"] th{background:rgba(255,255,255,.06)}
+:root[data-skin="vidrio"] .ring{background:linear-gradient(160deg,rgba(255,255,255,.11),rgba(255,255,255,.035) 60%)}
+:root[data-skin="vidrio"] .ring:hover{border-color:rgba(34,211,238,.45)}
+/* Ficha abierta: vidrio sobre la pantalla desenfocada, con bloques internos más claros */
+:root[data-skin="vidrio"] dialog::backdrop{background:rgba(3,5,10,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+:root[data-skin="vidrio"] #dlg{background:linear-gradient(170deg,rgba(30,36,54,.92),rgba(16,19,30,.94));backdrop-filter:blur(22px) saturate(150%);-webkit-backdrop-filter:blur(22px) saturate(150%);border-left:1px solid rgba(255,255,255,.16);box-shadow:-30px 0 60px rgba(0,0,0,.6)}
+:root[data-skin="vidrio"] #dlg nav{background:linear-gradient(rgba(27,32,48,.97) 78%,transparent)}
+:root[data-skin="vidrio"] #dlg .card,:root[data-skin="vidrio"] #dlg .sub,:root[data-skin="vidrio"] #dlg .doc{background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.14);box-shadow:0 8px 24px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}
+:root[data-skin="vidrio"] #dlg input,:root[data-skin="vidrio"] #dlg select,:root[data-skin="vidrio"] #dlg textarea{background:rgba(0,0,0,.28);border-color:rgba(255,255,255,.14)}
 .skin{width:34px;height:34px;border-radius:50%;border:1px solid var(--bd);background:none;color:var(--tx);font-size:17px;cursor:pointer;padding:0;flex:0 0 auto}
 .skin:hover{background:var(--acbg)}
 @media print{:root[data-skin="vidrio"]{color-scheme:light;--bg:#fff;--card:#fff;--tx:#27272A;--mut:#71717A;--bd:#E4E4E7;--bd2:#F1F1F3;--head:#FAFAF9;--stripe:#F6F6F3}:root[data-skin="vidrio"] body{background:#fff}}
@@ -235,7 +258,23 @@ function kpis(){
   const m=today().slice(0,7),act=S.prop.filter(p=>!tg(p).includes('VENDIDO')).length,vig=S.con.filter(vigente),ars=sum(vig.filter(c=>c.moneda!=='USD'),c=>c.monto),usd=sum(vig.filter(c=>c.moneda==='USD'),c=>c.monto);
   const ia=new Set(S.imp.filter(i=>impAmia(i)).map(i=>i.id)),ip=S.ipe.filter(z=>ia.has(z.impuesto)&&String(z.periodo).startsWith(m)&&!z.pagado).length,ra=S.rep.filter(r=>estOf(r)!==ESTADOS[3]).length;
   const k=(v,t,b,s)=>`<div class="card" data-act="tab" data-v="${v}"><span>${t}</span><b>${b}</b><small>${s}</small></div>`;
-  return`<div class="kpis">${k('props','Inmuebles',act,'sin contar los vendidos')}${k('alqs','Alquileres por mes','$ '+fnum(ars),vig.length+' contratos vigentes'+(usd?' · USD '+fnum(usd):''))}${k('imps','Impuestos del mes',ip,'sin pagar en '+MESES[+m.slice(5,7)-1].toLowerCase())}${k('reps','Reparaciones',ra,'abiertas')}</div>`;
+  return`<div class="kpis">${k('props','Inmuebles',act,'sin contar los vendidos')}${k('alqs','Alquileres por mes','$ '+fnum(ars),vig.length+' contratos vigentes'+(usd?' · USD '+fnum(usd):''))}${k('imps','Impuestos del mes',ip,'sin pagar en '+MESES[+m.slice(5,7)-1].toLowerCase())}${k('reps','Reparaciones',ra,'abiertas')}</div>`+anillos();
+}
+// Anillos de progreso del Tablero
+function anillo(v,tab,titulo,hecho,total,detalle,c1,c2){
+  const p=total?Math.min(1,hecho/total):0,R=34,L=2*Math.PI*R,id='g'+tab+Math.round(p*1000);
+  return`<div class="card ring" data-act="tab" data-v="${tab}"><svg viewBox="0 0 84 84" width="84" height="84" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs>
+    <circle cx="42" cy="42" r="${R}" fill="none" stroke="var(--bd)" stroke-width="8"/>
+    <circle cx="42" cy="42" r="${R}" fill="none" stroke="url(#${id})" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(L*p).toFixed(1)} ${L.toFixed(1)}" transform="rotate(-90 42 42)"/>
+    <text x="42" y="47" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">${total?Math.round(p*100)+'%':'—'}</text></svg>
+    <div><span>${titulo}</span><b>${hecho} de ${total}</b><small>${detalle}</small></div></div>`;
+}
+function anillos(){
+  const m=today().slice(0,7),mes=MESES[+m.slice(5,7)-1].toLowerCase(),y=m.slice(0,4),v=VIDRIO();
+  const vig=S.con.filter(vigente),cob=vig.filter(c=>S.cpa.some(z=>z.contrato===c.id&&String(z.periodo).startsWith(m)&&z.pagado===true)).length;
+  const ia=new Set(S.imp.filter(i=>impAmia(i)).map(i=>i.id)),im=S.ipe.filter(z=>ia.has(z.impuesto)&&String(z.periodo).startsWith(m)),imp=im.filter(z=>z.pagado===true).length;
+  const ry=S.rep.filter(r=>String(r.fechaSol||r.created_at||'').startsWith(y)),rf=ry.filter(r=>estOf(r)===ESTADOS[3]).length;
+  return`<div class="rings">${anillo(0,'alqs','Alquileres cobrados',cob,vig.length,'contratos vigentes · '+mes,v?'#22D3EE':'#1d6b5a',v?'#34D399':'#2f9e7f')}${anillo(0,'imps','Impuestos pagados',imp,im.length,'que paga AMIA · '+mes,v?'#FBBF24':'#92660a',v?'#FB7185':'#c2410c')}${anillo(0,'reps','Reparaciones finalizadas',rf,ry.length,'pedidas en '+y,v?'#A78BFA':'#4A4E69',v?'#22D3EE':'#2563eb')}</div>`;
 }
 function vKan(){
   return kpis()+`<div class="bar2"><button class="btn" data-act="new" data-k="rep">+ Nueva reparación</button></div><div class="kan">`+ESTADOS.map((e,i)=>{const l=S.rep.filter(r=>estOf(r)===e);return`<div class="col c${i}" data-drop="${e}"><h3>${e} <span class="mut">${l.length}</span></h3>`+l.map(r=>{const p=by(S.prop,r.prop);return`<div class="kc" draggable="true" data-act="rep" data-id="${r.id}"><b>${esc(r.titulo||'Sin título')}</b><div class="mut">${esc(p?p.direccion:'')}</div><div style="margin-top:4px">${pb(r.prioridad||'Normal')} ${xb(r)}</div></div>`}).join('')+'</div>'}).join('')+'</div><div class="mut">Arrastrá las tarjetas para cambiar el estado (en el celular, abrí la reparación).</div>';
@@ -493,23 +532,34 @@ function vAlqs(){
   <tr><th>Total mensual</th><th colspan="4">$ ${fnum(tot.ARS)} &nbsp;·&nbsp; USD ${fnum(tot.USD)}</th></tr></table></div>`;
 }
 const PAL=['#1d6b5a','#c2410c','#2563eb','#92660a','#6d28d9','#b91c1c','#0e7490','#4d7c0f','#9d174d','#475569'];
+const PAL_V=['#22D3EE','#A78BFA','#FB7185','#34D399','#FBBF24','#F472B6','#60A5FA','#2DD4BF','#FB923C','#94A3B8'];
+const VIDRIO=()=>document.documentElement.dataset.skin==='vidrio';
+const PALx=()=>VIDRIO()?PAL_V:PAL;
+// colores del gráfico ingresos vs. egresos: impuestos, reparaciones, alquileres
+const SC=()=>VIDRIO()?['#FB7185','#FBBF24','#22D3EE']:[PAL[0],PAL[1],PAL[2]];
+const fk=v=>{v=+v||0;const a=Math.abs(v);return a>=1e6?(v/1e6).toFixed(a>=1e7?0:1).replace('.',',')+' M':a>=1e3?Math.round(v/1e3)+' k':String(Math.round(v))};
 function donut(items){
   const tot=sum(items,x=>x.value)||1,cx=90,cy=90,R=72,r=44;let a0=-Math.PI/2,out='';
   const P=(q,a)=>[(cx+q*Math.cos(a)).toFixed(2),(cy+q*Math.sin(a)).toFixed(2)];
   items.forEach((it,i)=>{if(!it.value)return;
-    if(items.filter(z=>z.value).length===1){out+=`<circle cx="${cx}" cy="${cy}" r="${(R+r)/2}" fill="none" stroke="${PAL[i%PAL.length]}" stroke-width="${R-r}" data-act="gtag" data-t="${esc(it.tag||'')}" style="cursor:pointer"><title>${esc(it.label)}: ${it.value}</title></circle>`;return}
+    if(items.filter(z=>z.value).length===1){out+=`<circle cx="${cx}" cy="${cy}" r="${(R+r)/2}" fill="none" stroke="${PALx()[i%PALx().length]}" stroke-width="${R-r}" data-act="gtag" data-t="${esc(it.tag||'')}" style="cursor:pointer"><title>${esc(it.label)}: ${it.value}</title></circle>`;return}
     const a1=a0+2*Math.PI*it.value/tot,lg=a1-a0>Math.PI?1:0,[x0,y0]=P(R,a0),[x1,y1]=P(R,a1),[x2,y2]=P(r,a1),[x3,y3]=P(r,a0);
-    out+=`<path data-act="gtag" data-t="${esc(it.tag||'')}" d="M${x0},${y0} A${R},${R} 0 ${lg} 1 ${x1},${y1} L${x2},${y2} A${r},${r} 0 ${lg} 0 ${x3},${y3}Z" fill="${PAL[i%PAL.length]}" style="cursor:pointer"><title>${esc(it.label)}: ${it.value}</title></path>`;a0=a1});
+    out+=`<path data-act="gtag" data-t="${esc(it.tag||'')}" d="M${x0},${y0} A${R},${R} 0 ${lg} 1 ${x1},${y1} L${x2},${y2} A${r},${r} 0 ${lg} 0 ${x3},${y3}Z" fill="${PALx()[i%PALx().length]}" style="cursor:pointer"><title>${esc(it.label)}: ${it.value}</title></path>`;a0=a1});
   return`<svg viewBox="0 0 180 180" width="190" height="190">${out}<text x="90" y="88" text-anchor="middle" font-size="22" font-weight="700" fill="currentColor">${S.prop.length}</text><text x="90" y="104" text-anchor="middle" font-size="10" fill="currentColor">inmuebles</text></svg>`;
 }
 function hbar(items,f){
   if(!items.length)return'<div class="empty">Sin datos.</div>';
   const mx=Math.max(...items.map(i=>i.value))||1,H=items.length*26+6;
-  return`<svg viewBox="0 0 560 ${H}" width="100%" style="max-width:640px">${items.map((it,i)=>{const w=Math.max(2,it.value/mx*220);return`<text x="0" y="${i*26+17}" font-size="11" fill="currentColor">${esc(it.label)}</text><rect x="215" y="${i*26+5}" width="${w}" height="16" rx="3" fill="${PAL[0]}"><title>${esc(it.label)}: ${f(it.value)}</title></rect><text x="${215+w+6}" y="${i*26+17}" font-size="11" fill="currentColor">${f(it.value)}</text>`}).join('')}</svg>`;
+  return`<svg viewBox="0 0 560 ${H}" width="100%" style="max-width:640px">${items.map((it,i)=>{const w=Math.max(2,it.value/mx*220);return`<text x="0" y="${i*26+17}" font-size="11" fill="currentColor">${esc(it.label)}</text><rect x="215" y="${i*26+5}" width="${w}" height="16" rx="3" fill="${PALx()[0]}"><title>${esc(it.label)}: ${f(it.value)}</title></rect><text x="${215+w+6}" y="${i*26+17}" font-size="11" fill="currentColor">${f(it.value)}</text>`}).join('')}</svg>`;
 }
 function stack(m){
-  const mx=Math.max(1,...m.map(x=>Math.max(x.a+x.b,x.c))),Hh=190;
-  return`<svg viewBox="0 0 640 ${Hh+34}" width="100%" style="max-width:760px">${m.map((x,i)=>{const ha=x.a/mx*Hh,hb=x.b/mx*Hh,hc=x.c/mx*Hh,xx=12+i*52;return`<rect x="${xx}" y="${Hh-ha-hb+8}" width="20" height="${hb}" fill="${PAL[1]}"><title>${x.mes}: reparaciones ${fmt(x.b)}</title></rect><rect x="${xx}" y="${Hh-ha+8}" width="20" height="${ha}" fill="${PAL[0]}"><title>${x.mes}: impuestos ${fmt(x.a)}</title></rect><rect x="${xx+22}" y="${Hh-hc+8}" width="20" height="${hc}" fill="${PAL[2]}"><title>${x.mes}: alquileres ${fmt(x.c)}</title></rect><text x="${xx+21}" y="${Hh+24}" font-size="10" text-anchor="middle" fill="currentColor">${x.mes}</text>`}).join('')}</svg>`;
+  // Solo lo efectivamente pagado / cobrado. Arriba de cada columna se muestra el importe (k = miles, M = millones).
+  const mx=Math.max(1,...m.map(x=>Math.max(x.a+x.b,x.c))),Hh=190,T=18,[ci,cr,ca]=SC();
+  return`<svg viewBox="0 0 640 ${Hh+T+30}" width="100%" style="max-width:760px">${m.map((x,i)=>{const ha=x.a/mx*Hh,hb=x.b/mx*Hh,hc=x.c/mx*Hh,xx=12+i*52,b0=Hh+T;
+    return`<rect x="${xx}" y="${b0-ha-hb}" width="20" height="${hb}" rx="2" fill="${cr}"><title>${x.mes}: reparaciones pagadas ${fmt(x.b)}</title></rect><rect x="${xx}" y="${b0-ha}" width="20" height="${ha}" rx="2" fill="${ci}"><title>${x.mes}: impuestos pagados ${fmt(x.a)}</title></rect><rect x="${xx+22}" y="${b0-hc}" width="20" height="${hc}" rx="2" fill="${ca}"><title>${x.mes}: alquileres cobrados ${fmt(x.c)}</title></rect>`+
+      (x.a+x.b?`<text x="${xx+10}" y="${b0-ha-hb-4}" font-size="8.5" text-anchor="middle" fill="currentColor" opacity=".85">${fk(x.a+x.b)}</text>`:'')+
+      (x.c?`<text x="${xx+32}" y="${b0-hc-4}" font-size="8.5" font-weight="700" text-anchor="middle" fill="${ca}">${fk(x.c)}</text>`:'')+
+      `<text x="${xx+21}" y="${b0+18}" font-size="10" text-anchor="middle" fill="currentColor">${x.mes}</text>`}).join('')}</svg>`;
 }
 let SELG=new Set(),PREVG=null;
 const OPSG=[['imp','Impuestos por mes'],['rep','Reparaciones por mes'],['tot','Total mensual (impuestos + reparaciones)']];
@@ -546,7 +596,9 @@ function vGraf(){
   const lim=new Date();lim.setMonth(lim.getMonth()+3);const l3=lim.toISOString().slice(0,10),por90=S.con.filter(c=>c.fin&&c.fin>=h&&c.fin<=l3).length;
   const top=cur=>vig.filter(c=>(c.moneda==='USD')===(cur==='USD')&&c.monto).sort((a,b)=>b.monto-a.monto).slice(0,8).map(c=>({label:((by(S.prop,c.inmueble)||{}).direccion||'—').slice(0,34),value:+c.monto}));
   const monedaCpa=z=>(by(S.con,z.contrato)||{}).moneda==='USD'?'USD':'ARS';
-  const meses=MESES.map((mm,i)=>{const k=y+'-'+String(i+1).padStart(2,'0'),cp=S.cpa.filter(z=>String(z.periodo).startsWith(k));return{mes:mm.slice(0,3),a:sum(S.ipe.filter(z=>String(z.periodo).startsWith(k)&&impAmia(by(S.imp,z.impuesto)||{})),z=>z.importe),b:sum(S.pag.filter(z=>String(z.fecha||'').startsWith(k)),z=>z.monto),c:sum(cp.filter(z=>monedaCpa(z)==='ARS'),z=>z.importe),u:sum(cp.filter(z=>monedaCpa(z)==='USD'),z=>z.importe)}});
+  // Ingresos vs. egresos: solo lo pagado. Si un mes de alquiler está pagado pero sin importe cargado, se toma el alquiler del contrato.
+  const impCpa=z=>z.importe!=null&&z.importe!==''?+z.importe:+((by(S.con,z.contrato)||{}).monto||0);
+  const meses=MESES.map((mm,i)=>{const k=y+'-'+String(i+1).padStart(2,'0'),cp=S.cpa.filter(z=>String(z.periodo).startsWith(k)&&z.pagado===true);return{mes:mm.slice(0,3),a:sum(S.ipe.filter(z=>String(z.periodo).startsWith(k)&&z.pagado===true&&impAmia(by(S.imp,z.impuesto)||{})),z=>z.importe),b:sum(S.pag.filter(z=>String(z.fecha||'').startsWith(k)),z=>z.monto),c:sum(cp.filter(z=>monedaCpa(z)==='ARS'),impCpa),u:sum(cp.filter(z=>monedaCpa(z)==='USD'),impCpa)}});
   const T={imp:sum(meses,x=>x.a),rep:sum(meses,x=>x.b),alq:sum(meses,x=>x.c),usd:sum(meses,x=>x.u)};
   const tl=S.con.filter(c=>c.fin&&c.fin>=h&&c.fin<='2028-12-31').sort((a,b)=>a.fin.localeCompare(b.fin));
   const gl=F.gl||new Set(GAL),alr=S.prop.filter(p=>[...gl].some(t=>tg(p).includes(t))).sort((a,b)=>String(a.direccion).localeCompare(String(b.direccion)));
@@ -556,11 +608,11 @@ function vGraf(){
   <div class="card"><h1>Cartera de inmuebles · resumen ejecutivo</h1><div class="mut">Alcance: ${S.prop.length} inmuebles de AMIA (alquilados, en venta, vendidos, comodatos, sedes, testamentos y otros), con sus contratos, impuestos y situación legal. Actualizado al ${fd(h)}.</div></div>
   <div class="grid" style="margin-top:10px">${kpi(S.prop.length,'inmuebles en total')}${kpi(cnt('ALQUILADO'),'inmuebles alquilados')}${kpi('$ '+fnum(ing('ARS')),'ingresos estimados por mes (pesos)')}${kpi('USD '+fnum(ing('USD')),'ingresos estimados por mes (dólares)')}${kpi(por90,'contratos que vencen en 3 meses')}${kpi(cnt('VENDIDO'),'inmuebles vendidos')}</div>
   <h2>Estado de la cartera</h2><div class="card" style="display:flex;gap:20px;flex-wrap:wrap;align-items:center">${donut(cats.map(c=>({label:c[1],value:cnt(c[0]),tag:c[0]})))}
-   <div class="wrap" style="flex:1;min-width:280px"><table style="min-width:280px"><tr><th>Categoría</th><th>Cantidad</th><th class="noprint">Acción</th></tr>${cats.map((c,i)=>`<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${PAL[i%PAL.length]};margin-right:6px"></span>${c[1]}</td><td><b>${cnt(c[0])}</b></td><td class="noprint"><button class="btn x" data-act="gtag" data-t="${esc(c[0])}">Ver inmuebles</button></td></tr>`).join('')}</table></div></div>
+   <div class="wrap" style="flex:1;min-width:280px"><table style="min-width:280px"><tr><th>Categoría</th><th>Cantidad</th><th class="noprint">Acción</th></tr>${cats.map((c,i)=>`<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${PALx()[i%PALx().length]};margin-right:6px"></span>${c[1]}</td><td><b>${cnt(c[0])}</b></td><td class="noprint"><button class="btn x" data-act="gtag" data-t="${esc(c[0])}">Ver inmuebles</button></td></tr>`).join('')}</table></div></div>
   <div class="mut">Un inmueble puede tener varias etiquetas, por eso la suma puede superar el total. Tocá un sector del gráfico para ver esos inmuebles.</div>
   <h2>Vencimientos de contratos 2026 – 2028</h2><div class="card wrap">${tl.length?`<table style="min-width:520px"><tr><th>Vence</th><th>Dirección</th><th>Alquiler</th><th>Meses que faltan</th></tr>${tl.map(c=>{const mm=Math.max(0,Math.round((new Date(c.fin)-new Date(h))/2629800000));return`<tr class="row" data-act="inm" data-id="${c.inmueble}" data-t="alq"><td>${esc(my(c.fin))}</td><td>${esc((by(S.prop,c.inmueble)||{}).direccion||'')}</td><td>${c.monto!=null?(c.moneda==='USD'?'USD ':'$ ')+fnum(c.monto):'—'}</td><td>${bd(mm+' meses',mm<=3?'u':mm<=6?'w':'')}</td></tr>`}).join('')}</table>`:'<div class="empty">No hay contratos con vencimiento en esos años.</div>'}</div>
-  <h2>INGRESOS VS. EGRESOS ${y}</h2><div class="card" style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start"><div style="flex:2;min-width:300px">${stack(meses)}<div class="mut"><span class="badge" style="background:${PAL[0]};color:#fff">Impuestos</span> <span class="badge" style="background:${PAL[1]};color:#fff">Reparaciones pagadas</span> <span class="badge" style="background:${PAL[2]};color:#fff">Alquileres (ingresos)</span></div></div>
-  <div style="flex:1;min-width:260px"><b class="ttl">Totales ${y}</b><table style="min-width:0;margin-top:6px"><tr><th></th><th>Pesos</th><th>Dólares</th></tr><tr><td>Impuestos (a cargo de AMIA)</td><td>$ ${fnum(T.imp)}</td><td>—</td></tr><tr><td>Alquileres</td><td>$ ${fnum(T.alq)}</td><td>USD ${fnum(T.usd)}</td></tr><tr><td>Arreglos</td><td>$ ${fnum(T.rep)}</td><td>—</td></tr><tr><th>Ingresos − egresos</th><th colspan="2">$ ${fnum(T.alq-T.imp-T.rep)}</th></tr></table><div class="mut" style="margin-top:6px">Los alquileres en dólares se muestran aparte, sin convertir.</div></div></div>
+  <h2>INGRESOS VS. EGRESOS ${y}</h2><div class="card" style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start"><div style="flex:2;min-width:300px">${stack(meses)}<div class="mut">${SC().map((c,i)=>`<span style="display:inline-flex;align-items:center;gap:5px;margin-right:12px"><span style="width:11px;height:11px;border-radius:3px;background:${c}"></span>${['Impuestos pagados','Reparaciones pagadas','Alquileres cobrados (ingresos)'][i]}</span>`).join('')}</div><div class="mut" style="font-size:12px;margin-top:4px">Solo se cuenta lo marcado como pagado. Los números arriba de cada columna están en miles (k) o millones (M). Si un mes de alquiler figura pagado sin importe, se toma el alquiler actual del contrato.</div></div>
+  <div style="flex:1;min-width:260px"><b class="ttl">Totales ${y}</b><table style="min-width:0;margin-top:6px"><tr><th></th><th>Pesos</th><th>Dólares</th></tr><tr><td>Impuestos pagados (a cargo de AMIA)</td><td>$ ${fnum(T.imp)}</td><td>—</td></tr><tr><td>Alquileres cobrados</td><td>$ ${fnum(T.alq)}</td><td>USD ${fnum(T.usd)}</td></tr><tr><td>Arreglos pagados</td><td>$ ${fnum(T.rep)}</td><td>—</td></tr><tr><th>Ingresos − egresos</th><th colspan="2">$ ${fnum(T.alq-T.imp-T.rep)}</th></tr></table><div class="mut" style="margin-top:6px">Los alquileres en dólares se muestran aparte, sin convertir.</div></div></div>
   <div class="card" style="margin-top:10px"><b class="ttl">Informe del gasto mensual ${y}</b><div class="mut noprint" style="margin:4px 0 8px">Elegí uno o varios: impuestos, reparaciones o el total de ambos. Mirá la vista previa y descargá el Excel (cada opción en su propia hoja).</div>${OPSG.map(([k,t])=>`<label class="chk noprint"><input type="checkbox" data-chkg="${k}" ${SELG.has(k)?'checked':''}> ${t}</label>`).join('')}<div class="bar2 noprint" style="margin-top:6px"><button class="btn" data-act="prevg">Vista previa</button>${PREVG&&PREVG.length?'<button class="btn s" data-act="dlgasto">Descargar Excel</button><button class="btn s" data-act="printcard" data-title="Gasto mensual">Imprimir</button>':''}</div>${PREVG?PREVG.map(p=>`<h2>${p.label}</h2>${tbl(p.res)}${p.det?`<div class="mut noprint">El Excel incluye además la hoja “${p.detLabel}” con ${p.det.length} renglones.</div>`:''}`).join(''):''}</div>
   <h2>Alertas legales</h2><div class="card"><div class="noprint">${GAL.map(t=>`<label class="chk"><input type="checkbox" data-gl="${esc(t)}" ${gl.has(t)?'checked':''}> ${t}</label>`).join('')}</div>
   <div class="wrap">${alr.length?`<table style="min-width:640px"><tr><th>Dirección</th><th>Etiquetas</th><th>Última nota legal</th></tr>${alr.map(p=>{const n=ult(p);return`<tr class="row" data-act="inm" data-id="${p.id}" data-t="legal"><td><b>${esc(p.direccion)}</b></td><td>${tg(p).filter(t=>GAL.includes(t)).map(t=>bd(t,'u')).join(' ')}</td><td>${n?'<span class="mut">'+fd(n.fecha)+'</span> '+esc(String(n.texto||'').slice(0,220)):'<span class="mut">Sin notas</span>'}</td></tr>`}).join('')}</table>`:'<div class="empty">No hay inmuebles con esas alertas.</div>'}</div></div>`;
@@ -1030,7 +1082,7 @@ function cmdDraw(){
   $('#cmdr').innerHTML=it.length?it.map((x,i)=>(x.g!==g?`<div class="grp">${(g=x.g)}</div>`:'')+`<button class="it${i?'':' sel'}" ${x.at}><span>${x.t}</span><small>${x.s||''}</small></button>`).join(''):'<div class="empty">Sin resultados.</div>';
 }
 $('#srch').onclick=cmdOpen;
-$('#skin').onclick=()=>{const r=document.documentElement,on=r.dataset.skin!=='vidrio';if(on)r.dataset.skin='vidrio';else delete r.dataset.skin;try{localStorage.setItem('skin',on?'vidrio':'clasico')}catch(e){}toast(on?'Diseño: vidrio oscuro':'Diseño: clásico',1500)};
+$('#skin').onclick=()=>{const r=document.documentElement,on=r.dataset.skin!=='vidrio';if(on)r.dataset.skin='vidrio';else delete r.dataset.skin;try{localStorage.setItem('skin',on?'vidrio':'clasico')}catch(e){}render();toast(on?'Diseño: vidrio oscuro':'Diseño: clásico',1500)};
 $('#cmdq').addEventListener('input',cmdDraw);
 $('#cmdq').addEventListener('keydown',e=>{const b=[...document.querySelectorAll('#cmdr .it')];if(!b.length)return;
   if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();CMD.i=(CMD.i+(e.key==='ArrowDown'?1:-1)+b.length)%b.length;b.forEach((x,i)=>x.classList.toggle('sel',i===CMD.i));b[CMD.i].scrollIntoView({block:'nearest'})}
