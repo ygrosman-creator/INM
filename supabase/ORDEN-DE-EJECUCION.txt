@@ -14,4 +14,7 @@ LOTE 4 · AJUSTE DE ALQUILERES POR IPC / ICL (en este orden):
      - en cada contrato, que "El monto actual rige desde" sea la fecha real del último aumento;
      - comparar uno o dos montos sugeridos con la cuenta manual antes de tocar "Aplicar".
 
+LOTE 5 · AVISOS AUTOMÁTICOS POR MAIL: seguir INSTRUCTIVO-AVISOS-MAIL.txt (pasos A a G).
+  El SQL migracion-11-avisos-mail.sql va al FINAL (paso F), después de crear la función y probarla.
+
 IMPORTANTE: subir el index.html recién DESPUÉS del paso 2 (si no, la app avisa un error porque no encuentra la tabla nueva).

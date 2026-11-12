@@ -152,8 +152,44 @@ header h1:before{display:none}
 @media(max-width:700px){#dlg{width:100vw;border-radius:0;padding:16px}.srch kbd{display:none}}
 @media print{#cmdk,.srch,.kpis{display:none!important}#root{display:block}}
 @media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}#up,.dup,.dup2,.dupbar,#undo{display:none!important}}
+/* ===== Diseño opcional "Vidrio oscuro" (botón ◐ arriba a la derecha). El diseño clásico sigue siendo el normal. ===== */
+:root[data-skin="vidrio"]{color-scheme:dark;--bg:#0B0E14;--card:rgba(255,255,255,.055);--tx:#E8EAF0;--mut:#9AA3B5;--bd:rgba(255,255,255,.11);--bd2:rgba(255,255,255,.06);--head:rgba(255,255,255,.045);--stripe:rgba(255,255,255,.03);--ac:#22D3EE;--onac:#06121A;--acbg:rgba(34,211,238,.13);--nb:rgba(255,255,255,.09);--nt:#D6DAE3;--warn:#FBBF24;--warnbg:rgba(251,191,36,.14);--ok:#34D399;--okbg:rgba(52,211,153,.14);--bad:#FB7185;--badbg:rgba(251,113,133,.15);--rbg:rgba(251,113,133,.15);--rtx:#FB7185;--nbg:rgba(251,146,60,.15);--ntx:#FDBA74;--ybg:rgba(250,204,21,.13);--ytx:#FDE047;--vbg:rgba(167,139,250,.16);--vtx:#C4B5FD;--fbg:rgba(232,121,249,.15);--ftx:#F0ABFC;--sh:0 8px 30px rgba(0,0,0,.35);--rad:18px;--glass:blur(16px) saturate(140%)}
+:root[data-skin="vidrio"] body{background:#0B0E14 fixed;background-image:radial-gradient(700px 480px at 6% -6%,rgba(139,92,246,.30),transparent 60%),radial-gradient(640px 460px at 98% 12%,rgba(34,211,238,.20),transparent 60%),radial-gradient(760px 520px at 70% 108%,rgba(251,113,133,.16),transparent 60%);background-attachment:fixed}
+:root[data-skin="vidrio"] .card,:root[data-skin="vidrio"] header,:root[data-skin="vidrio"] .col{backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);border:1px solid var(--bd);box-shadow:var(--sh)}
+:root[data-skin="vidrio"] header{background:rgba(16,19,28,.72)}
+:root[data-skin="vidrio"] header h1{background:linear-gradient(90deg,#22D3EE,#A78BFA);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+:root[data-skin="vidrio"] .btn{background:linear-gradient(135deg,#22D3EE,#8B5CF6);color:#fff;border:0;box-shadow:0 4px 18px rgba(139,92,246,.35)}
+:root[data-skin="vidrio"] .btn.s{background:rgba(255,255,255,.07);color:var(--tx);border:1px solid var(--bd);box-shadow:none}
+:root[data-skin="vidrio"] .btn.d{background:rgba(251,113,133,.08);color:var(--bad);border:1px solid rgba(251,113,133,.35);box-shadow:none}
+:root[data-skin="vidrio"] .btn.x{background:none;color:var(--mut);box-shadow:none}
+:root[data-skin="vidrio"] input,:root[data-skin="vidrio"] select,:root[data-skin="vidrio"] textarea{background:rgba(255,255,255,.05);color:var(--tx)}
+:root[data-skin="vidrio"] option{background:#151925;color:#E8EAF0}
+:root[data-skin="vidrio"] input:disabled,:root[data-skin="vidrio"] select:disabled{background:rgba(255,255,255,.025)}
+:root[data-skin="vidrio"] #nav,:root[data-skin="vidrio"] #cmdk{background:#141826;border-color:var(--bd)}
+:root[data-skin="vidrio"] #nav button.on{background:linear-gradient(135deg,#22D3EE,#8B5CF6);color:#fff}
+:root[data-skin="vidrio"] .kpis .card{position:relative;overflow:hidden}
+:root[data-skin="vidrio"] .kpis .card b{font-size:30px;background:linear-gradient(90deg,#fff,#B9C2D6);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+:root[data-skin="vidrio"] .kpis .card:before{content:'';position:absolute;left:0;top:0;right:0;height:3px;background:linear-gradient(90deg,#22D3EE,#8B5CF6)}
+:root[data-skin="vidrio"] .kpis .card:nth-child(2):before{background:linear-gradient(90deg,#34D399,#22D3EE)}
+:root[data-skin="vidrio"] .kpis .card:nth-child(3):before{background:linear-gradient(90deg,#FBBF24,#FB7185)}
+:root[data-skin="vidrio"] .kpis .card:nth-child(4):before{background:linear-gradient(90deg,#FB7185,#A78BFA)}
+:root[data-skin="vidrio"] .kpis .card:after{content:'';position:absolute;right:-30px;bottom:-40px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.35),transparent 70%)}
+:root[data-skin="vidrio"] .grid>.card:hover,:root[data-skin="vidrio"] .kpis .card:hover{border-color:rgba(34,211,238,.45);box-shadow:0 10px 34px rgba(34,211,238,.12)}
+:root[data-skin="vidrio"] .col,:root[data-skin="vidrio"] .col.c0,:root[data-skin="vidrio"] .col.c1,:root[data-skin="vidrio"] .col.c2,:root[data-skin="vidrio"] .col.c3{background:rgba(255,255,255,.04);border-top:3px solid #FB7185}
+:root[data-skin="vidrio"] .col.c1{border-top-color:#FBBF24}:root[data-skin="vidrio"] .col.c2{border-top-color:#22D3EE}:root[data-skin="vidrio"] .col.c3{border-top-color:#34D399}
+:root[data-skin="vidrio"] .col.c0 h3{color:#FB7185}:root[data-skin="vidrio"] .col.c1 h3{color:#FBBF24}:root[data-skin="vidrio"] .col.c2 h3{color:#22D3EE}:root[data-skin="vidrio"] .col.c3 h3{color:#34D399}
+:root[data-skin="vidrio"] .kc{background:rgba(255,255,255,.06);border-color:var(--bd)}
+:root[data-skin="vidrio"] .cv{background:linear-gradient(90deg,rgba(251,113,133,.16),rgba(255,255,255,.04) 60%)}
+:root[data-skin="vidrio"] .ct{background:linear-gradient(90deg,rgba(251,146,60,.16),rgba(255,255,255,.04) 60%)}
+:root[data-skin="vidrio"] #dlg nav button.on{background:linear-gradient(135deg,#22D3EE,#8B5CF6);color:#fff;border-color:transparent}
+:root[data-skin="vidrio"] #dlg{--ac:#22D3EE;--onac:#06121A;--acbg:rgba(34,211,238,.13);--bg:#0F121A;--card:#151925;background:#151925;border-left:1px solid rgba(255,255,255,.1)}
+:root[data-skin="vidrio"] #up,:root[data-skin="vidrio"] .dup{background:linear-gradient(135deg,#22D3EE,#8B5CF6);color:#fff}
+.skin{width:34px;height:34px;border-radius:50%;border:1px solid var(--bd);background:none;color:var(--tx);font-size:17px;cursor:pointer;padding:0;flex:0 0 auto}
+.skin:hover{background:var(--acbg)}
+@media print{:root[data-skin="vidrio"]{color-scheme:light;--bg:#fff;--card:#fff;--tx:#27272A;--mut:#71717A;--bd:#E4E4E7;--bd2:#F1F1F3;--head:#FAFAF9;--stripe:#F6F6F3}:root[data-skin="vidrio"] body{background:#fff}}
 </style></head><body>
-<div id="root"><header><div class="brand"><div class="mwrap noprint"><button class="hamb" data-act="navt" title="Menú" aria-label="Menú"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><nav id="nav"></nav></div><h1>INMUEBLES AMIA</h1></div><button class="srch noprint" id="srch" title="Buscar inmuebles, personas, reparaciones… (Ctrl + K)"><span>🔍 Buscar…</span><kbd>Ctrl K</kbd></button><input id="me" placeholder="Tu nombre" title="Se usa en pagos y novedades"><button class="btn s" id="out" style="display:none">Salir</button></header><div id="app"></div></div>
+<script>try{if(localStorage.getItem('skin')==='vidrio')document.documentElement.dataset.skin='vidrio'}catch(e){}</script>
+<div id="root"><header><div class="brand"><div class="mwrap noprint"><button class="hamb" data-act="navt" title="Menú" aria-label="Menú"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><nav id="nav"></nav></div><h1>INMUEBLES AMIA</h1></div><button class="srch noprint" id="srch" title="Buscar inmuebles, personas, reparaciones… (Ctrl + K)"><span>🔍 Buscar…</span><kbd>Ctrl K</kbd></button><button class="skin noprint" id="skin" title="Cambiar diseño: clásico / vidrio oscuro" aria-label="Cambiar diseño">◐</button><input id="me" placeholder="Tu nombre" title="Se usa en pagos y novedades"><button class="btn s" id="out" style="display:none">Salir</button></header><div id="app"></div></div>
 <dialog id="dlg"></dialog><dialog id="cmdk"><input id="cmdq" placeholder="Buscar inmueble, persona, inquilino, reparación o sección…" autocomplete="off"><div class="res" id="cmdr"></div></dialog><datalist id="dlp"></datalist><datalist id="dlper"></datalist><button id="up" data-act="up" title="Volver arriba">↑</button><div id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="config.js"></script>
 <script>
@@ -796,6 +832,8 @@ document.addEventListener('click',async ev=>{
     BUSY=false}
   else if(a==='ajap'){if(BUSY)return;BUSY=true;t.disabled=true;try{await ajAplicar(t.dataset.id)}finally{BUSY=false}}
   else if(a==='ajidx'){IDX.icl=null;IDX.err=null;loadIdx(true)}
+  else if(a==='mpok'){const id=t.dataset.id,el=document.getElementById('mp-'+id),f=el&&el.value;if(!f)return toast('Elegí la fecha desde la que rige el monto nuevo.');if(await upd('con',id,{base_fecha:f})){MPEND.delete(id);toast('Listo: el monto rige desde el '+fd(f),2500);if(DRAW[(dlg||{}).type])DRAW[dlg.type]()}}
+  else if(a==='mpno'){MPEND.delete(t.dataset.id);if(DRAW[(dlg||{}).type])DRAW[dlg.type]()}
   else if(a==='delc'){const key='delc'+t.dataset.id;if(ARM!==key){ARM=key;t.textContent='¿Seguro?';return}ARM=null;await w(()=>DB.doc(COL[t.dataset.c]+'/'+t.dataset.id).delete())}
   else if(a==='deldoc'&&r)upd('rep',r.id,{docs:(r.docs||[]).filter((_,i)=>i!==+t.dataset.i)});
   else if(a==='nov'&&r){const x=$('#nov').value.trim();if(x)upd('rep',r.id,{novedades:[...(r.novedades||[]),{f:today(),t:x,por:me()}]})}
@@ -850,8 +888,10 @@ document.addEventListener('change',async ev=>{
   if(c==='prop'&&f==='situacion_legal')return upd('prop',id,{situacion_legal:v,legal_actualizado:new Date().toISOString()});
   if(c==='pre'&&f==='estado'&&v==='Aprobado')return aprobar(id);
   if(c==='pag'&&f==='monto'&&r){const o=by(S.pag,id),a=aprobado(r);if(a>0&&paid(r)-(+o.monto||0)+(v||0)>a)toast('El total pagado supera el importe aprobado: requiere aprobación adicional.')}
+  const montoAnt=c==='con'&&f==='monto'?(by(S.con,id)||{}).monto:undefined;
   const okU=await upd(c,id,{[f]:v});let msg='Guardado ✓';
-  if(okU&&c==='cpa'&&(f==='importe'||f==='pagado')){const y=by(S.cpa,id);if(y&&String(y.periodo).slice(0,7)===today().slice(0,7)&&+y.importe>0){const con=by(S.con,y.contrato);if(con&&+con.monto!==+y.importe){const ok2=await upd('con',con.id,{monto:+y.importe});if(ok2)msg='Alquiler actual actualizado a '+fnum(y.importe)}}}
+  if(okU&&c==='con'&&f==='monto'&&v!=null&&+v!==+montoAnt){MPEND.set(id,montoAnt);if(DRAW[(dlg||{}).type])DRAW[dlg.type]()}
+  if(okU&&c==='cpa'&&(f==='importe'||f==='pagado')){const y=by(S.cpa,id);if(y&&String(y.periodo).slice(0,7)===today().slice(0,7)&&+y.importe>0){const con=by(S.con,y.contrato);if(con&&+con.monto!==+y.importe){const ant=con.monto,ok2=await upd('con',con.id,{monto:+y.importe});if(ok2){msg='Alquiler actual actualizado a '+fnum(y.importe);MPEND.set(con.id,ant);if(DRAW[(dlg||{}).type])DRAW[dlg.type]()}}}}
   if(okU&&(t.type==='checkbox'||msg!=='Guardado ✓'))toast(msg,2200);
 });
 document.addEventListener('input',ev=>{const e=ev.target,k=e.dataset.flt;if(e.dataset&&e.dataset.num!==undefined){liveNum(e);return}if(k&&e.tagName==='INPUT'&&e.type==='text'&&e.dataset.ps===undefined&&e.dataset.pp===undefined){const g0=searchGo(k,e.value.trim(),false);if(g0){clearTimeout(window._f);F[k]='';e.value='';try{e.blur()}catch(x){}g0();render();return}F[k]=e.value;PREV3=null;PREVI=null;clearTimeout(window._f);window._f=setTimeout(()=>{render();const n=document.querySelector('[data-flt="'+k+'"]');if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length)}},250)}});
@@ -885,6 +925,8 @@ const sameK=(a,b)=>String(a)===String(b)||(/^\d{4}-\d\d-\d\d/.test(String(b))&&S
 // ===== Ajuste de alquileres por IPC / ICL (el sistema sugiere, una persona confirma) =====
 // Índices del BCRA: variable 40 = ICL (diario), variable 27 = inflación mensual del INDEC (%).
 const IDX={icl:null,iclD:[],ipc:null,err:null,loading:false};
+// Contratos cuyo alquiler se cambió a mano y falta confirmar desde qué fecha rige (id -> monto anterior)
+const MPEND=new Map();
 // IPC: se usan los meses del período (para un ajuste de abril: enero, febrero y marzo). Decidido el 11/11/2026.
 const IPCLAG=0;
 async function bcra(id,desde){
@@ -947,7 +989,10 @@ function ajFicha(c){
   const r=ajCalc(c),mon=c.moneda==='USD'?'USD ':'$ ',hs=S.caj.filter(x=>x.contrato===c.id).sort((a,b)=>String(b.fecha||'').localeCompare(String(a.fecha||''))||String(b.created_at||'').localeCompare(String(a.created_at||'')));
   const pr=r.estado==='manual'?'Manual: el monto se cambia a mano':r.estado==='datos'?'Completá índice, meses y fecha':r.estado==='fin'?'El contrato termina antes del próximo ajuste':fd(r.prox)+(r.estado==='listo'?` · sugerido ${mon}${fnum(r.nuevo)} (+${fnum((r.coef-1)*100)}%)`:r.estado==='espera'&&r.prox<=today()?' · falta el '+r.falta:'');
   const sel=(f,list,v,x='')=>`<select data-c="con" data-id="${c.id}" data-f="${f}" ${x}>${v?'':'<option value="" selected disabled>Elegir…</option>'}${opts(list,v)}</select>`;
-  return`<h2>Ajuste automático del alquiler</h2><div class="r2">${L('Índice de ajuste',sel('ajuste_indice',Object.entries(AJI),c.ajuste_indice||''))}${L('Cada cuántos meses',sel('ajuste_meses',[1,2,3,4,6,12].map(n=>[String(n),n===1?'Todos los meses':'Cada '+n+' meses']),c.ajuste_meses?String(c.ajuste_meses):'','data-int="1"'))}${L('El monto actual rige desde',I('con',c.id,'base_fecha',c.base_fecha,'date'))}</div>
+  const pend=MPEND.has(c.id)?`<div class="sub" style="border:2px solid var(--warn);margin-top:10px"><b>Cambiaste el alquiler a mano (de ${mon}${fnum(MPEND.get(c.id))} a ${mon}${fnum(c.monto)}). ¿Desde qué fecha rige el monto nuevo?</b>
+    <div class="bar2" style="margin-top:8px;align-items:center"><input type="date" id="mp-${c.id}" value="${today().slice(0,7)}-01" style="max-width:190px"><button class="btn" data-act="mpok" data-id="${c.id}">Guardar fecha</button><button class="btn s" data-act="mpno" data-id="${c.id}">Dejar la fecha como está (${c.base_fecha?fd(c.base_fecha):'vacía'})</button></div>
+    <div class="mut">El próximo ajuste automático se calcula desde esa fecha.</div></div>`:'';
+  return`<h2>Ajuste automático del alquiler</h2>${pend}<div class="r2">${L('Índice de ajuste',sel('ajuste_indice',Object.entries(AJI),c.ajuste_indice||''))}${L('Cada cuántos meses',sel('ajuste_meses',[1,2,3,4,6,12].map(n=>[String(n),n===1?'Todos los meses':'Cada '+n+' meses']),c.ajuste_meses?String(c.ajuste_meses):'','data-int="1"'))}${L('El monto actual rige desde',I('con',c.id,'base_fecha',c.base_fecha,'date'))}</div>
   <div class="mut" style="margin-top:6px">Próximo ajuste: <b>${esc(pr)}</b>${c.forma_incremento?' · según la planilla: '+esc(c.forma_incremento):''}</div>
   ${hs.length?`<div class="mut" style="margin-top:6px">Ajustes aplicados:</div>${hs.map(x=>`<div style="font-size:13px">${fd(x.fecha)} · ${esc(AJI[x.indice]||x.indice||'')} · ${mon}${fnum(x.monto_anterior)} → <b>${mon}${fnum(x.monto_nuevo)}</b>${x.coef?' (+'+fnum((x.coef-1)*100)+'%)':''}${x.por?' · '+esc(x.por):''}</div>`).join('')}`:''}`;
 }
@@ -985,6 +1030,7 @@ function cmdDraw(){
   $('#cmdr').innerHTML=it.length?it.map((x,i)=>(x.g!==g?`<div class="grp">${(g=x.g)}</div>`:'')+`<button class="it${i?'':' sel'}" ${x.at}><span>${x.t}</span><small>${x.s||''}</small></button>`).join(''):'<div class="empty">Sin resultados.</div>';
 }
 $('#srch').onclick=cmdOpen;
+$('#skin').onclick=()=>{const r=document.documentElement,on=r.dataset.skin!=='vidrio';if(on)r.dataset.skin='vidrio';else delete r.dataset.skin;try{localStorage.setItem('skin',on?'vidrio':'clasico')}catch(e){}toast(on?'Diseño: vidrio oscuro':'Diseño: clásico',1500)};
 $('#cmdq').addEventListener('input',cmdDraw);
 $('#cmdq').addEventListener('keydown',e=>{const b=[...document.querySelectorAll('#cmdr .it')];if(!b.length)return;
   if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();CMD.i=(CMD.i+(e.key==='ArrowDown'?1:-1)+b.length)%b.length;b.forEach((x,i)=>x.classList.toggle('sel',i===CMD.i));b[CMD.i].scrollIntoView({block:'nearest'})}

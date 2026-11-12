@@ -1,0 +1,59 @@
+AVISOS AUTOMÁTICOS POR MAIL · INMUEBLES AMIA
+=============================================
+Sale de:   patinando1005@gmail.com
+Llega a:   jsegal@amia.org.ar y ygrosman@amia.org.ar
+Mail 1:    todos los lunes 7:30 · deuda de impuestos y alquileres (primero lo que vence esa semana)
+Mail 2:    los días 20 a las 8:00 · alquileres que aumentan el mes siguiente
+
+Reglas que usa:
+- Alquileres: vencen el día 10 de cada mes (se cambia con el secreto DIA_VENCIMIENTO_ALQUILER).
+  Se controla desde enero 2026. Un mes sin cargar en "Pagos mes a mes" cuenta como deuda.
+- Impuestos: todos menos EXENTO y NO PAGAR. Se muestra la forma de pago de cada uno.
+- Aumentos: IPC con los meses del período. Como el último IPC todavía no está publicado el día 20,
+  el monto del mail es ESTIMADO; el definitivo se aplica desde la app.
+
+Hacer en este orden. Tiempo total: unos 20 minutos.
+
+PASO A · Clave de aplicación de Gmail (en la cuenta patinando1005@gmail.com)
+  1. Entrar a https://myaccount.google.com con esa cuenta → Seguridad.
+  2. Activar "Verificación en 2 pasos" (Google lo exige para el punto 3).
+  3. Entrar a https://myaccount.google.com/apppasswords → nombre: "Inmuebles AMIA" → Crear.
+  4. Google muestra una clave de 16 letras. Copiarla (se usa en el paso C). No compartirla por chat ni mail.
+  Recomendado: poner como correo de recuperación de la cuenta una casilla de AMIA.
+
+PASO B · Crear la función "avisos" en Supabase
+  1. Supabase → el proyecto → Edge Functions → "Deploy a new function" → "Via Editor".
+  2. Nombre de la función: avisos   (exactamente así, en minúsculas)
+  3. Borrar el código de ejemplo y pegar TODO el contenido de supabase/functions/avisos/index.ts
+  4. Deploy.
+  5. Entrar a la función → Details (o Settings) → DESACTIVAR "Enforce JWT verification" (Verify JWT) → Save.
+     (La función se protege con su propia clave, AVISOS_TOKEN.)
+
+PASO C · Secretos (Edge Functions → Secrets → Add new secret). Cargar estos 5:
+  GMAIL_USER               patinando1005@gmail.com
+  GMAIL_APP_PASSWORD       la clave de 16 letras del paso A
+  AVISOS_DESTINATARIOS     jsegal@amia.org.ar,ygrosman@amia.org.ar
+  AVISOS_TOKEN             una clave inventada, larga, sin espacios (ej.: 4 palabras y números juntos). Anotarla: se usa en los pasos D y E.
+  DIA_VENCIMIENTO_ALQUILER 10
+
+PASO D · Ver los mails SIN mandarlos (en el navegador, reemplazando LA-CLAVE por el AVISOS_TOKEN)
+  Deuda:     https://qtcdrnpwvetaekmbhrcf.supabase.co/functions/v1/avisos?tipo=deuda&ver=1&token=LA-CLAVE
+  Aumentos:  https://qtcdrnpwvetaekmbhrcf.supabase.co/functions/v1/avisos?tipo=aumentos&ver=1&token=LA-CLAVE
+  Para simular otra fecha agregar &hoy=2026-11-20 (por ejemplo, para ver el mail de aumentos como saldría el día 20).
+  Revisar que los datos sean correctos. Si algo no cierra, avisar antes de seguir.
+
+PASO E · Mandar un mail de prueba (llega con [PRUEBA] en el asunto a los dos destinatarios)
+  https://qtcdrnpwvetaekmbhrcf.supabase.co/functions/v1/avisos?tipo=deuda&prueba=1&token=LA-CLAVE
+  La página tiene que mostrar  {"ok":true, ...}. Si muestra un error, copiarlo y enviármelo.
+  Revisar que haya llegado (mirar también en Correo no deseado; si está ahí, marcar "No es spam").
+
+PASO F · Programar los envíos
+  1. Abrir supabase/migracion-11-avisos-mail.sql y reemplazar las DOS apariciones de PEGAR-ACA-LA-CLAVE por el AVISOS_TOKEN.
+  2. Supabase → SQL Editor → pegar → Run. Al final tienen que aparecer los dos avisos programados.
+  3. No guardar este archivo con la clave en GitHub (volver a poner PEGAR-ACA-LA-CLAVE después de ejecutarlo).
+
+PASO G · Controlar el primer lunes
+  Si a las 7:30 no llegó el mail, en el SQL Editor ejecutar las consultas que están al final de migracion-11-avisos-mail.sql
+  (muestran si se ejecutó y qué respondió) y enviarme el resultado.
+
+Para cambiar destinatarios o el día de vencimiento de los alquileres: editar el secreto correspondiente (paso C). No hace falta tocar nada más.
