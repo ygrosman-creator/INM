@@ -934,15 +934,15 @@ document.addEventListener('change',async ev=>{
   if(t.dataset.am){F.am=t.checked;PREV3=null;render();return}
   if(t.dataset.etq&&dlg&&dlg.type==='inm'){const p=by(S.prop,dlg.id),cur=tg(p);upd('prop',p.id,{etiquetas:t.checked?[...new Set([...cur,t.dataset.etq])]:cur.filter(x=>x!==t.dataset.etq)});return}
   if(t.dataset.sv){const[cid,k]=t.dataset.sv.split(':'),c=by(S.con,cid);upd('con',cid,{servicios_inquilino:{...(c.servicios_inquilino||{}),[k]:t.checked}});return}
-  if(t.id==='dfile'&&t.files.length&&dlg&&dlg.type==='inm'){const tipo=$('#dtipo').value;toast('Subiendo…');for(const f of t.files){const x=await w(()=>ASSETS.upload(f));if(x)await w(()=>DB.collection('documentos').add({inmueble:dlg.id,tipo,nombre:f.name,fecha:today(),estado:'Disponible',archivo:{id:x.id,url:x.url,name:f.name}}))}toast('Archivo adjuntado');return}
+  if(t.id==='dfile'&&t.files.length&&dlg&&dlg.type==='inm'){const tipo=$('#dtipo').value;toast('Subiendo…');for(const f of t.files){const x=await w(()=>ASSETS.upload(f));if(x)await w(()=>DB.collection('documentos').add({inmueble:dlg.id,tipo,nombre:f.name,fecha:today(),estado:'Disponible',archivo:{id:x.id,url:x.url,name:f.name}}))}redrawDlg(t);toast('Archivo adjuntado');return}
   if(t.dataset.flt){F[t.dataset.flt]=t.value;PREV=null;PREV2=null;PREV3=null;PREVG=null;PREVI=null;t.blur();render();return}
-  if(t.dataset.up&&t.files.length){toast('Subiendo…');const x=await w(()=>ASSETS.upload(t.files[0]));if(x){upd(t.dataset.up,t.dataset.id,{archivo:{id:x.id,url:x.url,name:t.files[0].name},...(t.dataset.up==='doc'?{estado:'Disponible'}:{})});toast('Archivo adjuntado')}return}
+  if(t.dataset.up&&t.files.length){toast('Subiendo…');const x=await w(()=>ASSETS.upload(t.files[0]));if(x){await upd(t.dataset.up,t.dataset.id,{archivo:{id:x.id,url:x.url,name:t.files[0].name},...(t.dataset.up==='doc'?{estado:'Disponible'}:{})});redrawDlg(t);toast('Archivo adjuntado')}return}
   if(!dlg)return;const r=dlg.type==='rep'?by(S.rep,dlg.id):null;if(dlg.type==='rep'&&!r)return;
   if(t.dataset.rnota!==undefined&&dlg&&dlg.type==='rep'){const cur=by(S.rep,dlg.id),n=+t.dataset.rnota;if(cur&&(cur.docs||[])[n]){const docs=cur.docs.map((x,i)=>i===n?{...x,nota:t.value.trim()}:x);await upd('rep',cur.id,{docs});toast('Nota guardada',1200)}return}
   if(t.id==='file'&&r&&t.files.length){
     const cat=$('#cat').value,add=[];toast('Subiendo…');
     for(const f of t.files){const x=await w(()=>ASSETS.upload(f));if(x)add.push({id:x.id,url:x.url,name:f.name,cat,fecha:today()})}
-    const cur=by(S.rep,dlg.id);if(add.length&&cur){await upd('rep',cur.id,{docs:[...(cur.docs||[]),...add]});toast('Archivo adjuntado')}return}
+    const cur=by(S.rep,dlg.id);if(add.length&&cur){await upd('rep',cur.id,{docs:[...(cur.docs||[]),...add]});redrawDlg(t);toast('Archivo adjuntado')}return}
   const c=t.dataset.c,f=t.dataset.f,id=t.dataset.id;if(!c)return;
   const v=t.type==='checkbox'?t.checked:t.dataset.int!==undefined?(t.value.trim()===''?null:(parseInt(t.value.replace(/\D/g,''))||null)):t.dataset.num?(t.value.trim()===''?null:num(t.value)):t.value;
   if(id==='new'){const ok=await w(async()=>{await DB.collection(COL[c]).upsert({impuesto:t.dataset.imp,periodo:t.dataset.per,[f]:v},'impuesto,periodo');return true});if(ok)toast('Guardado ✓',1600);return}
@@ -964,6 +964,8 @@ document.addEventListener('dragleave',e=>{const d=$('#dlg');if(d&&(!e.relatedTar
 // Adjuntar arrastrando archivos desde la computadora a la ficha abierta:
 // inmueble → solapa Documentos (con el tipo elegido), reparación → Archivos (con la categoría elegida).
 // Si se suelta sobre un documento pendiente sin archivo, el archivo va a ese documento.
+// Después de subir, la ficha se redibuja aunque el foco haya quedado en el selector de archivos o el desplegable de tipo
+function redrawDlg(t){try{if(t&&t.blur)t.blur();const a=document.activeElement;if(a&&a.blur&&$('#dlg').contains(a))a.blur()}catch(e){}if(dlg&&DRAW[dlg.type])DRAW[dlg.type]()}
 function hasFiles(e){return!!(e.dataTransfer&&[...(e.dataTransfer.types||[])].includes('Files'))}
 function dropInput(e){const d=e.target.closest&&e.target.closest('#dlg');if(!d||!ASSETS||!dlg)return null;const one=e.target.closest('.doc'),u=one&&one.querySelector('input[type=file][data-up]');return u||d.querySelector('#dfile,#file')||(dlg.type==='inm'?'tab':null)}
 function dropFiles(e){const d=$('#dlg');if(d)d.classList.remove('dropping');let inp=dropInput(e);
