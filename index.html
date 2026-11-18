@@ -530,9 +530,11 @@ const OPSI=[['forma','Por forma de pago (mes elegido)'],['pend','No pagados por 
 const impDir=i=>(by(S.prop,i.inmueble)||{}).direccion||'';
 const impPM=()=>new Map(S.ipe.map(z=>[z.impuesto+'|'+String(z.periodo).slice(0,7),z]));
 const impBase=i=>(F.if?i.forma_pago===F.if:!['NO PAGAR','EXENTO'].includes(i.forma_pago))&&(!F.it||i.tipo===F.it)&&qm([i.concepto,i.nro_cliente,impDir(i),(by(S.prop,i.inmueble)||{}).localidad].join(' '),F.iq);
-function impRank(x){const t=today();if(x&&x.pagado)return[3,''];const v=x&&x.vencimiento;if(!v)return[2,''];return v>=t?[0,v]:[1,v]}
+const impInq=i=>/^INQUILINOS/.test(String(i.forma_pago||'').trim().toUpperCase())?1:0;
+function impRank(x){const t=today();const v=x&&x.vencimiento;if(!v)return[2,''];return v>=t?[0,v]:[1,v]}
 function impRows(m,PM){
   return S.imp.filter(i=>{const x=PM.get(i.id+'|'+m),pg=!!(x&&x.pagado);return impBase(i)&&(!F.ip||(F.ip==='si'?pg:!pg))}).sort((a,b)=>{
+    const qa=impInq(a),qb=impInq(b);if(qa!==qb)return qa-qb;if(qa)return impDir(a).localeCompare(impDir(b))||String(a.concepto).localeCompare(String(b.concepto));
     const ra=impRank(PM.get(a.id+'|'+m)),rb=impRank(PM.get(b.id+'|'+m));
     if(ra[0]!==rb[0])return ra[0]-rb[0];
     if(ra[0]===0)return ra[1].localeCompare(rb[1])||impDir(a).localeCompare(impDir(b));
