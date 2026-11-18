@@ -134,12 +134,12 @@ header{position:sticky;top:8px;z-index:40}
 header h1:before{display:none}
 .brand{display:flex;align-items:center;gap:8px}
 .mwrap{position:relative}
-.mwrap:hover:after{content:'';position:absolute;left:0;top:100%;width:240px;height:10px}
+@media (hover:hover){.mwrap:hover:after{content:'';position:absolute;left:0;top:100%;width:240px;height:10px}.mwrap:hover .hamb{background:var(--acbg)}.mwrap:hover #nav{visibility:visible;opacity:1;pointer-events:auto;transition:opacity .12s ease .18s,visibility 0s linear .18s}}
 .hamb{width:36px;height:36px;border:0;border-radius:8px;background:none;color:var(--tx);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
-.hamb .ic{width:22px;height:22px}.hamb:hover,.mwrap:hover .hamb,#root.navx .hamb{background:var(--acbg)}
+.hamb .ic{width:22px;height:22px}#root.navx .hamb{background:var(--acbg)}
 #nav{display:flex;visibility:hidden;opacity:0;pointer-events:none;transition:opacity .12s ease .2s,visibility 0s linear .32s;position:absolute;top:calc(100% + 8px);left:-4px;z-index:50;flex-direction:column;flex-wrap:nowrap;min-width:240px;margin:0;padding:8px;gap:2px;background:var(--card);border:1px solid var(--bd);border-radius:var(--rad);box-shadow:0 14px 36px rgba(0,0,0,.16)}
-/* se abre si el mouse se queda un momento sobre las rayitas (no al pasar de largo) y se cierra solo al elegir */
-.mwrap:hover #nav,#root.navx #nav{visibility:visible;opacity:1;pointer-events:auto;transition:opacity .12s ease .18s,visibility 0s linear .18s}
+/* con mouse se abre si el mouse se queda un momento sobre las rayitas (ver @media hover arriba); en el celular, solo al tocarlas. Se cierra al elegir */
+#root.navx #nav{visibility:visible;opacity:1;pointer-events:auto;transition:opacity .12s ease .18s,visibility 0s linear .18s}
 #root.navx #nav{transition:none}
 .mwrap.shut #nav{visibility:hidden!important;opacity:0!important;pointer-events:none!important;transition:none!important}
 /* La ficha abierta (panel de la derecha) va oscura con letra clara; el resto de la app queda clara */

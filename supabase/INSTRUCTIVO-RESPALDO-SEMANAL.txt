@@ -1,0 +1,61 @@
+COPIA DE SEGURIDAD SEMANAL POR MAIL · INMUEBLES AMIA
+=====================================================
+
+Qué hace: todos los viernes a las 16:00 (hora de Argentina) llega un mail desde patinando1005@gmail.com
+con un archivo .zip adjunto que tiene TODA la base de datos:
+  - RESTAURAR.txt   : cómo volver a armar todo en un proyecto nuevo de Supabase (con la lista de usuarios y roles)
+  - estructura.sql  : crea todas las tablas, permisos y auditoría
+  - restaurar-N.sql : carga todos los datos y los roles (se pegan en orden en el SQL Editor)
+  - carpeta csv/    : una planilla por tabla (se abre con Excel)
+  - carpeta json/   : los mismos datos en formato JSON
+  - LEEME.txt       : fecha y cantidad de filas de cada tabla
+No incluye los archivos adjuntos (PDF y fotos), que siguen en Supabase Storage, ni las contraseñas.
+
+Usa la misma función "avisos" de los mails de deuda y aumentos. Son 4 pasos.
+
+
+PASO 1 · Actualizar la función "avisos"
+  1. Supabase -> Edge Functions -> avisos -> pestaña "Code".
+  2. Borrar todo el código (Ctrl + A, Suprimir).
+  3. Abrir D:\Descargas\IA\INM\supabase\functions\avisos\index.ts con el Bloc de notas,
+     copiar todo (Ctrl + A, Ctrl + C) y pegarlo en el editor de Supabase (Ctrl + V).
+  4. Botón "Deploy updates" (abajo a la derecha). Esperar a que diga que se publicó.
+  Los mails de deuda y aumentos siguen funcionando igual.
+
+
+PASO 2 · Decir a quién le llega el respaldo
+  1. Supabase -> Edge Functions -> Secrets (o "Manage secrets").
+  2. Agregar un secreto nuevo:
+       Name:  RESPALDO_DESTINATARIOS
+       Value: el o los mails que lo reciben, separados por coma
+  3. Save.
+  Si no se crea este secreto, el respaldo les llega a los mismos destinatarios que los avisos de deuda.
+
+
+PASO 3 · Probarlo (opcional pero recomendado)
+  En la barra de direcciones del navegador (arriba, NO en el buscador de Google) pegar esta dirección,
+  reemplazando LA-CLAVE por el valor del secreto AVISOS_TOKEN, y apretar Enter:
+
+    https://qtcdrnpwvetaekmbhrcf.supabase.co/functions/v1/avisos?tipo=respaldo&prueba=1&token=LA-CLAVE
+
+  Tiene que aparecer un texto que empieza con {"ok":true ... y llegar un mail "[PRUEBA] Copia de seguridad..."
+  con el .zip adjunto.
+
+  Para descargar el .zip en el momento SIN mandar mail, usar la misma dirección cambiando prueba=1 por ver=1.
+
+
+PASO 4 · Programarlo para los viernes
+  1. Supabase -> SQL Editor -> New query.
+  2. Abrir D:\Descargas\IA\INM\supabase\migracion-12-respaldo-semanal.sql, copiar todo, pegar y "Run".
+     No hace falta pegar ninguna clave: toma la misma del aviso de los lunes.
+  3. Abajo tienen que aparecer 3 filas: avisos-aumentos-dia-20, avisos-deuda-lunes y respaldo-viernes
+     (con 0 19 * * 5 y active = true).
+
+Listo. El primer respaldo llega el próximo viernes a las 16:00.
+
+
+SI UN VIERNES NO LLEGA
+  En SQL Editor ejecutar:
+    select created, status_code, content from net._http_response order by created desc limit 5;
+  Ahí se ve la respuesta de la función (ok o el error).
+  Gmail no acepta adjuntos de más de 25 MB: si algún día la base crece tanto, el mail avisa con un error.

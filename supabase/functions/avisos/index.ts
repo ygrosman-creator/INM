@@ -2,7 +2,10 @@
 // Arma y manda por mail (desde una cuenta de Gmail) dos avisos:
 //   ?tipo=deuda     -> todos los lunes 7:30: impuestos y alquileres sin pagar (primero lo que vence esa semana)
 //   ?tipo=aumentos  -> los días 20 a las 8:00: alquileres que ajustan el mes siguiente
-// Otros parámetros:  &ver=1 (muestra el mail en el navegador, NO lo manda) · &prueba=1 (agrega [PRUEBA] al asunto)
+//   ?tipo=respaldo  -> los viernes a las 16:00: copia de seguridad de toda la base en un .zip adjunto
+//                      (va a RESPALDO_DESTINATARIOS; si ese secreto no está, a AVISOS_DESTINATARIOS)
+// Otros parámetros:  &ver=1 (muestra el mail en el navegador, NO lo manda; en el respaldo descarga el .zip)
+//                    &prueba=1 (agrega [PRUEBA] al asunto)
 //                    &hoy=AAAA-MM-DD (simula otra fecha, para probar)
 // Secretos (Edge Functions -> Secrets): GMAIL_USER, GMAIL_APP_PASSWORD, AVISOS_TOKEN, AVISOS_DESTINATARIOS,
 //   DIA_VENCIMIENTO_ALQUILER (opcional, 10 si no está). SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY los pone Supabase.
@@ -180,6 +183,596 @@ async function leerTodo(tabla) {
   }
   return out;
 }
+// ---------- copia de seguridad ----------
+// Todas las tablas de la app. Cada una va en JSON (para restaurar) y en CSV (para abrir con Excel).
+const TABLAS_RESPALDO = ['propiedades', 'personas', 'vinculos', 'documentos', 'causas', 'novedades_legales', 'sepelios', 'llaves',
+  'impuestos', 'impuestos_periodos', 'contratos', 'alquiler_pagos', 'contratos_ajustes', 'reparaciones', 'presupuestos', 'pagos',
+  'proveedores', 'opciones', 'perfiles', 'auditoria'];
+async function leerTabla(tabla) {
+  try { return await leerTodo(tabla); } catch (e) {
+    // tablas sin columna "id": se leen sin ordenar
+    const url = ENV('SUPABASE_URL'), key = ENV('SUPABASE_SERVICE_ROLE_KEY');
+    let out = [], off = 0;
+    for (let n = 0; n < 200; n++) {
+      const r = await fetch(`${url}/rest/v1/${tabla}?select=*&limit=1000&offset=${off}`, { headers: { apikey: key, Authorization: 'Bearer ' + key } });
+      if (!r.ok) throw new Error(`${r.status} ${await r.text()}`);
+      const j = await r.json(); out = out.concat(j); off += j.length; if (j.length < 1000) break;
+    }
+    return out;
+  }
+}
+function csv(filas) {
+  if (!filas.length) return '﻿';
+  const cols = [...new Set(filas.flatMap((f) => Object.keys(f)))];
+  const cel = (v) => {
+    if (v == null) return '';
+    const s = typeof v === 'object' ? JSON.stringify(v) : String(v);
+    return /[;"\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  // separador ";" y BOM para que Excel en castellano lo abra bien con acentos
+  return '﻿' + [cols.join(';'), ...filas.map((f) => cols.map((c) => cel(f[c])).join(';'))].join('\r\n');
+}
+// Usuarios de la app (correo + rol), para volver a darles el mismo rol en un proyecto nuevo
+async function leerUsuarios() {
+  const url = ENV('SUPABASE_URL'), key = ENV('SUPABASE_SERVICE_ROLE_KEY');
+  let out = [];
+  for (let page = 1; page < 20; page++) {
+    const r = await fetch(`${url}/auth/v1/admin/users?page=${page}&per_page=200`, { headers: { apikey: key, Authorization: 'Bearer ' + key } });
+    if (!r.ok) throw new Error(`usuarios: ${r.status}`);
+    const j = await r.json(), us = j.users || [];
+    out = out.concat(us.map((u) => ({ id: u.id, email: u.email })));
+    if (us.length < 200) break;
+  }
+  return out;
+}
+// Orden de carga (primero las tablas de las que dependen las demás). "perfiles" no se carga: se arma con los usuarios nuevos.
+const ORDEN_RESTAURAR = ['opciones', 'proveedores', 'propiedades', 'personas', 'vinculos', 'documentos', 'causas', 'novedades_legales',
+  'sepelios', 'llaves', 'impuestos', 'impuestos_periodos', 'contratos', 'alquiler_pagos', 'contratos_ajustes', 'reparaciones',
+  'presupuestos', 'pagos', 'auditoria'];
+const lit = (s) => "'" + String(s).replace(/'/g, "''") + "'";
+// Arma restaurar-1.sql, restaurar-2.sql... (cada uno de menos de ~1,5 MB para que el SQL Editor de Supabase lo acepte).
+function armarRestaurar(datos, usuarios, perfiles, hoy) {
+  const LIM = 1500000, partes = [];
+  const sentencias = [];
+  if ((datos.opciones || []).length) sentencias.push('-- opciones: se reemplazan las que trae la estructura por las del respaldo\ndelete from public.opciones;');
+  for (const t of ORDEN_RESTAURAR) {
+    const filas = datos[t] || [];
+    // lotes de hasta ~300 KB cada uno
+    for (let i = 0; i < filas.length;) {
+      let j = i, tam = 0;
+      while (j < filas.length && (j === i || tam < 300000)) { tam += JSON.stringify(filas[j]).length + 1; j++; }
+      const lote = JSON.stringify(filas.slice(i, j));
+      let tag = 'RJ'; while (lote.includes('$' + tag + '$')) tag += 'X';
+      sentencias.push(`-- ${t} (filas ${i + 1} a ${j} de ${filas.length})\n` +
+        `insert into public.${t} overriding system value select * from json_populate_recordset(null::public.${t}, $${tag}$${lote}$${tag}$) on conflict do nothing;`);
+      i = j;
+    }
+    if (t === 'auditoria' && filas.length) sentencias.push(`select setval(pg_get_serial_sequence('public.auditoria', 'id'), (select coalesce(max(id), 0) + 1 from public.auditoria), false);`);
+  }
+  // Roles: se asignan por correo a los usuarios que ya se hayan creado en el proyecto nuevo
+  const mail = new Map(usuarios.map((u) => [u.id, u.email]));
+  const roles = perfiles.map((p) => [mail.get(p.user_id), p.rol]).filter(([m, r]) => m && r);
+  if (roles.length) sentencias.push('-- Roles de los usuarios (crear antes los usuarios en Authentication -> Users)\n' +
+    `insert into public.perfiles(user_id) select id from auth.users on conflict do nothing;\n` +
+    roles.map(([m, r]) => `update public.perfiles set rol = ${lit(r)} where user_id in (select id from auth.users where lower(email) = lower(${lit(m)}));`).join('\n'));
+  let cur = [];
+  const cerrar = () => { if (cur.length) { partes.push(cur); cur = []; } };
+  let tam = 0;
+  for (const s of sentencias) { if (tam + s.length > LIM && cur.length) { cerrar(); tam = 0; } cur.push(s); tam += s.length; }
+  cerrar();
+  return partes.map((ss, i) => [
+    `-- RESTAURAR DATOS · INMUEBLES AMIA · respaldo del ${fd(hoy)} · parte ${i + 1} de ${partes.length}`,
+    '-- Ejecutar en orden (parte 1, 2, 3...) en el SQL Editor de un proyecto que YA tenga la estructura (estructura.sql). Ver RESTAURAR.txt.',
+    '-- No borra datos (salvo la lista de opciones en la parte 1): si un registro ya existe, lo deja como está.',
+    'begin;',
+    '-- durante la carga no se controlan relaciones entre tablas ni se registra auditoría',
+    'set local session_replication_role = replica;',
+    ...ss,
+    'commit;',
+    i === partes.length - 1 ? '\n-- Control: cantidad de registros cargados\n' + ORDEN_RESTAURAR.map((t) => `select ${lit(t)} as tabla, count(*) as filas from public.${t}`).join('\nunion all ') + ';' : '',
+  ].join('\n'));
+}
+async function armarRespaldo(hoy) {
+  const { zipSync, strToU8 } = await import('npm:fflate@0.8.2');
+  const archivos = {}, resumen = [], errores = [], datos = {};
+  for (const t of TABLAS_RESPALDO) {
+    try {
+      const filas = await leerTabla(t);
+      datos[t] = filas;
+      archivos[`json/${t}.json`] = strToU8(JSON.stringify(filas, null, 1));
+      archivos[`csv/${t}.csv`] = strToU8(csv(filas));
+      resumen.push([t, filas.length]);
+    } catch (e) { errores.push([t, String((e && e.message) || e).slice(0, 200)]); }
+  }
+  if (!resumen.length) throw new Error('No se pudo leer ninguna tabla: ' + errores.map((x) => x.join(': ')).join(' | '));
+  let usuarios = [];
+  try { usuarios = await leerUsuarios(); } catch (e) { errores.push(['usuarios', String((e && e.message) || e).slice(0, 200)]); }
+  const mailDe = new Map(usuarios.map((u) => [u.id, u.email]));
+  const listaUsuarios = (datos.perfiles || []).map((p) => `  ${mailDe.get(p.user_id) || '(usuario sin correo)'} - ${p.rol}`);
+  const partes = armarRestaurar(datos, usuarios, datos.perfiles || [], hoy);
+  partes.forEach((sql, i) => { archivos[`restaurar-${i + 1}.sql`] = strToU8(sql); });
+  archivos['estructura.sql'] = strToU8(ESTRUCTURA);
+  archivos['RESTAURAR.txt'] = strToU8('﻿' + [
+    'CÓMO VOLVER A ARMAR TODO DESDE ESTE RESPALDO (por ejemplo, si se pierde el proyecto de Supabase)',
+    '',
+    '1) Crear un proyecto nuevo en supabase.com (New project). Anotar la contraseña de la base.',
+    '2) SQL Editor -> New query: pegar TODO estructura.sql -> Run.',
+    '   Crea las tablas, los permisos por rol, la auditoría y el espacio para archivos adjuntos.',
+    '3) Authentication -> Users -> Add user -> Create new user, uno por cada usuario de esta lista',
+    '   (con la contraseña que quieran y tildando "Auto Confirm User"):',
+    ...(listaUsuarios.length ? listaUsuarios : ['  (no se pudo leer la lista de usuarios)']),
+    `4) SQL Editor -> New query: pegar restaurar-1.sql -> Run. Después restaurar-2.sql, y así hasta el último (son ${partes.length}).`,
+    '   Carga todos los datos y, al final, les da a los usuarios el mismo rol que tenían.',
+    '   La última parte muestra cuántos registros quedaron en cada tabla: comparar con LEEME.txt.',
+    '5) Project Settings -> API: copiar "Project URL" y la clave "anon public".',
+    '   Ponerlas en config.js de la app (url y key), subirlo a GitHub y esperar el despliegue de Vercel.',
+    '6) Avisos por mail y este respaldo semanal: volver a crear la función "avisos" con sus secretos',
+    '   y programarla (INSTRUCTIVO-AVISOS-MAIL.txt, migracion-11 y migracion-12, cambiando en esos SQL',
+    '   la dirección https://....supabase.co por la del proyecto nuevo).',
+    '',
+    'LO QUE ESTE RESPALDO NO TRAE:',
+    '  - Los archivos adjuntos (PDF y fotos). Los registros de documentos vuelven, pero el archivo hay que subirlo de nuevo.',
+    '  - Las contraseñas de los usuarios (se crean de nuevo en el paso 3).',
+    '',
+    'Si el SQL Editor rechaza un archivo por grande, avisar: se puede partir en archivos más chicos.',
+  ].join('\r\n'));
+  const leeme = [
+    'COPIA DE SEGURIDAD - INMUEBLES AMIA',
+    'Fecha: ' + fd(hoy) + ' (hora del servidor: ' + new Date().toISOString() + ')',
+    '',
+    'RESTAURAR.txt   : cómo volver a armar todo en un proyecto nuevo de Supabase.',
+    'estructura.sql  : crea las tablas, permisos y auditoría (paso 2).',
+    'restaurar-N.sql : carga todos los datos y los roles de los usuarios (paso 4).',
+    'Carpeta csv/    : una planilla por tabla, para abrir con Excel (separador ";").',
+    'Carpeta json/   : los mismos datos completos en formato JSON.',
+    'No incluye los archivos adjuntos (PDF y fotos), que quedan en Supabase Storage.',
+    '',
+    'Tabla - cantidad de filas:',
+    ...resumen.map(([t, n]) => `  ${t}: ${n}`),
+    ...(errores.length ? ['', 'NO SE PUDIERON LEER:', ...errores.map(([t, m]) => `  ${t}: ${m}`)] : []),
+  ].join('\r\n');
+  archivos['LEEME.txt'] = strToU8('﻿' + leeme);
+  const fecha = new Date(Date.now() - 3 * 3600e3);
+  const zip = zipSync(archivos, { level: 9, mtime: fecha });
+  const nombre = `respaldo-inmuebles-${hoy}.zip`, mb = zip.length / 1048576;
+  const html = marco('Copia de seguridad semanal · ' + fd(hoy),
+    `<p>Va adjunta la copia de seguridad de toda la base de datos (<b>${esc(nombre)}</b>, ${nf.format(+mb.toFixed(2))} MB).</p>
+     <p>Adentro hay una planilla por tabla (carpeta <b>csv</b>, se abre con Excel) y los datos completos para restaurar (carpeta <b>json</b>). Los archivos adjuntos (PDF y fotos) no están incluidos.</p>` +
+    tabla(['Tabla', 'Filas'], resumen.map(([t, n]) => [esc(t), nf.format(n)])) +
+    (errores.length ? h2('No se pudieron leer', '#B91C1C') + tabla(['Tabla', 'Error'], errores.map(([t, m]) => [esc(t), esc(m)])) : '') +
+    '<p style="color:#71717A;font-size:12px">Guardá este mail o el .zip en una carpeta segura (Drive, disco externo).</p>');
+  return { asunto: 'Copia de seguridad INMUEBLES AMIA ' + fd(hoy), html, adjuntos: [{ nombre, datos: zip }], zip, nombre, mb };
+}
+
+// Estructura completa de la base (schema.sql + migracion-2 a migracion-10), va dentro del respaldo como estructura.sql
+// Si se agrega una migración nueva que cree tablas o columnas, sumarla también acá.
+const ESTRUCTURA = String.raw`-- ESTRUCTURA COMPLETA DE LA BASE · INMUEBLES AMIA
+-- Crea todas las tablas, permisos, auditoría y el espacio de archivos en un proyecto NUEVO y VACÍO de Supabase.
+-- Es la unión, en orden, de schema.sql y migracion-2 a migracion-10. Ejecutar UNA vez: SQL Editor -> New query -> pegar -> Run.
+-- No carga datos: los datos se cargan después con restaurar-1.sql, restaurar-2.sql... del respaldo semanal.
+
+-- =================== schema.sql ===================
+-- Inmuebles | Reparaciones y Mantenimiento — ejecutar completo en Supabase → SQL Editor
+create extension if not exists pgcrypto;
+
+-- Roles: admin (aprueba presupuestos y edita), editor (edita), lector (solo consulta)
+create table perfiles(user_id uuid primary key references auth.users on delete cascade, rol text not null default 'lector' check (rol in ('admin','editor','lector')));
+alter table perfiles enable row level security;
+create policy "ver mi perfil" on perfiles for select to authenticated using (user_id = auth.uid());
+create function public.rol_actual() returns text language sql stable security definer set search_path=public as $$ select rol from perfiles where user_id = auth.uid() $$;
+create function public.puede_editar() returns boolean language sql stable security definer set search_path=public as $$ select coalesce(public.rol_actual() in ('admin','editor'), false) $$;
+create function public.nuevo_perfil() returns trigger language plpgsql security definer set search_path=public as $$ begin insert into perfiles(user_id) values (new.id) on conflict do nothing; return new; end $$;
+create trigger al_crear_usuario after insert on auth.users for each row execute function public.nuevo_perfil();
+insert into perfiles(user_id) select id from auth.users on conflict do nothing;
+
+create table propiedades(
+  id uuid primary key default gen_random_uuid(), created_at timestamptz default now(),
+  codigo text unique, direccion text, localidad text, estado text, responsable text, obs text);
+create table proveedores(
+  id uuid primary key default gen_random_uuid(), created_at timestamptz default now(),
+  nombre text, cuit text, rubro text, tel text, email text, facturacion text, condiciones text, obs text);
+create table reparaciones(
+  id uuid primary key default gen_random_uuid(), created_at timestamptz default now(),
+  numero text unique, titulo text, prop uuid references propiedades on delete set null, prov uuid references proveedores on delete set null,
+  solicitante text, categoria text, prioridad text, estado text, responsable text, "desc" text,
+  "fechaSol" date, "fechaIni" date, "fechaFinPrev" date, "fechaFinReal" date,
+  docs jsonb default '[]', novedades jsonb default '[]');
+create table presupuestos(
+  id uuid primary key default gen_random_uuid(), created_at timestamptz default now(),
+  rep uuid references reparaciones on delete cascade, prov uuid references proveedores on delete set null,
+  fecha date, monto numeric default 0, estado text, validez date, plazo text, condiciones text, "desc" text,
+  "aprobadoPor" text, "fechaAprob" date, "aprobadoOriginal" numeric, archivo jsonb);
+create table pagos(
+  id uuid primary key default gen_random_uuid(), created_at timestamptz default now(),
+  rep uuid references reparaciones on delete cascade, prov uuid references proveedores on delete set null,
+  numero text, fecha date, monto numeric default 0, medio text, operacion text, factura text, por text, obs text, archivo jsonb);
+create unique index un_aprobado_por_rep on presupuestos(rep) where estado = 'Aprobado';
+
+-- Solo un admin puede aprobar presupuestos
+create function public.solo_admin_aprueba() returns trigger language plpgsql as $$
+begin
+  if new.estado = 'Aprobado' and (tg_op = 'INSERT' or old.estado is distinct from 'Aprobado') and coalesce(public.rol_actual(),'') <> 'admin' then
+    raise exception 'Solo un administrador puede aprobar presupuestos';
+  end if; return new;
+end $$;
+create trigger aprobar_solo_admin before insert or update on presupuestos for each row execute function public.solo_admin_aprueba();
+
+-- Seguridad (RLS) y tiempo real
+do $$ declare t text; begin
+  foreach t in array array['propiedades','proveedores','reparaciones','presupuestos','pagos'] loop
+    execute format('alter table %I enable row level security', t);
+    execute format('create policy "leer" on %I for select to authenticated using (true)', t);
+    execute format('create policy "escribir" on %I for all to authenticated using (public.puede_editar()) with check (public.puede_editar())', t);
+    execute format('alter publication supabase_realtime add table %I', t);
+  end loop;
+end $$;
+
+-- Archivos adjuntos (bucket privado)
+insert into storage.buckets(id, name, public) values ('adjuntos','adjuntos',false) on conflict do nothing;
+create policy "adjuntos leer" on storage.objects for select to authenticated using (bucket_id = 'adjuntos');
+create policy "adjuntos subir" on storage.objects for insert to authenticated with check (bucket_id = 'adjuntos' and public.puede_editar());
+
+-- Después de crear tu usuario (Authentication → Users), hacete admin:
+-- update perfiles set rol = 'admin' where user_id = (select id from auth.users where email = 'tu@correo.com');
+
+-- =================== migracion-2.sql ===================
+-- Ejecutar UNA vez en Supabase → SQL Editor (agrega el proveedor elegido a cada reparación)
+alter table reparaciones add column if not exists prov uuid references proveedores on delete set null;
+notify pgrst, 'reload schema';
+
+-- =================== migracion-3-inmuebles.sql ===================
+-- Fase 1 · Sistema de inmuebles. Ejecutar UNA vez en Supabase → SQL Editor.
+-- Amplía la tabla "propiedades" existente; no borra nada.
+
+-- 1) Listas editables por el equipo (etiquetas, vínculos, tipos de documento)
+create table opciones(
+  id uuid primary key default gen_random_uuid(), created_at timestamptz default now(),
+  lista text not null check (lista in ('vinculo','tipo_documento','etiqueta','forma_pago','tipo_impuesto')),
+  valor text not null, orden int default 0, unique (lista, valor));
+insert into opciones(lista, valor, orden) values
+ ('vinculo','Donante',1),('vinculo','Donante con usufructo',2),('vinculo','Testador',3),('vinculo','Inquilino',4),
+ ('vinculo','Garante',5),('vinculo','Beneficiario',6),('vinculo','Comodatario',7),('vinculo','Heredero',8),
+ ('tipo_documento','Escritura',1),('tipo_documento','Contrato de alquiler',2),('tipo_documento','Garantía',3),
+ ('tipo_documento','Documentación sucesoria',4),('tipo_documento','Donación',5),('tipo_documento','Testamento',6),
+ ('tipo_documento','Plano',7),('tipo_documento','Foto',8),('tipo_documento','Otro',9),
+ ('etiqueta','ALQUILADO',1),
+ ('etiqueta','EN ALQUILER',2),
+ ('etiqueta','A LA VENTA',3),
+ ('etiqueta','VENDIDO',4),
+ ('etiqueta','COMODATO',5),
+ ('etiqueta','USUFRUCTO DONANTE',6),
+ ('etiqueta','SEDE AMIA',7),
+ ('etiqueta','POSIBLE DONACIÓN',8),
+ ('etiqueta','TESTAMENTO',9),
+ ('etiqueta','OTROS',10),
+ ('etiqueta','USUCAPIÓN',11),
+ ('etiqueta','JUDICIALIZADO',12),
+ ('etiqueta','LEGADO',13),
+ ('etiqueta','VACÍO',14),
+ ('etiqueta','OCUPADO',15),
+ ('etiqueta','USURPADO',16),
+ ('etiqueta','SUCESIÓN EN TRÁMITE',17),
+ ('etiqueta','TASACIÓN PENDIENTE',18),
+ ('forma_pago','INQUILINOS - PROPIETARIOS',1),
+ ('forma_pago','TESOMPTC',2),
+ ('forma_pago','DEBITOS FRANCES',3),
+ ('forma_pago','T.C.',4),
+ ('forma_pago','EXENTO',5),
+ ('forma_pago','NO PAGAR',6),
+ ('tipo_impuesto','ABL',1),
+ ('tipo_impuesto','AYSA',2),
+ ('tipo_impuesto','ARBA',3),
+ ('tipo_impuesto','LUZ',4),
+ ('tipo_impuesto','GAS',5),
+ ('tipo_impuesto','EXPENSAS',6),
+ ('tipo_impuesto','TELÉFONO',7),
+ ('tipo_impuesto','TASA MUNICIPAL',8),
+ ('tipo_impuesto','SEGURO',9),
+ ('tipo_impuesto','OTRO',10);
+
+-- 2) Ficha del inmueble. Las etiquetas (varias por inmueble) reemplazan al estado único
+alter table propiedades
+  add column if not exists tipo text,                       -- departamento, local, lote, PH, cementerio…
+  add column if not exists m2 numeric,
+  add column if not exists nomenclatura text,               -- nomenclatura catastral
+  add column if not exists etiquetas text[] default '{}',   -- permite filtrar varias a la vez
+  add column if not exists situacion_legal text,
+  add column if not exists legal_actualizado timestamptz,   -- fecha automática de última actualización legal
+  add column if not exists de_amia boolean default false,   -- DE AMIA: tenemos el título
+  add column if not exists anio_venta int,                  -- para los VENDIDOS
+  add column if not exists valor_venta numeric,
+  add column if not exists moneda_venta text default 'USD'; -- las notas van en la columna existente "obs"
+create index if not exists propiedades_etiquetas on propiedades using gin (etiquetas);
+
+-- Las etiquetas se guardan siempre en MAYÚSCULAS, y OTRO / OTRA / OTRAS / OTROS se unifican en OTROS
+create function public.etiquetas_mayuscula() returns trigger language plpgsql as $$
+declare f text := '';
+begin
+  if tg_table_name = 'propiedades' then
+    new.etiquetas := coalesce((select array_agg(distinct case when upper(trim(e)) in ('OTRO','OTRA','OTRAS') then 'OTROS' else upper(trim(e)) end)
+                               from unnest(new.etiquetas) e where trim(e) <> ''), '{}');
+  elsif new.lista = 'etiqueta' then
+    new.valor := case when upper(trim(new.valor)) in ('OTRO','OTRA','OTRAS') then 'OTROS' else upper(trim(new.valor)) end;
+  end if;
+  return new;
+end $$;
+
+create trigger mayuscula_etiquetas_prop before insert or update on propiedades for each row execute function public.etiquetas_mayuscula();
+create trigger mayuscula_etiquetas_opc  before insert or update on opciones     for each row execute function public.etiquetas_mayuscula();
+
+-- 3) Personas y su vínculo con cada inmueble (varias por inmueble, varios inmuebles por persona)
+create table personas(
+  id uuid primary key default gen_random_uuid(), created_at timestamptz default now(),
+  nombre text, apellido text, dni text, cuit text, nacimiento date, fallecimiento date,
+  mail text, telefono text, otros text);
+create table vinculos(
+  id uuid primary key default gen_random_uuid(), created_at timestamptz default now(),
+  inmueble uuid references propiedades on delete cascade, persona uuid references personas on delete cascade,
+  vinculo text, desde date, hasta date, obs text);
+
+-- 4) Documentos y fotos (el archivo vive en el bucket privado "adjuntos")
+create table documentos(
+  id uuid primary key default gen_random_uuid(), created_at timestamptz default now(),
+  inmueble uuid references propiedades on delete cascade,
+  tipo text, nombre text, fecha date, estado text default 'Disponible' check (estado in ('Disponible','Pendiente')),
+  archivo jsonb, obs text);
+
+-- 5) Legal: causas, bitácora y sepelios
+create table causas(
+  id uuid primary key default gen_random_uuid(), created_at timestamptz default now(),
+  inmueble uuid references propiedades on delete cascade,
+  tipo text default 'Usucapión', expediente text, caratula text, estado text, tasacion numeric, moneda text default 'USD');
+create table novedades_legales(
+  id uuid primary key default gen_random_uuid(), created_at timestamptz default now(),
+  inmueble uuid references propiedades on delete cascade, causa uuid references causas on delete set null,
+  fecha date default current_date, tipo text, texto text, por text);
+create table sepelios(
+  id uuid primary key default gen_random_uuid(), created_at timestamptz default now(),
+  inmueble uuid references propiedades on delete cascade, persona uuid references personas on delete set null,
+  origen text, servicio text, obs text);
+
+-- La fecha de última actualización legal se completa sola
+create function public.tocar_legal() returns trigger language plpgsql security definer set search_path=public as $$
+begin
+  update propiedades set legal_actualizado = now() where id = coalesce(new.inmueble, old.inmueble);
+  return coalesce(new, old);
+end $$;
+create trigger legal_novedades after insert or update or delete on novedades_legales for each row execute function public.tocar_legal();
+create trigger legal_causas    after insert or update or delete on causas            for each row execute function public.tocar_legal();
+create trigger legal_sepelios  after insert or update or delete on sepelios          for each row execute function public.tocar_legal();
+
+-- 6) Trazabilidad: cada alta, cambio o baja queda con fecha, hora y usuario
+create table auditoria(
+  id bigint generated always as identity primary key, cuando timestamptz default now(),
+  usuario uuid, tabla text, registro uuid, accion text, antes jsonb, despues jsonb);
+create function public.auditar() returns trigger language plpgsql security definer set search_path=public as $$
+begin
+  insert into auditoria(usuario, tabla, registro, accion, antes, despues)
+  values (auth.uid(), tg_table_name, (coalesce(to_jsonb(new), to_jsonb(old))->>'id')::uuid, tg_op,
+          case when tg_op <> 'INSERT' then to_jsonb(old) end, case when tg_op <> 'DELETE' then to_jsonb(new) end);
+  return coalesce(new, old);
+end $$;
+do $$ declare t text; begin
+  foreach t in array array['propiedades','personas','vinculos','documentos','causas','novedades_legales','sepelios'] loop
+    execute format('create trigger auditar_%1$s after insert or update or delete on %1$I for each row execute function public.auditar()', t);
+  end loop;
+end $$;
+alter table auditoria enable row level security;
+create policy "solo admin ve auditoria" on auditoria for select to authenticated using (public.rol_actual() = 'admin');
+
+-- 7) Seguridad y tiempo real (mismo esquema que el resto: leer todos, escribir editor/admin)
+do $$ declare t text; begin
+  foreach t in array array['opciones','personas','vinculos','documentos','causas','novedades_legales','sepelios'] loop
+    execute format('alter table %I enable row level security', t);
+    execute format('create policy "leer" on %I for select to authenticated using (true)', t);
+    execute format('create policy "escribir" on %I for all to authenticated using (public.puede_editar()) with check (public.puede_editar())', t);
+    execute format('alter publication supabase_realtime add table %I', t);
+  end loop;
+end $$;
+notify pgrst, 'reload schema';
+
+-- =================== migracion-4-impuestos.sql ===================
+-- Impuestos de cada inmueble · ejecutar UNA vez, DESPUÉS de migracion-3-inmuebles.sql
+-- Un impuesto (o servicio) pertenece a un inmueble y se actualiza mes a mes en impuestos_periodos.
+
+create table impuestos(
+  id uuid primary key default gen_random_uuid(), created_at timestamptz default now(),
+  inmueble uuid references propiedades on delete cascade,
+  concepto text,        -- impuesto o servicio tal como figura (EDESUR, AYSA, ABL exento nov 22…)
+  tipo text,            -- ABL, AYSA, ARBA, LUZ, GAS, EXPENSAS, TELÉFONO… (lista editable en "opciones")
+  nro_cliente text,     -- número de cliente o referencia; puede quedar vacío (por ejemplo, exentos)
+  forma_pago text,      -- INQUILINOS - PROPIETARIOS, TESOMPTC, DEBITOS FRANCES, T.C., EXENTO, NO PAGAR…
+  notas text);
+create index impuestos_inmueble on impuestos(inmueble);
+
+create table impuestos_periodos(
+  id uuid primary key default gen_random_uuid(), created_at timestamptz default now(),
+  impuesto uuid not null references impuestos on delete cascade,
+  periodo date not null,      -- primer día del mes (2026-01-01 = enero 2026)
+  importe numeric,
+  vencimiento date,           -- con esto se arma el aviso semanal de vencimientos
+  pagado boolean default false, fecha_pago date, obs text,
+  unique (impuesto, periodo));
+create index periodos_vencimiento on impuestos_periodos(vencimiento);
+
+do $$ declare t text; begin
+  foreach t in array array['impuestos','impuestos_periodos'] loop
+    execute format('alter table %I enable row level security', t);
+    execute format('create policy "leer" on %I for select to authenticated using (true)', t);
+    execute format('create policy "escribir" on %I for all to authenticated using (public.puede_editar()) with check (public.puede_editar())', t);
+    execute format('create trigger auditar_%1$s after insert or update or delete on %1$I for each row execute function public.auditar()', t);
+    execute format('alter publication supabase_realtime add table %I', t);
+  end loop;
+end $$;
+notify pgrst, 'reload schema';
+
+-- =================== migracion-5-alquileres.sql ===================
+-- Alquileres: contratos y pagos mensuales · ejecutar UNA vez, DESPUÉS de migracion-3 y migracion-4.
+-- Un inquilino es una persona (tabla personas) vinculada al inmueble; el contrato guarda fechas, monto e incremento.
+
+create table contratos(
+  id uuid primary key default gen_random_uuid(), created_at timestamptz default now(),
+  inmueble uuid references propiedades on delete cascade,
+  inquilino uuid references personas on delete set null,
+  descripcion text,            -- m², ambientes, etc.
+  duracion_texto text,         -- tal como figuraba en la planilla
+  inicio date, fin date, meses int,
+  monto numeric, moneda text default 'ARS', fuente_monto text,
+  forma_incremento text,       -- IPC, ICL, promedio IPC + ICL, etc.
+  deposito text, inmobiliaria text,
+  servicios_inquilino jsonb default '{}',   -- {"LUZ":true,"GAS":false,"ABL":true,...}
+  activo boolean default true, obs text);
+create index contratos_inmueble on contratos(inmueble);
+create index contratos_fin on contratos(fin);
+
+create table alquiler_pagos(
+  id uuid primary key default gen_random_uuid(), created_at timestamptz default now(),
+  contrato uuid not null references contratos on delete cascade,
+  periodo date not null,       -- primer día del mes
+  importe numeric,
+  pagado boolean,              -- vacío = todavía sin confirmar
+  fecha_pago date, obs text,
+  unique (contrato, periodo));
+
+do $$ declare t text; begin
+  foreach t in array array['contratos','alquiler_pagos'] loop
+    execute format('alter table %I enable row level security', t);
+    execute format('create policy "leer" on %I for select to authenticated using (true)', t);
+    execute format('create policy "escribir" on %I for all to authenticated using (public.puede_editar()) with check (public.puede_editar())', t);
+    execute format('create trigger auditar_%1$s after insert or update or delete on %1$I for each row execute function public.auditar()', t);
+    execute format('alter publication supabase_realtime add table %I', t);
+  end loop;
+end $$;
+notify pgrst, 'reload schema';
+
+-- =================== migracion-6-ajustes.sql ===================
+-- Ajustes del lote 2 · ejecutar UNA vez, después de migracion-5.
+-- 1) Llaves de cada inmueble, 2) fecha exacta de venta, 3) la situación legal cargada pasa a una nota con fecha.
+
+create table llaves(
+  id uuid primary key default gen_random_uuid(), created_at timestamptz default now(),
+  inmueble uuid references propiedades on delete cascade,
+  numero int, notas text);
+create index llaves_inmueble on llaves(inmueble);
+
+do $$ declare t text; begin
+  foreach t in array array['llaves'] loop
+    execute format('alter table %I enable row level security', t);
+    execute format('create policy "leer" on %I for select to authenticated using (true)', t);
+    execute format('create policy "escribir" on %I for all to authenticated using (public.puede_editar()) with check (public.puede_editar())', t);
+    execute format('create trigger auditar_%1$s after insert or update or delete on %1$I for each row execute function public.auditar()', t);
+    execute format('alter publication supabase_realtime add table %I', t);
+  end loop;
+end $$;
+
+alter table propiedades add column if not exists fecha_venta date;
+
+-- El texto legal que vino de las planillas pasa a UNA nota con la fecha de hoy (después la ordenás por fechas).
+insert into novedades_legales(inmueble, fecha, tipo, texto, por)
+select p.id, current_date, 'Carga inicial', p.situacion_legal, 'Carga inicial'
+from propiedades p
+where nullif(trim(p.situacion_legal), '') is not null
+  and not exists (select 1 from novedades_legales n where n.inmueble = p.id and n.tipo = 'Carga inicial');
+
+update propiedades set situacion_legal = null
+where situacion_legal is not null
+  and exists (select 1 from novedades_legales n where n.inmueble = propiedades.id and n.tipo = 'Carga inicial');
+
+notify pgrst, 'reload schema';
+select (select count(*) from llaves) as llaves, (select count(*) from novedades_legales where tipo = 'Carga inicial') as notas_legales_iniciales;
+
+-- =================== migracion-7-ingreso.sql ===================
+-- Fecha de ingreso del inmueble y sus notas · ejecutar UNA vez.
+alter table propiedades add column if not exists fecha_ingreso date;
+alter table propiedades add column if not exists notas_ingreso text;
+notify pgrst, 'reload schema';
+select count(*) as columnas_nuevas from information_schema.columns where table_name = 'propiedades' and column_name in ('fecha_ingreso','notas_ingreso');   -- tiene que dar 2
+
+-- =================== migracion-8-ajustes.sql ===================
+-- Ajustes de etiquetas, usucapión y comodato · ejecutar UNA vez (después de migracion-7).
+
+-- 1) Campos nuevos
+alter table propiedades add column if not exists usucapion_anios int;     -- años de usucapión (o directamente el año)
+alter table propiedades add column if not exists comodato_vence date;    -- vencimiento del comodato
+
+-- 2) Etiquetas: OCUPADO pasa a USURPADO; se sacan OTROS y SUCESIÓN EN TRÁMITE
+update propiedades
+set etiquetas = (
+  select coalesce(array_agg(distinct case when e = 'OCUPADO' then 'USURPADO' else e end), '{}')
+  from unnest(etiquetas) e
+  where e not in ('OTROS', 'SUCESIÓN EN TRÁMITE'))
+where etiquetas && array['OCUPADO', 'OTROS', 'SUCESIÓN EN TRÁMITE'];
+
+delete from opciones where lista = 'etiqueta' and valor in ('OCUPADO', 'OTROS', 'SUCESIÓN EN TRÁMITE');
+
+notify pgrst, 'reload schema';
+select
+  (select count(*) from information_schema.columns where table_name = 'propiedades' and column_name in ('usucapion_anios','comodato_vence')) as columnas_nuevas,   -- tiene que dar 2
+  (select count(*) from propiedades where etiquetas && array['OCUPADO','OTROS','SUCESIÓN EN TRÁMITE']) as con_etiquetas_viejas;                                              -- tiene que dar 0
+
+-- =================== migracion-9-comodato.sql ===================
+-- Comodato sin fecha de vencimiento · ejecutar UNA vez (después de migracion-8).
+-- Si está tildado, el comodato se considera VIGENTE en los informes aunque no tenga fecha.
+alter table propiedades add column if not exists comodato_sin_vencimiento boolean default false;
+notify pgrst, 'reload schema';
+select count(*) as columnas_nuevas from information_schema.columns where table_name = 'propiedades' and column_name = 'comodato_sin_vencimiento';   -- tiene que dar 1
+
+-- =================== migracion-10-ajustes-alquiler.sql ===================
+-- Ajuste automático de alquileres (sugerir y confirmar) · ejecutar UNA vez, después de migracion-9.
+-- 1) Cada contrato guarda con qué índice ajusta, cada cuántos meses y desde cuándo rige el monto actual.
+-- 2) Cada ajuste aprobado queda registrado en contratos_ajustes (quién, cuándo, índice, monto anterior y nuevo).
+-- 3) Se completan los datos a partir del texto de "forma de incremento" que ya estaba cargado. Revisar los que queden vacíos.
+
+alter table contratos add column if not exists ajuste_indice text check (ajuste_indice in ('IPC','ICL','PROMEDIO','MANUAL'));
+alter table contratos add column if not exists ajuste_meses int check (ajuste_meses between 1 and 24);
+alter table contratos add column if not exists base_fecha date;   -- desde cuándo rige el monto actual (último ajuste o inicio)
+
+create table if not exists contratos_ajustes(
+  id uuid primary key default gen_random_uuid(), created_at timestamptz default now(),
+  contrato uuid not null references contratos on delete cascade,
+  fecha date,              -- fecha desde la que rige el monto nuevo
+  indice text, detalle text,
+  coef numeric, monto_anterior numeric, monto_nuevo numeric,
+  por text);
+create index if not exists contratos_ajustes_contrato on contratos_ajustes(contrato);
+
+do $$ declare t text; begin
+  foreach t in array array['contratos_ajustes'] loop
+    execute format('alter table %I enable row level security', t);
+    execute format('create policy "leer" on %I for select to authenticated using (true)', t);
+    execute format('create policy "escribir" on %I for all to authenticated using (public.puede_editar()) with check (public.puede_editar())', t);
+    execute format('create trigger auditar_%1$s after insert or update or delete on %1$I for each row execute function public.auditar()', t);
+    execute format('alter publication supabase_realtime add table %I', t);
+  end loop;
+end $$;
+
+-- Completar índice y frecuencia a partir del texto (solo donde todavía están vacíos)
+update contratos set
+  ajuste_indice = case
+    when upper(forma_incremento) like '%IPC%' and upper(forma_incremento) like '%ICL%' then 'PROMEDIO'
+    when upper(forma_incremento) like '%IPC%' then 'IPC'
+    when upper(forma_incremento) like '%ICL%' then 'ICL' end,
+  ajuste_meses = case
+    when upper(forma_incremento) like '%CUATRIMESTRAL%' then 4
+    when upper(forma_incremento) like '%TRIMESTRAL%' then 3
+    when upper(forma_incremento) like '%SEMESTRAL%' then 6
+    when upper(forma_incremento) like '%ANUAL O CADA%' then null   -- ambiguo: completar a mano
+    when upper(forma_incremento) like '%ANUAL%' then 12 end
+where ajuste_indice is null and ajuste_meses is null;
+
+-- Se supone que el "alquiler actual" cargado rige desde el último ajuste que correspondía según el inicio.
+update contratos set base_fecha = (inicio + make_interval(months => (
+    ((extract(year from age(current_date, inicio))*12 + extract(month from age(current_date, inicio)))::int / ajuste_meses) * ajuste_meses)))::date
+where base_fecha is null and inicio is not null and ajuste_meses is not null and inicio <= current_date;
+
+notify pgrst, 'reload schema';
+
+-- Control: cómo quedó cada contrato (los que tengan índice o meses vacíos hay que completarlos en la ficha)
+select p.direccion, c.forma_incremento, c.ajuste_indice, c.ajuste_meses, c.inicio, c.base_fecha, c.monto
+from contratos c left join propiedades p on p.id = c.inmueble
+order by (c.ajuste_indice is null or c.ajuste_meses is null) desc, p.direccion;
+`;
+
 // El asunto va sin acentos ni símbolos: algunos programas de envío lo arman mal y el mail llega "desarmado".
 const asciiAsunto = (s) => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[·–—]/g, '-').replace(/[^\x20-\x7E]/g, '').replace(/\s+/g, ' ').trim().slice(0, 150);
 async function enviar(mail, destinatarios) {
@@ -190,14 +783,20 @@ async function enviar(mail, destinatarios) {
     // nodemailer: arma el mail (asunto, acentos y HTML) de forma estándar
     const nodemailer = (await import('npm:nodemailer@6.9.16')).default;
     const t = nodemailer.createTransport({ host: 'smtp.gmail.com', port: 465, secure: true, auth: { user, pass } });
-    await t.sendMail({ from: `"INMUEBLES AMIA" <${user}>`, to: destinatarios.join(', '), subject, text: texto, html: mail.html, textEncoding: 'base64' });
+    let attachments;
+    if (mail.adjuntos && mail.adjuntos.length) {
+      const { Buffer } = await import('node:buffer');
+      attachments = mail.adjuntos.map((a) => ({ filename: a.nombre, content: Buffer.from(a.datos), contentType: 'application/zip' }));
+    }
+    await t.sendMail({ from: `"INMUEBLES AMIA" <${user}>`, to: destinatarios.join(', '), subject, text: texto, html: mail.html, textEncoding: 'base64', attachments });
     return 'nodemailer';
   } catch (e) {
     if (/auth|535|534|Username and Password/i.test(String(e && e.message))) throw e; // clave de Gmail mal: no tiene sentido reintentar
     console.error('nodemailer falló, se usa denomailer', e);
     const { SMTPClient } = await import('https://deno.land/x/denomailer@1.6.0/mod.ts');
     const client = new SMTPClient({ connection: { hostname: 'smtp.gmail.com', port: 465, tls: true, auth: { username: user, password: pass } } });
-    try { await client.send({ from: `INMUEBLES AMIA <${user}>`, to: destinatarios, subject, content: texto, html: mail.html }); }
+    const attachments = (mail.adjuntos || []).map((a) => ({ filename: a.nombre, content: a.datos, encoding: 'binary', contentType: 'application/zip' }));
+    try { await client.send({ from: `INMUEBLES AMIA <${user}>`, to: destinatarios, subject, content: texto, html: mail.html, attachments }); }
     finally { await client.close(); }
     return 'denomailer';
   }
@@ -207,7 +806,18 @@ async function atender(req) {
   const token = req.headers.get('x-avisos-token') || q('token');
   if (!ENV('AVISOS_TOKEN') || token !== ENV('AVISOS_TOKEN')) return new Response('No autorizado', { status: 401 });
   try {
-    const tipo = q('tipo') === 'aumentos' ? 'aumentos' : 'deuda', hoy = /^\d{4}-\d{2}-\d{2}$/.test(q('hoy') || '') ? q('hoy') : hoyAR();
+    const tipo = ['aumentos', 'respaldo'].includes(q('tipo')) ? q('tipo') : 'deuda', hoy = /^\d{4}-\d{2}-\d{2}$/.test(q('hoy') || '') ? q('hoy') : hoyAR();
+    if (tipo === 'respaldo') {
+      const r = await armarRespaldo(hoy);
+      // &ver=1: descarga el .zip directamente, sin mandar mail
+      if (q('ver')) return new Response(r.zip, { headers: { 'content-type': 'application/zip', 'content-disposition': `attachment; filename="${r.nombre}"` } });
+      if (r.mb > 24) throw new Error(`El respaldo pesa ${r.mb.toFixed(1)} MB y Gmail no acepta adjuntos de más de 25 MB`);
+      if (q('prueba')) r.asunto = '[PRUEBA] ' + r.asunto;
+      const dest = (ENV('RESPALDO_DESTINATARIOS') || ENV('AVISOS_DESTINATARIOS')).split(/[,;\s]+/).filter(Boolean);
+      if (!dest.length) throw new Error('Falta el secreto RESPALDO_DESTINATARIOS');
+      const via = await enviar(r, dest);
+      return Response.json({ ok: true, tipo, hoy, asunto: asciiAsunto(r.asunto), destinatarios: dest, mb: +r.mb.toFixed(2), via });
+    }
     const [prop, per, con] = await Promise.all(['propiedades', 'personas', 'contratos'].map(leerTodo));
     let mail;
     if (tipo === 'deuda') {
