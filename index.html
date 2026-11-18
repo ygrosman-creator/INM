@@ -188,6 +188,7 @@ h2,.ttl{font-family:var(--fh);letter-spacing:-.01em}
 .kpis .card,.grid>.card.kpi{background:var(--kpi);color:var(--kpitx);border-color:var(--kpi)}
 .kpis .card span,.kpis .card small,.grid>.card.kpi span{color:var(--kpimut)}
 .kpis .card b,.grid>.card.kpi b{font-family:var(--fh);font-size:34px;font-weight:700;letter-spacing:-.02em;color:var(--kpitx)}
+.card.kpi .kpix{display:block;font-size:12px;margin-top:6px;color:var(--kpimut)}.grid>.card.kpi .kpix b{display:inline;font-family:inherit;font-size:12px;letter-spacing:0;color:var(--kpitx)}
 .kpis .card:nth-child(4n+1) b,.grid>.card.kpi:nth-child(4n+1) b{color:var(--mint)}
 .kpis .card:nth-child(4n+3) b,.grid>.card.kpi:nth-child(4n+3) b{color:var(--orange)}
 :root[data-skin="oscuro"] .kpis .card,:root[data-skin="oscuro"] .grid>.card.kpi{border-color:#2A2926}
@@ -677,7 +678,7 @@ function vGraf(){
   const kpi=(b,s)=>`<div class="card kpi"><b>${b}</b><span>${s}</span></div>`;
   return`<div class="bar2 noprint"><select data-flt="gy" title="Año de los gráficos e informes">${opts(aniosG(),y)}</select><button class="btn s" data-act="print">Imprimir / guardar como PDF</button></div>
   <div class="card"><h1>Cartera de inmuebles · resumen ejecutivo</h1><div class="mut">Alcance: ${S.prop.length} inmuebles de AMIA (alquilados, en venta, vendidos, comodatos, sedes, testamentos y otros), con sus contratos, impuestos y situación legal. Actualizado al ${fd(h)}.</div></div>
-  <div class="grid" style="margin-top:10px">${kpi(S.prop.length,'inmuebles en total')}${kpi(cnt('ALQUILADO'),'inmuebles alquilados')}${kpi('$ '+fnum(ing('ARS')),'ingresos estimados por mes (pesos)')}${kpi('USD '+fnum(ing('USD')),'ingresos estimados por mes (dólares)')}${kpi(por90,'contratos que vencen en 3 meses')}${kpi(cnt('VENDIDO'),'inmuebles vendidos')}</div>
+  <div class="grid" style="margin-top:10px">${kpi(S.prop.length,'inmuebles en total')}${kpi(cnt('ALQUILADO'),'inmuebles alquilados')}${kpi('$ '+fnum(ing('ARS')),'ingresos estimados por mes (pesos)')}${kpi('USD '+fnum(ing('USD')),'ingresos estimados por mes (dólares)')}${kpi(por90,'contratos que vencen en 3 meses')}${(()=>{const v=S.prop.filter(p=>tg(p).includes('VENDIDO')),a0=+today().slice(0,4);return kpi(v.length,'inmuebles vendidos'+`<small class="kpix">${[a0,a0-1,a0-2].map(a=>`${a}: <b>${v.filter(p=>+anioVenta(p)===a).length}</b>`).join(' · ')}</small>`)})()}</div>
   <h2>Estado de la cartera</h2><div class="card" style="display:flex;gap:20px;flex-wrap:wrap;align-items:center">${donut(cats.map(c=>({label:c[1],value:cnt(c[0]),tag:c[0]})))}
    <div class="wrap" style="flex:1;min-width:280px"><table style="min-width:280px"><tr><th>Categoría</th><th>Cantidad</th><th class="noprint">Acción</th></tr>${cats.map((c,i)=>`<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${PALx()[i%PALx().length]};margin-right:6px"></span>${c[1]}</td><td><b>${cnt(c[0])}</b></td><td class="noprint"><button class="btn x" data-act="gtag" data-t="${esc(c[0])}">Ver inmuebles</button></td></tr>`).join('')}</table></div></div>
   <div class="mut">Un inmueble puede tener varias etiquetas, por eso la suma puede superar el total. Tocá un sector del gráfico para ver esos inmuebles.</div>
