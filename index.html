@@ -203,6 +203,7 @@ h2,.ttl{font-family:var(--fh);letter-spacing:-.01em}
 #up,.dup{background:var(--kpi);color:var(--kpitx)}
 :root[data-skin="oscuro"] #up,:root[data-skin="oscuro"] .dup{background:var(--ac);color:var(--onac)}
 .doc textarea.dnota{width:100%;box-sizing:border-box;margin:4px 0 2px;font-size:12px;min-height:34px;resize:vertical}
+.badge{white-space:normal;max-width:100%;line-height:1.35}
 #dlg.dropping{outline:3px dashed var(--ac);outline-offset:-8px;background-image:linear-gradient(var(--acbg),var(--acbg))}
 tr.tot th{background:var(--head);color:var(--tx);font-size:13px;letter-spacing:.02em;border-top:2px solid var(--bd)}
 /* Anillos de progreso */
@@ -236,8 +237,14 @@ const nx=(a,f,p,n)=>p+String(Math.max(0,...a.map(x=>parseInt(String(x[f]||'').re
 const me=()=>{try{return localStorage.getItem('me')||''}catch(e){return''}};
 const pres=r=>S.pre.filter(p=>p.rep===r.id),pagos=r=>S.pag.filter(p=>p.rep===r.id);
 const apr=r=>pres(r).find(p=>p.estado==='Aprobado');
-const aprobado=r=>apr(r)?+apr(r).monto||0:0,paid=r=>sum(pagos(r),p=>p.monto),saldo=r=>aprobado(r)-paid(r);
-const epago=r=>{const a=aprobado(r),p=paid(r);if(!a&&!p&&estOf(r)===ESTADOS[3])return'Dado de baja';return p>a?'Con diferencia':!a&&!p?'Sin aprobar':p>=a?'Pagado':p?'Parcial':'Pendiente'};
+// Pagos: los que tienen fecha futura son "programados" y no cuentan como pagados hasta ese día
+const pagoFut=p=>!!p.fecha&&String(p.fecha).slice(0,10)>today(),prog=r=>pagos(r).filter(pagoFut).sort((a,b)=>String(a.fecha).localeCompare(String(b.fecha)));
+const aprobado=r=>apr(r)?+apr(r).monto||0:0,paid=r=>sum(pagos(r).filter(p=>!pagoFut(p)),p=>p.monto),paidAll=r=>sum(pagos(r),p=>p.monto),saldo=r=>aprobado(r)-paid(r);
+const epago=r=>{const a=aprobado(r),p=paid(r);if(!a&&!p&&estOf(r)===ESTADOS[3])return'Dado de baja';return!a&&p?'Pagado sin presupuesto':p>a?'Pagado de más':!a&&!p?'Sin aprobar':p>=a?'Pagado':p?'Parcial':'Pendiente'};
+// Texto de la etiqueta con el detalle: cuánto se debe, cuánto se pagó de más y si hay un pago programado
+const epagoTxt=r=>{const e=epago(r),a=aprobado(r),p=paid(r),f=prog(r)[0];let t=e;
+  if(e==='Parcial'||e==='Pendiente')t+=' · debe '+fmt(a-p);else if(e==='Pagado de más')t+=' '+fmt(p-a);
+  if(f&&e!=='Pagado'&&e!=='Pagado de más')t+=' · pago programado '+fd(f.fecha).slice(0,5);return t};
 const provId=r=>r.prov||(apr(r)||{}).prov;const provN=r=>{const v=by(S.prov,provId(r));return v?v.nombre:'—'};
 const open=r=>!['Finalizada','Cancelada'].includes(r.estado);
 const opts=(l,sel,blank)=>(blank!=null?`<option value="">${blank}</option>`:'')+l.map(o=>{const[v,t]=Array.isArray(o)?o:[o,o];return`<option value="${esc(v)}"${v===sel?' selected':''}>${esc(t)}</option>`}).join('');
@@ -248,7 +255,7 @@ const bd=(t,c='')=>`<span class="badge ${c}">${esc(t)}</span>`;
 const ECLS=['r','n','y','o'];
 const estOf=r=>{const e=String(r.estado||'').toUpperCase();if(/FINALIZ|CANCEL/.test(e))return ESTADOS[3];if(/EJECUC|APROBAD/.test(e))return ESTADOS[2];if(/PRESUPUESTO|APROBACI/.test(e))return ESTADOS[1];return ESTADOS[0]};
 const eb=r=>{const e=estOf(r);return bd(e,ECLS[ESTADOS.indexOf(e)])};
-const pb=p=>bd(p,p==='Urgente'||p==='Alta'?'u':''),xb=r=>{const e=epago(r);return bd(e,e==='Pagado'?'o':e==='Con diferencia'?'v':e==='Sin aprobar'||e==='Dado de baja'?'':'w')};
+const pb=p=>bd(p,p==='Urgente'||p==='Alta'?'u':''),xb=r=>{const e=epago(r);return bd(epagoTxt(r),e==='Pagado'?'o':e==='Pagado de más'||e==='Pagado sin presupuesto'?'v':e==='Sin aprobar'||e==='Dado de baja'?'':'w')};
 const att=a=>a?`<a href="#" data-sign="${esc(a.url)}">${esc(a.name)}</a>`:'<span class="mut">Sin archivo</span>';
 
 function repTable(l){
@@ -256,7 +263,7 @@ function repTable(l){
   return`<div class="wrap"><table style="min-width:760px"><tr><th>Reparación</th><th>Dirección del inmueble</th><th>Proveedor</th><th>Estado</th><th>Importe total</th><th>Pagado</th><th>Saldo pendiente</th></tr>`+l.map(r=>{const p=by(S.prop,r.prop);return`<tr class="row" data-act="rep" data-id="${r.id}"><td><b>${esc(r.titulo||'Sin título')}</b></td><td>${esc(p?p.direccion:'—')}</td><td>${esc(provN(r))}</td><td>${eb(r)}</td><td>${aprobado(r)?fmt(aprobado(r)):'<span class="mut">Sin presupuesto aprobado</span>'}</td><td>${fmt(paid(r))}</td><td class="${saldo(r)>0?'neg':''}">${aprobado(r)||paid(r)?fmt(saldo(r)):'—'}</td></tr>`}).join('')+'</table></div>';
 }
 function pagoTable(l,conPagado){
-  return`<div class="wrap"><table style="min-width:560px"><tr><th>Dirección del inmueble</th><th>Proveedor</th><th>Importe total</th>${conPagado?'<th>Pagado</th>':''}<th>Saldo pendiente</th></tr>`+l.map(r=>{const p=by(S.prop,r.prop);return`<tr class="row" data-act="rep" data-id="${r.id}"><td><b>${esc(p?p.direccion:'—')}</b></td><td>${esc(provN(r))}</td><td>${fmt(aprobado(r))}</td>${conPagado?`<td>${fmt(paid(r))}</td>`:''}<td class="${saldo(r)>0?'neg':''}">${fmt(saldo(r))} ${epago(r)==='Con diferencia'?bd('Con diferencia','v'):''}</td></tr>`}).join('')+'</table></div>';
+  return`<div class="wrap"><table style="min-width:560px"><tr><th>Dirección del inmueble</th><th>Proveedor</th><th>Importe total</th>${conPagado?'<th>Pagado</th>':''}<th>Saldo pendiente</th></tr>`+l.map(r=>{const p=by(S.prop,r.prop);return`<tr class="row" data-act="rep" data-id="${r.id}"><td><b>${esc(p?p.direccion:'—')}</b></td><td>${esc(provN(r))}</td><td>${fmt(aprobado(r))}</td>${conPagado?`<td>${fmt(paid(r))}</td>`:''}<td class="${saldo(r)>0?'neg':''}">${fmt(saldo(r))} ${epago(r)==='Pagado de más'?bd('Pagado de más','v'):''}</td></tr>`}).join('')+'</table></div>';
 }
 function kpis(){
   const m=today().slice(0,7),act=S.prop.filter(p=>!tg(p).includes('VENDIDO')).length,vig=S.con.filter(vigente),ars=sum(vig.filter(c=>c.moneda!=='USD'),c=>c.monto),usd=sum(vig.filter(c=>c.moneda==='USD'),c=>c.monto);
@@ -787,7 +794,7 @@ function drawRep(){
   ${L('Resumen del problema',I(c,id,'titulo',r.titulo))}
   <h2>Identificación</h2><div class="r2">${L('Propiedad',PS(`data-c="${c}" data-id="${id}" data-f="prop"`,r.prop))}${L('Fecha de solicitud',I(c,id,'fechaSol',r.fechaSol,'date'))}${L('Solicitante',I(c,id,'solicitante',r.solicitante))}${L('Categoría',SE(c,id,'categoria',r.categoria,CATS,''))}</div>${L('Descripción del problema',`<textarea data-c="${c}" data-id="${id}" data-f="desc" rows="2">${esc(r.desc||'')}</textarea>`)}
   <h2>Gestión</h2><div class="r2">${L('Responsable del seguimiento',I(c,id,'responsable',r.responsable))}${L('Prioridad',SE(c,id,'prioridad',r.prioridad||'Normal',PRIO))}${L('Estado',SE(c,id,'estado',estOf(r),ESTADOS))}${L('Proveedor elegido',SE(c,id,'prov',provId(r)||'',pv,'Sin elegir'))}${L('Inicio previsto',I(c,id,'fechaIni',r.fechaIni,'date'))}${L('Fin previsto',I(c,id,'fechaFinPrev',r.fechaFinPrev,'date'))}${L('Fin real',I(c,id,'fechaFinReal',r.fechaFinReal,'date'))}</div>
-  <h2>Control económico</h2><div class="grid"><div class="kpi"><b>${fmt(aprobado(r))}</b><span>importe aprobado</span></div><div class="kpi"><b>${fmt(paid(r))}</b><span>total pagado</span></div><div class="kpi"><b class="${saldo(r)>0?'neg':''}">${fmt(saldo(r))}</b><span>saldo pendiente</span></div><div class="kpi">${xb(r)}<br><span>estado de pago</span></div></div>
+  <h2>Control económico</h2><div class="grid"><div class="kpi"><b>${fmt(aprobado(r))}</b><span>importe aprobado</span></div><div class="kpi"><b>${fmt(paid(r))}</b><span>total pagado${prog(r).length?` (+ ${fmt(sum(prog(r),p=>p.monto))} programado desde el ${fd(prog(r)[0].fecha)})`:''}</span></div><div class="kpi"><b class="${saldo(r)>0?'neg':''}">${fmt(saldo(r))}</b><span>saldo pendiente</span></div><div class="kpi">${xb(r)}<br><span>estado de pago</span></div></div>
   <h2>Presupuestos</h2>${pres(r).map(p=>`<div class="sub"><div class="r2">${L('Proveedor',SE('pre',p.id,'prov',p.prov,pv,'Elegir…'))}${L('Fecha',I('pre',p.id,'fecha',p.fecha,'date'))}${L('Importe total',I('pre',p.id,'monto',p.monto,'number','min="0"'))}${L('Estado',SE('pre',p.id,'estado',p.estado,PEST))}${L('Validez hasta',I('pre',p.id,'validez',p.validez,'date'))}${L('Plazo estimado',I('pre',p.id,'plazo',p.plazo))}${L('Condiciones de pago',I('pre',p.id,'condiciones',p.condiciones))}${L('Descripción',I('pre',p.id,'desc',p.desc))}${L('Aprobado por',I('pre',p.id,'aprobadoPor',p.aprobadoPor))}${L('Fecha de aprobación',I('pre',p.id,'fechaAprob',p.fechaAprob,'date'))}</div><div class="bar2" style="margin:6px 0 0;align-items:center"><span>${att(p.archivo)}</span>${up('pre',p.id)}${p.estado==='Aprobado'&&p.aprobadoOriginal!=null&&+p.aprobadoOriginal!==+p.monto?`<span class="neg">Importe original aprobado: ${fmt(p.aprobadoOriginal)}</span>`:''}<button class="btn x" data-act="delc" data-c="pre" data-id="${p.id}">${ARM==='delc'+p.id?'¿Seguro?':'Eliminar'}</button></div></div>`).join('')}<button class="btn s" data-act="addpre">+ Presupuesto</button>
   <h2>Pagos</h2>${pagos(r).map(p=>`<div class="sub"><b>${esc(p.numero)}</b><div class="r2">${L('Fecha',I('pag',p.id,'fecha',p.fecha,'date'))}${L('Importe pagado',I('pag',p.id,'monto',p.monto,'number','min="0"'))}${L('Proveedor',SE('pag',p.id,'prov',p.prov,pv,'Elegir…'))}${L('Medio de pago',SE('pag',p.id,'medio',p.medio,MEDIOS))}${L('N° de operación',I('pag',p.id,'operacion',p.operacion))}${L('N° de factura',I('pag',p.id,'factura',p.factura))}${L('Registrado por',I('pag',p.id,'por',p.por))}${L('Observaciones',I('pag',p.id,'obs',p.obs))}</div><div class="bar2" style="margin:6px 0 0;align-items:center"><span>${att(p.archivo)}</span>${up('pag',p.id)}<button class="btn x" data-act="delc" data-c="pag" data-id="${p.id}">${ARM==='delc'+p.id?'¿Seguro?':'Eliminar'}</button></div></div>`).join('')}<button class="btn s" data-act="addpag">+ Pago</button>
   <h2>Fotos, facturas y comprobantes</h2><div class="docs">${(r.docs||[]).map((x,n)=>`<div class="doc">${false?`<img src="${esc(x.url)}" alt="">`:''}${att(x)}<textarea data-rnota="${n}" rows="2" placeholder="Notas" class="dnota">${esc(x.nota||'')}</textarea><div class="mut">${esc(x.cat)} · ${esc(x.fecha||'')} <button class="btn x" data-act="deldoc" data-i="${n}">✕</button></div></div>`).join('')||'<span class="mut">Sin archivos.</span>'}</div>${ASSETS?`<div class="bar2" style="margin-top:8px"><select id="cat">${opts(DOCC)}</select><input type="file" id="file" multiple><span class="mut">o arrastrá los archivos a la ficha</span></div>`:'<div class="mut">Adjuntar archivos requiere permiso de colaborador.</div>'}
@@ -949,7 +956,7 @@ document.addEventListener('change',async ev=>{
   if(!id){toast('Primero agregá la persona (botón + Persona) o el dato.');return}
   if(c==='prop'&&f==='situacion_legal')return upd('prop',id,{situacion_legal:v,legal_actualizado:new Date().toISOString()});
   if(c==='pre'&&f==='estado'&&v==='Aprobado')return aprobar(id);
-  if(c==='pag'&&f==='monto'&&r){const o=by(S.pag,id),a=aprobado(r);if(a>0&&paid(r)-(+o.monto||0)+(v||0)>a)toast('El total pagado supera el importe aprobado: requiere aprobación adicional.')}
+  if(c==='pag'&&f==='monto'&&r){const o=by(S.pag,id),a=aprobado(r);if(a>0&&paidAll(r)-(+o.monto||0)+(v||0)>a)toast('El total pagado supera el importe aprobado: requiere aprobación adicional.')}
   const montoAnt=c==='con'&&f==='monto'?(by(S.con,id)||{}).monto:undefined;
   const okU=await upd(c,id,{[f]:v});let msg='Guardado ✓';
   if(okU&&c==='con'&&f==='monto'&&v!=null&&+v!==+montoAnt){MPEND.set(id,montoAnt);if(DRAW[(dlg||{}).type])DRAW[dlg.type]()}
