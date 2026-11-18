@@ -239,7 +239,10 @@ const me=()=>{try{return localStorage.getItem('me')||''}catch(e){return''}};
 const pres=r=>S.pre.filter(p=>p.rep===r.id),pagos=r=>S.pag.filter(p=>p.rep===r.id);
 const apr=r=>pres(r).find(p=>p.estado==='Aprobado');
 // Tarjeta de reparación: a qué proveedores se les pidió presupuesto (o el proveedor elegido, si no hay presupuestos)
-const kprov=r=>{const ns=[...new Set(pres(r).map(x=>(by(S.prov,x.prov)||{}).nombre).filter(Boolean))];const v=by(S.prov,provId(r));
+// En FINALIZADO solo se muestra el contratado: a quién se le pagó, o si no hay pagos, el del presupuesto aprobado / proveedor elegido
+const kprov=r=>{if(estOf(r)===ESTADOS[3]){const ps=[...new Set(pagos(r).map(x=>(by(S.prov,x.prov)||{}).nombre).filter(Boolean))],v0=by(S.prov,(apr(r)||{}).prov||r.prov),c=ps.length?ps:v0?[v0.nombre]:[];
+    return c.length?`<div class="kprov">${esc('Contratado: '+c.join(', '))}</div>`:''}
+  const ns=[...new Set(pres(r).map(x=>(by(S.prov,x.prov)||{}).nombre).filter(Boolean))];const v=by(S.prov,provId(r));
   const t=ns.length?(ns.length>1?'Presupuestos: ':'Presupuesto: ')+ns.join(', '):v?'Proveedor: '+v.nombre:'';return t?`<div class="kprov">${esc(t)}</div>`:''};
 // Pagos: los que tienen fecha futura son "programados" y no cuentan como pagados hasta ese día
 const pagoFut=p=>!!p.fecha&&String(p.fecha).slice(0,10)>today(),prog=r=>pagos(r).filter(pagoFut).sort((a,b)=>String(a.fecha).localeCompare(String(b.fecha)));
