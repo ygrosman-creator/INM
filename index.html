@@ -153,6 +153,10 @@ header h1:before{display:none}
 #undo:hover:not(:disabled),.uarr:hover:not(:disabled){background:var(--acbg);color:var(--tx);transform:none}#undo:disabled,.uarr:disabled{opacity:.3;cursor:default}
 @media(max-width:700px){#dlg{width:100vw;border-radius:0;padding:16px}.srch kbd{display:none}}
 @media print{#cmdk,.srch,.kpis{display:none!important}#root{display:block}}
+.gmes{cursor:pointer}.gmes:hover text{font-weight:700}
+#gtip{position:fixed;z-index:200;display:none;background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);padding:10px 12px;font-size:12.5px;pointer-events:none;max-width:340px}
+#gtip table{min-width:0;margin-top:4px;border-collapse:collapse}#gtip td{padding:2px 6px;border:0;background:none!important}#gtip td:last-child{text-align:right;white-space:nowrap}
+#gtip tr.s td{font-weight:700;border-top:1px solid var(--bd)}#gtip tr.r td{font-weight:800;font-size:13.5px;border-top:2px solid var(--tx)}#gtip .pos{color:#0E8F6C}
 .ttot td:nth-child(n+2){white-space:nowrap}
 .ttot tr.tsec>td{background:var(--head)!important;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);padding-top:10px}
 .ttot tr.tsum>td{font-weight:700;border-top:2px solid var(--bd)}
@@ -577,6 +581,21 @@ function hbar(items,f){
   const mx=Math.max(...items.map(i=>i.value))||1,H=items.length*26+6;
   return`<svg viewBox="0 0 560 ${H}" width="100%" style="max-width:640px">${items.map((it,i)=>{const w=Math.max(2,it.value/mx*220);return`<text x="0" y="${i*26+17}" font-size="11" fill="currentColor">${esc(it.label)}</text><rect x="215" y="${i*26+5}" width="${w}" height="16" rx="3" fill="${PALx()[0]}"><title>${esc(it.label)}: ${f(it.value)}</title></rect><text x="${215+w+6}" y="${i*26+17}" font-size="11" fill="currentColor">${f(it.value)}</text>`}).join('')}</svg>`;
 }
+// Resumen de un mes del gráfico (HTML del cartelito)
+function resMes(x,i){
+  const P=v=>'$ '+fnum(Math.round(v)),ing=x.c+(x.cu||0),eg=x.a+x.b,res=ing-eg,L=(t,v,c='')=>`<tr${c?` class="${c}"`:''}><td>${t}</td><td>${v}</td></tr>`;
+  return`<b>${MESES[i]}</b><table>`+L('Alquileres en pesos',P(x.c))+(x.u?L(`Alquileres en dólares (USD ${fnum(Math.round(x.u))}${x.tc?' × $ '+fnum(x.tc):''})`,x.tc?P(x.cu):'sin cotización'):'')+L('Total ingresos',P(ing),'s')+
+    L('Impuestos pagados',P(x.a))+L('Arreglos pagados',P(x.b))+L('Total egresos',P(eg),'s')+L('Ingresos − egresos',`<span class="${res<0?'neg':'pos'}">${P(res)}</span>`,'r')+'</table>';
+}
+// Cartelito flotante para [data-gtip]: con mouse aparece al pasar por encima; en el celular, al tocar (y se cierra tocando afuera)
+function gtipShow(el,ev){let t=$('#gtip');if(!t){t=document.createElement('div');t.id='gtip';document.body.appendChild(t)}
+  t.innerHTML=el.dataset.gtip;t.style.display='block';const r=el.getBoundingClientRect(),w=t.offsetWidth,h=t.offsetHeight;
+  let x=r.left+r.width/2-w/2,y=r.top-h-8;if(y<8)y=r.bottom+8;x=Math.max(8,Math.min(x,innerWidth-w-8));t.style.left=x+'px';t.style.top=y+'px'}
+const gtipHide=()=>{const t=$('#gtip');if(t)t.style.display='none'};
+document.addEventListener('mouseover',e=>{const g=e.target.closest&&e.target.closest('[data-gtip]');if(g)gtipShow(g,e)});
+document.addEventListener('mouseout',e=>{const g=e.target.closest&&e.target.closest('[data-gtip]');if(g&&!(e.relatedTarget&&g.contains(e.relatedTarget)))gtipHide()});
+document.addEventListener('click',e=>{const g=e.target.closest&&e.target.closest('[data-gtip]');if(g)gtipShow(g,e);else gtipHide()},true);
+addEventListener('scroll',gtipHide,{passive:true});
 function stack(m){
   // Solo lo efectivamente pagado / cobrado. Arriba de cada columna se muestra el importe (k = miles, M = millones).
   // La columna de ingresos suma los alquileres en pesos (verde) y los cobrados en dólares pasados a pesos (celeste, arriba)
@@ -586,7 +605,8 @@ function stack(m){
       (hu?`<rect x="${xx+22}" y="${b0-hc-hu}" width="20" height="${hu}" rx="2" fill="${COL_USD}"><title>${x.mes}: alquileres cobrados USD ${fnum(x.u)} × $ ${fnum(Math.round(x.tc))} = ${fmt(x.cu)}</title></rect>`:'')+
       (x.a+x.b?`<text x="${xx+10}" y="${b0-ha-hb-4}" font-size="8.5" text-anchor="middle" fill="currentColor" opacity=".85">${fk(x.a+x.b)}</text>`:'')+
       (x.c+(x.cu||0)?`<text x="${xx+32}" y="${b0-hc-hu-4}" font-size="8.5" font-weight="700" text-anchor="middle" fill="${ca}">${fk(x.c+(x.cu||0))}</text>`:'')+
-      `<text x="${xx+21}" y="${b0+18}" font-size="10" text-anchor="middle" fill="currentColor">${x.mes}</text>`}).join('')}</svg>`;
+      // nombre del mes: al pasar el mouse (o tocarlo en el celular) muestra ingresos − egresos de ese mes
+      `<g class="gmes" data-gtip="${esc(resMes(x,i))}"><rect x="${xx-4}" y="${b0+4}" width="50" height="22" fill="transparent"/><text x="${xx+21}" y="${b0+18}" font-size="10" text-anchor="middle" fill="currentColor" text-decoration="underline dotted">${x.mes}</text></g>`}).join('')}</svg>`;
 }
 // Tipo de cambio para pasar a pesos los alquileres cobrados en dólares:
 // dólar billete Banco Nación, valor COMPRA, del último día de cada mes. El histórico diario lo publica ArgentinaDatos
