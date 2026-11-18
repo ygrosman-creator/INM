@@ -560,8 +560,8 @@ const OSCURO=()=>document.documentElement.dataset.skin==='oscuro';
 // Paleta del diseño editorial: verde menta, naranja, negro (o crema en oscuro), violeta, rojo, celeste…
 const PAL_E=()=>['#1FC79A','#F59E0B',OSCURO()?'#E8E2D6':'#161616','#7C6AE6','#EF4444','#38BDF8','#A8A39A','#84CC16','#EC4899','#8B5E3C'];
 const PALx=()=>PAL_E();
-// colores del gráfico ingresos vs. egresos: impuestos (naranja), reparaciones (negro / gris claro), alquileres (verde menta)
-const SC=()=>['#F59E0B',OSCURO()?'#A8A39A':'#161616','#1FC79A'];
+// colores del gráfico ingresos vs. egresos: impuestos (obispo claro), reparaciones (negro / gris claro), alquileres (verde menta)
+const SC=()=>['#B57EDC',OSCURO()?'#A8A39A':'#161616','#1FC79A'];
 const fk=v=>{v=+v||0;const a=Math.abs(v);return a>=1e6?(v/1e6).toFixed(a>=1e7?0:1).replace('.',',')+' M':a>=1e3?Math.round(v/1e3)+' k':String(Math.round(v))};
 function donut(items){
   const tot=sum(items,x=>x.value)||1,cx=90,cy=90,R=72,r=44;let a0=-Math.PI/2,out='';
