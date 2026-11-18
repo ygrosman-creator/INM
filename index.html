@@ -513,8 +513,10 @@ function drawPer(){
   <div class="bar2" style="margin-top:8px;align-items:center">${PS('id="pvprop"','')}<select id="pvtipo">${opts(OPC('vinculo'),'','Vínculo…')}</select><button class="btn s" data-act="vinper">Vincular</button></div>
   <div class="bar2" style="margin-top:12px">${DEL('per',x.id,'Eliminar persona')}</div>`;
 }
-const CC_PER=['#1FC79A','#3B82F6','#8B5CF6','#EC4899','#F59E0B','#0EA5E9','#14B8A6','#F97316','#6366F1','#84CC16'];
-const colPer=x=>{let h=0;for(const c of String(x.nombre||x.id||''))h=(h*31+c.charCodeAt(0))>>>0;return CC_PER[h%CC_PER.length]};
+const CC_PER=[['Inquilinos','#1FC79A',/inquilin/],['Comodatarios','#8B5CF6',/comodat/],['Donantes','#3B82F6',/donant/],['Testadores y herederos','#F59E0B',/testad|hered|benefic/],['Garantes','#0EA5E9',/garant/]],CC_PER_OTRO='#94A3B8';
+const nrm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+const grpPer=x=>{const vs=S.vin.filter(v=>v.persona===x.id).map(v=>nrm(v.vinculo));return CC_PER.find(([,,re])=>vs.some(v=>re.test(v)))};
+const colPer=x=>{const g=grpPer(x);return g?g[1]:CC_PER_OTRO};
 const inic=n=>String(n||'?').replace(/[^\p{L}\s]/gu,' ').trim().split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'?';
 function vPers(){
   const dirDe=v=>(by(S.prop,v.inmueble)||{}).direccion||'';
