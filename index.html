@@ -204,6 +204,7 @@ h2,.ttl{font-family:var(--fh);letter-spacing:-.01em}
 :root[data-skin="oscuro"] #up,:root[data-skin="oscuro"] .dup{background:var(--ac);color:var(--onac)}
 .doc textarea.dnota{width:100%;box-sizing:border-box;margin:4px 0 2px;font-size:12px;min-height:34px;resize:vertical}
 .badge{white-space:normal;max-width:100%;line-height:1.35}
+.kc .kprov{font-size:12px;color:var(--tx);margin-top:3px;line-height:1.35}
 #dlg.dropping{outline:3px dashed var(--ac);outline-offset:-8px;background-image:linear-gradient(var(--acbg),var(--acbg))}
 tr.tot th{background:var(--head);color:var(--tx);font-size:13px;letter-spacing:.02em;border-top:2px solid var(--bd)}
 /* Anillos de progreso */
@@ -237,6 +238,9 @@ const nx=(a,f,p,n)=>p+String(Math.max(0,...a.map(x=>parseInt(String(x[f]||'').re
 const me=()=>{try{return localStorage.getItem('me')||''}catch(e){return''}};
 const pres=r=>S.pre.filter(p=>p.rep===r.id),pagos=r=>S.pag.filter(p=>p.rep===r.id);
 const apr=r=>pres(r).find(p=>p.estado==='Aprobado');
+// Tarjeta de reparación: a qué proveedores se les pidió presupuesto (o el proveedor elegido, si no hay presupuestos)
+const kprov=r=>{const ns=[...new Set(pres(r).map(x=>(by(S.prov,x.prov)||{}).nombre).filter(Boolean))];const v=by(S.prov,provId(r));
+  const t=ns.length?(ns.length>1?'Presupuestos: ':'Presupuesto: ')+ns.join(', '):v?'Proveedor: '+v.nombre:'';return t?`<div class="kprov">${esc(t)}</div>`:''};
 // Pagos: los que tienen fecha futura son "programados" y no cuentan como pagados hasta ese día
 const pagoFut=p=>!!p.fecha&&String(p.fecha).slice(0,10)>today(),prog=r=>pagos(r).filter(pagoFut).sort((a,b)=>String(a.fecha).localeCompare(String(b.fecha)));
 const aprobado=r=>apr(r)?+apr(r).monto||0:0,paid=r=>sum(pagos(r).filter(p=>!pagoFut(p)),p=>p.monto),paidAll=r=>sum(pagos(r),p=>p.monto),saldo=r=>aprobado(r)-paid(r);
@@ -288,7 +292,7 @@ function anillos(){
   return`<div class="rings">${anillo(0,'alqs','Alquileres cobrados',cob,vig.length,'contratos vigentes · '+mes,'#1FC79A','#2BE0B0')}${anillo(0,'imps','Impuestos pagados',imp,im.length,'que paga AMIA · '+mes,'#F59E0B','#FBBF24')}${anillo(0,'reps','Reparaciones finalizadas',rf,ry.length,'pedidas en '+y,OSCURO()?'#E8E2D6':'#161616',OSCURO()?'#A8A39A':'#4A4744')}</div>`;
 }
 function vKan(){
-  return kpis()+`<div class="bar2"><button class="btn" data-act="new" data-k="rep">+ Nueva reparación</button></div><div class="kan">`+ESTADOS.map((e,i)=>{const l=S.rep.filter(r=>estOf(r)===e);return`<div class="col c${i}" data-drop="${e}"><h3>${e} <span class="mut">${l.length}</span></h3>`+l.map(r=>{const p=by(S.prop,r.prop);return`<div class="kc" draggable="true" data-act="rep" data-id="${r.id}"><b>${esc(r.titulo||'Sin título')}</b><div class="mut">${esc(p?p.direccion:'')}</div><div style="margin-top:4px">${pb(r.prioridad||'Normal')} ${xb(r)}</div></div>`}).join('')+'</div>'}).join('')+'</div><div class="mut">Arrastrá las tarjetas para cambiar el estado (en el celular, abrí la reparación).</div>';
+  return kpis()+`<div class="bar2"><button class="btn" data-act="new" data-k="rep">+ Nueva reparación</button></div><div class="kan">`+ESTADOS.map((e,i)=>{const l=S.rep.filter(r=>estOf(r)===e);return`<div class="col c${i}" data-drop="${e}"><h3>${e} <span class="mut">${l.length}</span></h3>`+l.map(r=>{const p=by(S.prop,r.prop);return`<div class="kc" draggable="true" data-act="rep" data-id="${r.id}"><b>${esc(r.titulo||'Sin título')}</b><div class="mut">${esc(p?p.direccion:'')}</div>${kprov(r)}<div style="margin-top:4px">${pb(r.prioridad||'Normal')} ${xb(r)}</div></div>`}).join('')+'</div>'}).join('')+'</div><div class="mut">Arrastrá las tarjetas para cambiar el estado (en el celular, abrí la reparación).</div>';
 }
 const RK=[2,1,0,3];
 const OPS2=[['lista','Listado de reparaciones'],['estado','Por estado'],['inmueble','Por inmueble'],['proveedor','Por proveedor'],['tipo','Por tipo de arreglo']];let SEL2=new Set(),PREV2=null;
