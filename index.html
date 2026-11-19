@@ -424,17 +424,22 @@ const ICO_CASA='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stro
 const ICO_DEPTO='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 7h.01M12 7h.01M15 7h.01M9 11h.01M12 11h.01M15 11h.01M9 15h.01M15 15h.01"/><path d="M11 21v-3h2v3"/></svg>';
 const SV=b=>`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${b}</svg>`;
 const ICO_LOCAL=SV('<path d="M4 9h16l-1.5-5h-13z"/><path d="M4 9a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0 2.7 2.7 0 0 0 5.3 0"/><path d="M5 11.5V20h14v-8.5"/><path d="M10 20v-5h4v5"/>');
-const ICO_INST=SV('<path d="M3 9.5 12 4l9 5.5"/><path d="M4 9.5h16"/><path d="M6 12v6M10 12v6M14 12v6M18 12v6"/><path d="M3.5 20.5h17"/>');
+const ICO_INST=SV('<path d="M12 1.8 15.6 8H8.4zM12 10.2 8.4 4h7.2z" stroke-width="1.5"/><path d="M3.5 12.5h17"/><path d="M6 15v3.5M10 15v3.5M14 15v3.5M18 15v3.5"/><path d="M3.5 21h17"/>');
+const ICO_TERRENO=SV('<path d="M3 20h18"/><path d="M5 20 7.5 13h9l2.5 7"/><path d="M12 13V4l5 2.2-5 2.2"/>');
+const ICO_AUTO=SV('<path d="M4.5 16.5V13l2-5h11l2 5v3.5z"/><path d="M4.5 13h15"/><circle cx="8" cy="17.5" r="1.7"/><circle cx="16" cy="17.5" r="1.7"/>');
 const ICO_ESTRELLA=SV('<path d="M12 3 20 17H4z"/><path d="M12 21 4 7h16z"/>');
 // Dibujo fijo para algunos inmuebles puntuales (el resto se deduce del tipo y la dirección)
-const ICO_FIJO=[[/LOPE DE VEGA 2772/,'depto'],[/JONTE 3340/,'casa'],[/ALBERDI 1022/,'depto'],[/MITRE 628/,'casa'],[/MATIENZO 2225/,'casa']];
+const ICO_FIJO=[[/LOPE DE VEGA 2772/,'depto'],[/ALBERDI 1022/,'depto'],[/MATIENZO 2225\b/,'casa'],[/ACEVEDO 477\b/,'depto'],[/SIRIA 2561\b/,'depto'],
+  [/MITRE 628\b/,'local'],[/MITRE 610\b/,'local'],[/^PATENTES/,'auto'],[/^LOTE\b/,'terreno'],
+  [/JONTE 3340\b/,'inst'],[/DIAZ VELEZ 4972\b/,'inst'],[/MORENO 2150\b/,'inst'],[/BELAUSTEGUI 878\b/,'inst'],[/CUENCA 467\b/,'inst'],[/ESTADO DE ISRAEL 43\b/,'inst'],
+  [/LAPRIDA 790\b/,'inst'],[/LAVALLE 2812\b/,'inst'],[/LOYOLA 1135\b/,'inst'],[/ORONO 1661\b/,'inst'],[/PASTEUR 633\b/,'inst'],[/SAN BLAS 5026\b/,'inst'],[/URIBURU 650\b/,'inst'],[/VARELA 5072\b/,'inst']];
 const icoTipo=p=>{const N=s=>String(s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,''),d=N(p.direccion),t=N(p.tipo),todo=d+' '+t+' '+N(p.localidad);
   const f=ICO_FIJO.find(([re])=>re.test(d));if(f)return f[1];
   if(/CEMENTERIO/.test(todo)||(/TERRENO/.test(todo)&&/BERAZATEGUI/.test(todo)))return'estrella';
-  if(/INSTITUC/.test(t))return'inst';if(/LOCAL/.test(t))return'local';
+  if(/INSTITUC/.test(t))return'inst';if(/LOCAL/.test(t))return'local';if(/TERRENO|LOTE/.test(t))return'terreno';if(/AUTO|PATENTE|VEHICUL/.test(t))return'auto';
   if(/CASA/.test(t))return'casa';if(/DEPART|DPTO|DEPTO|EDIFICIO/.test(t))return'depto';
   return/\d\s*[°º]|\bPISO\b|\bU\.?F\.?\s*\d|\bDTO\b|\bDEPTO\b|\bDPTO\b|\bOF(ICINA)?\.?\s*\d/.test(d)?'depto':'casa'};
-const ICOS={casa:[ICO_CASA,'Casa'],depto:[ICO_DEPTO,'Departamento'],local:[ICO_LOCAL,'Local'],inst:[ICO_INST,'Institución'],estrella:[ICO_ESTRELLA,'Cementerio / terreno']};
+const ICOS={casa:[ICO_CASA,'Casa'],depto:[ICO_DEPTO,'Departamento'],local:[ICO_LOCAL,'Local'],inst:[ICO_INST,'Institución judía'],estrella:[ICO_ESTRELLA,'Cementerio / terreno'],terreno:[ICO_TERRENO,'Terreno'],auto:[ICO_AUTO,'Patentes / vehículos']};
 const icoInm=p=>ICOS[icoTipo(p)];
 function vProps(){
   const sel=new Set(F.tg||[]),vd=p=>tg(p).includes('VENDIDO')?1:0,l=inmList().sort((a,b)=>vd(a)-vd(b)||String(a.direccion).localeCompare(String(b.direccion)));
@@ -453,7 +458,7 @@ function drawInm(){
 }
 function fDatos(p){
   const id=p.id,c='prop',tags=tg(p),all=[...new Set([...OPC('etiqueta'),...tags])].sort((a,b)=>a.localeCompare(b));
-  return`<div class="r2">${L('Dirección',I(c,id,'direccion',p.direccion))}${L('Localidad',I(c,id,'localidad',p.localidad))}${L('Tipo (casa, departamento, local, institución, lote…)',I(c,id,'tipo',p.tipo))}${L('Superficie (m²)',I(c,id,'m2',p.m2,'number'))}${L('Nomenclatura catastral',I(c,id,'nomenclatura',p.nomenclatura))}</div>
+  return`<div class="r2">${L('Dirección',I(c,id,'direccion',p.direccion))}${L('Localidad',I(c,id,'localidad',p.localidad))}${L('Tipo (casa, departamento, local, institución, terreno…)',I(c,id,'tipo',p.tipo))}${L('Superficie (m²)',I(c,id,'m2',p.m2,'number'))}${L('Nomenclatura catastral',I(c,id,'nomenclatura',p.nomenclatura))}</div>
   <label class="chk" style="margin-top:8px"><input type="checkbox" data-c="prop" data-id="${id}" data-f="de_amia" ${p.de_amia?'checked':''}> DE AMIA (tenemos el título)</label>
   <h2>Ingreso del inmueble</h2><div class="r2">${L('Fecha de ingreso',I(c,id,'fecha_ingreso',p.fecha_ingreso,'date'))}<div style="grid-column:span 2">${L('Notas',I(c,id,'notas_ingreso',p.notas_ingreso))}</div></div>
   <h2>Usucapión</h2><div class="r2 sm">${L('Años de usucapión',`<input data-c="prop" data-id="${id}" data-f="usucapion_anios" data-int="1" inputmode="numeric" value="${p.usucapion_anios??''}">`)}${L('Año en que se puede hacer la usucapión',`<input value="${anioUsu(p)||''}" disabled>`)}</div><div class="mut">Se calcula con la fecha de ingreso más los años de usucapión. Si cargás directamente un año (por ejemplo 2031), se toma ese año.</div>
