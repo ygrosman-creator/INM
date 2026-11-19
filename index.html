@@ -172,6 +172,24 @@ header h1:before{display:none}
 .ttot tr.tres>td{font-weight:800;font-size:15px;border-top:3px double var(--tx);background:var(--acbg)!important}
 .printonly{display:none}@media print{.printonly{display:inline}}
 @media print{.gsoff{display:none!important}}.gsoff{opacity:.45}
+.infv{--ibg:#F8F9FA;--icd:#FFFFFF;--ibd:#E5E7EB;--itx:#1F2937;--imu:#6B7280;--iac:#059669;--iacbg:#ECFDF5;--iav:#FFFBEB;--iavtx:#92400E;--iavbd:#FDE68A;background:var(--ibg);border-radius:16px;padding:12px;color:var(--itx)}
+:root[data-skin="oscuro"] .infv,:root[data-theme="dark"] .infv{--ibg:#141517;--icd:#1C1D20;--ibd:#2E3035;--itx:#E5E7EB;--imu:#9CA3AF;--iac:#34D399;--iacbg:rgba(52,211,153,.12);--iav:rgba(251,191,36,.1);--iavtx:#FCD34D;--iavbd:rgba(251,191,36,.35)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .infv{--ibg:#141517;--icd:#1C1D20;--ibd:#2E3035;--itx:#E5E7EB;--imu:#9CA3AF;--iac:#34D399;--iacbg:rgba(52,211,153,.12);--iav:rgba(251,191,36,.1);--iavtx:#FCD34D;--iavbd:rgba(251,191,36,.35)}}
+.infv .card{background:var(--icd)!important;border:1px solid var(--ibd)!important;box-shadow:0 1px 2px rgba(0,0,0,.04)!important;color:var(--itx)}.infv .mut{color:var(--imu)}.infv h2{margin:16px 0 8px}
+.irap{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:8px}
+.irapc{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;padding:12px 14px;border:1px solid var(--ibd);border-radius:12px;background:var(--icd);color:var(--itx);cursor:pointer;font:inherit;transition:border-color .15s,background .15s}
+.irapc small{color:var(--imu);font-size:12px}.irapc:hover{border-color:var(--iac)}.irapc.on{border-color:var(--iac);background:var(--iacbg);box-shadow:inset 0 0 0 1px var(--iac)}
+.ibar{align-items:center}.ibar select.infsel,.igc select.infsel{width:auto!important;max-width:none!important;flex:0 0 auto}
+.isw{display:inline-flex;align-items:center;gap:10px;margin-top:10px;cursor:pointer;font-size:14px;user-select:none}.isw input{position:absolute;opacity:0;pointer-events:none}
+.iswt{width:36px;height:20px;border-radius:20px;background:var(--ibd);position:relative;transition:background .15s;flex:0 0 auto}.iswt::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:left .15s}
+.isw input:checked+.iswt{background:var(--iac)}.isw input:checked+.iswt::after{left:18px}.isw input:focus-visible+.iswt{outline:2px solid var(--iac);outline-offset:2px}
+.iaviso{margin-top:10px;padding:8px 12px;border-radius:10px;background:var(--iav);color:var(--iavtx);border:1px solid var(--iavbd);font-size:13px}
+.igrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}@media(max-width:640px){.igrid{grid-template-columns:1fr}}
+.igc{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:10px 12px;border:1px solid var(--ibd);border-radius:12px;background:var(--ibg);transition:border-color .15s,background .15s}
+.igc.on{border-color:var(--iac);background:var(--iacbg)}.igc>label.chk{flex:1 1 200px;margin:0;display:flex;align-items:flex-start;gap:8px}.igc>label.chk input{margin-top:3px}
+.igc label span{display:flex;flex-direction:column}.igc label small{color:var(--imu);font-size:12px;font-weight:400}.igc select[disabled],.igc .ichk2.off{opacity:.45}.igc .ichk2{margin:0;font-size:13px}
+.ihead{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px}.ipill{font-size:12px;padding:3px 9px;border-radius:20px;background:var(--iacbg);color:var(--iac);font-weight:600}
+.infv .btn:not(.s){background:var(--iac);border-color:var(--iac)}
 .gbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}.gbar select{width:auto;min-width:0;flex:0 0 auto}
 .gdd{position:relative}.gdd summary{list-style:none;cursor:pointer;padding:8px 30px 8px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--card);white-space:nowrap;position:relative}
 .gdd summary::-webkit-details-marker{display:none}.gdd summary::after{content:'▾';position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--mut)}
@@ -786,12 +804,12 @@ function vRes(){
   <div class="card wrap"><table>${th}${ms.map(m=>row(m[0],m[1])).join('')}<tr><th>Total ${y}</th>${tot.map(x=>`<th>${fmt(x)}</th>`).join('')}</tr></table></div>
   <h2>Por inmueble en ${y}</h2><div class="card wrap"><table>${th}${S.prop.filter(p=>!tg(p).includes('VENDIDO')).map(p=>row(p.direccion,agg(y,p.id))).join('')}</table></div><div class="mut">Presupuestado = por fecha del presupuesto; aprobado = por fecha de aprobación; pagado = por fecha del pago. No incluye inmuebles vendidos.</div>`;
 }
-let INF={ai:'',tg:new Set(),tm:'todas',tipo:'',loc:'',av:'',amia:'',ay:'',g:new Set(['datos','alquiler']),sub:false,prev:null};
+let INF={ai:'',tg:new Set(),tm:'todas',tipo:'',loc:'',av:'',amia:'',ay:'',g:new Set(['datos','alquiler']),sub:false,inc:false,q:'',prev:null};
 const GRUPOS=[['datos','Datos del inmueble: superficie, etiquetas, DE AMIA y tipo'],['alquiler','Alquiler: último monto, inquilino, inicio y fin del contrato'],['venta','Venta: año e importe'],['impuestos','Impuestos del año: cantidad, total, no pagado y próximo vencimiento'],['reparaciones','Reparaciones: cantidad, importe total, pagado y saldo'],['legal','Legal: última nota y fecha'],['personas','Personas vinculadas y su vínculo'],['usucapion','Usucapión: años, año en que se puede hacer y notas judiciales'],['comodato','Comodato: fecha de vencimiento y estado']];
 const anioVenta=p=>p.anio_venta||(p.fecha_venta?+String(p.fecha_venta).slice(0,4):null);
 function infList(){
   const sel=[...INF.tg],alg=INF.tm==='alguna';
-  return S.prop.filter(p=>(!INF.ai||String(p.fecha_ingreso||'').slice(0,4)===INF.ai)&&(!tg(p).includes('VENDIDO')||INF.tg.has('VENDIDO')||INF.av)&&(!tg(p).includes('TESTAMENTO')||INF.tg.has('TESTAMENTO'))&&(!INF.g.has('legal')||S.nov.some(n=>n.inmueble===p.id)||tg(p).some(t=>['JUDICIALIZADO','USUCAPIÓN','USURPADO'].includes(t)))&&(!sel.length||(alg?sel.some(t=>tg(p).includes(t)):sel.every(t=>tg(p).includes(t))))&&(!INF.tipo||p.tipo===INF.tipo)&&(!INF.loc||p.localidad===INF.loc)&&(!INF.av||String(anioVenta(p))===INF.av)&&(!INF.amia||(INF.amia==='si'?p.de_amia:!p.de_amia))).sort((a,b)=>String(a.direccion).localeCompare(String(b.direccion)));
+  return S.prop.filter(p=>(!INF.ai||String(p.fecha_ingreso||'').slice(0,4)===INF.ai)&&(INF.inc||!tg(p).includes('VENDIDO')||INF.tg.has('VENDIDO')||INF.av)&&(INF.inc||!tg(p).includes('TESTAMENTO')||INF.tg.has('TESTAMENTO'))&&(!INF.g.has('legal')||S.nov.some(n=>n.inmueble===p.id)||tg(p).some(t=>['JUDICIALIZADO','USUCAPIÓN','USURPADO'].includes(t)))&&(!sel.length||(alg?sel.some(t=>tg(p).includes(t)):sel.every(t=>tg(p).includes(t))))&&(!INF.tipo||p.tipo===INF.tipo)&&(!INF.loc||p.localidad===INF.loc)&&(!INF.av||String(anioVenta(p))===INF.av)&&(!INF.amia||(INF.amia==='si'?p.de_amia:!p.de_amia))).sort((a,b)=>String(a.direccion).localeCompare(String(b.direccion)));
 }
 function buildInf(){
   const y=INF.ay||String(new Date().getFullYear()),g=INF.g,t=today();
@@ -860,13 +878,20 @@ function dlInf(){
 function vInf(){
   const cy=new Date().getFullYear(),y=INF.ay||String(cy),locs=[...new Set(S.prop.map(p=>p.localidad).filter(Boolean))].sort(),tipos=[...new Set(S.prop.map(p=>p.tipo).filter(Boolean))].sort(),anios=[...new Set(S.prop.map(anioVenta).filter(Boolean))].sort((a,b)=>b-a).map(String);
   const aniosI=[...new Set(S.prop.map(p=>p.fecha_ingreso?String(p.fecha_ingreso).slice(0,4):null).filter(Boolean))].sort((a,b)=>b-a);
-  return`<div class="card"><h1 class="noprint" style="font-size:18px">Informe consolidado</h1><div class="mut noprint">Un solo informe que cruza todo lo que elijas, en una única tabla. Si tildás una sola opción de contenido, ves solamente esa información.</div>
-  <h2 class="noprint">1. Qué inmuebles incluir</h2><div class="bar2" style="align-items:center">${DD('itg','Etiquetas',OPC('etiqueta'),INF.tg,'data-itg')}<select data-inf="tm" style="max-width:250px">${opts([['todas','Con TODAS las etiquetas elegidas'],['alguna','Con ALGUNA de las etiquetas elegidas']],INF.tm)}</select><select data-inf="av">${opts(anios,INF.av,'Cualquier año de venta')}</select><select data-inf="ai">${opts(aniosI,INF.ai,'Cualquier año de ingreso')}</select><select data-inf="amia">${opts([['si','DE AMIA (con título)'],['no','No son de AMIA']],INF.amia,'DE AMIA y no DE AMIA')}</select></div>
-  <div class="mut noprint">Por defecto no se incluyen los inmuebles vendidos ni los de testamento: para verlos, elegí esas etiquetas. Si elegís el contenido “Legal”, salen solo los inmuebles con tema legal.</div>
-  <h2 class="noprint">2. Qué contenido incluir</h2><div class="noprint">${GRUPOS.map(([k,t])=>`<label class="chk"><input type="checkbox" data-ig="${k}" ${INF.g.has(k)?'checked':''}> ${t}</label>`).join('<br>')}</div>
-  <div class="bar2" style="margin-top:10px;align-items:center"><span class="mut">Año para impuestos:</span><select data-inf="ay" style="max-width:110px">${opts([cy-1,cy,cy+1].map(String),y)}</select>${INF.g.has('venta')?`<label class="chk"><input type="checkbox" data-infchk="sub" ${INF.sub?'checked':''}> Subtotales por año de venta</label>`:''}</div>
-  <div class="bar2 noprint" style="margin-top:6px"><button class="btn" data-act="infprev">Vista previa</button><button class="btn s" data-act="infvend">Vendidos por año</button><button class="btn s" data-act="infusu">Usucapión</button><button class="btn s" data-act="infcom">Comodatos</button>${INF.prev&&INF.prev.length?'<button class="btn s" data-act="infdl">Descargar Excel</button><button class="btn s" data-act="printcard" data-title="Informe de inmuebles">Imprimir</button>':''}</div>
-  ${INF.prev?(INF.prev.length?`<h2>Informe de inmuebles · ${INF.cnt||0} inmuebles</h2>${tbl(INF.prev)}`:'<div class="empty">No hay inmuebles con esos filtros.</div>'):''}</div>`;
+  INF.prev=buildInf();const ncol=INF.prev.length?Object.keys(INF.prev[0]).length:0;
+  const RAP=[['vend','infvend','Vendidos por año','Vendidos con año e importe de venta y subtotales'],['usu','infusu','Usucapión','Años, cuándo se puede hacer y notas judiciales'],['com','infcom','Comodatos','Vencimiento, estado y personas vinculadas']];
+  const IG=([k,t])=>{const on=INF.g.has(k),[tit,...r]=t.split(':');
+    const extra=k==='impuestos'?`<select data-inf="ay" class="infsel" ${on?'':'disabled'} title="Año de los impuestos">${opts([cy-1,cy,cy+1].map(String),y)}</select>`:k==='venta'?`<label class="chk ichk2${on?'':' off'}"><input type="checkbox" data-infchk="sub" ${INF.sub?'checked':''} ${on?'':'disabled'}> Subtotales por año</label>`:'';
+    return`<div class="igc${on?' on':''}"><label class="chk"><input type="checkbox" data-ig="${k}" ${on?'checked':''}> <span><b>${esc(tit)}</b>${r.length?`<small>${esc(r.join(':').trim())}</small>`:''}</span></label>${extra}</div>`};
+  return`<div class="infv">
+  <div class="card noprint"><b class="ttl">Reportes rápidos</b><div class="irap">${RAP.map(([q,a,t,d])=>`<button class="irapc${INF.q===q?' on':''}" data-act="${a}"><b>${t}</b><small>${d}</small></button>`).join('')}</div></div>
+  <div class="card noprint" style="margin-top:12px"><b class="ttl">Informe consolidado</b><div class="mut">Elegí qué inmuebles y qué datos querés ver. La tabla de abajo se arma sola mientras elegís.</div>
+  <h2>1. Qué inmuebles incluir</h2><div class="bar2 ibar">${DD('itg','Etiquetas',OPC('etiqueta'),INF.tg,'data-itg')}<select data-inf="tm" class="infsel">${opts([['todas','Con TODAS las etiquetas elegidas'],['alguna','Con ALGUNA de las etiquetas elegidas']],INF.tm)}</select><select data-inf="av" class="infsel">${opts(anios,INF.av,'Cualquier año de venta')}</select><select data-inf="ai" class="infsel">${opts(aniosI,INF.ai,'Cualquier año de ingreso')}</select><select data-inf="amia" class="infsel">${opts([['si','DE AMIA (con título)'],['no','No son de AMIA']],INF.amia,'DE AMIA y no DE AMIA')}</select></div>
+  <label class="isw"><input type="checkbox" data-infchk="inc" ${INF.inc?'checked':''}><span class="iswt"></span> Incluir inmuebles vendidos y de testamento</label>
+  ${INF.g.has('legal')?'<div class="iaviso">⚖ Estás viendo solo inmuebles con tema legal (con notas legales o etiqueta Judicializado, Usucapión o Usurpado), porque elegiste el contenido “Legal”.</div>':''}
+  <h2>2. Qué contenido incluir</h2><div class="igrid">${GRUPOS.map(IG).join('')}</div></div>
+  <div class="card" style="margin-top:12px"><div class="ihead"><b class="ttl" style="margin:0">Informe de inmuebles</b><span class="ipill">${INF.cnt||0} inmuebles</span><span class="ipill">${ncol} columnas</span><span style="flex:1"></span>${INF.prev.length?'<button class="btn s noprint" data-act="infdl">Excel</button><button class="btn s noprint" data-act="printcard" data-title="Informe de inmuebles">PDF / Imprimir</button>':''}</div>
+  ${INF.prev.length?tbl(INF.prev):'<div class="empty">No hay inmuebles con esos filtros.</div>'}</div></div>`;
 }
 const TABS=[['kan','Tablero',vKan],['reps','Reparaciones',vReps],['pagos','Control de pagos',vPagos],['res','Resumen económico',vRes],['provs','Proveedores',vProvs],['props','Inmuebles',vProps],['pers','Personas',vPers],['alqs','Alquileres',vAlqs],['imps','Impuestos',vImps],['inf','Informes',vInf],['graf','Gráficos',vGraf]];
 // Frase grande de cada pantalla (debajo del rótulo con el nombre de la sección)
@@ -985,10 +1010,9 @@ document.addEventListener('click',async ev=>{
   else if(a==='undo')doUndo();
   else if(a==='up'){const d=$('#dlg');if(d.open)d.scrollTo({top:0,behavior:'smooth'});else window.scrollTo({top:0,behavior:'smooth'})}
   else if(a==='addmm'){F.pex=F.pex||{};F.pex[t.dataset.k]=(F.pex[t.dataset.k]||0)+1;if(dlg&&dlg.type==='per')drawPer(),dupBtn()}
-  else if(a==='infprev'){INF.prev=buildInf();render()}
-  else if(a==='infvend'){INF.tg=new Set(['VENDIDO']);INF.tm='todas';INF.g=new Set(['venta']);INF.sub=true;INF.av='';INF.prev=buildInf();render()}
-  else if(a==='infusu'){INF.tg=new Set(['USUCAPIÓN']);INF.tm='todas';INF.g=new Set(['usucapion']);INF.sub=false;INF.av='';INF.ai='';INF.prev=buildInf();render()}
-  else if(a==='infcom'){INF.tg=new Set(['COMODATO']);INF.tm='todas';INF.g=new Set(['comodato','personas']);INF.sub=false;INF.av='';INF.ai='';INF.prev=buildInf();render()}
+  else if(a==='infvend'){INF.tg=new Set(['VENDIDO']);INF.tm='todas';INF.g=new Set(['venta']);INF.sub=true;INF.av='';INF.q='vend';render()}
+  else if(a==='infusu'){INF.tg=new Set(['USUCAPIÓN']);INF.tm='todas';INF.g=new Set(['usucapion']);INF.sub=false;INF.av='';INF.ai='';INF.q='usu';render()}
+  else if(a==='infcom'){INF.tg=new Set(['COMODATO']);INF.tm='todas';INF.g=new Set(['comodato','personas']);INF.sub=false;INF.av='';INF.ai='';INF.q='com';render()}
   else if(a==='infdl')dlInf();
   else if(a==='printcard'){try{const el=t.closest('.card').cloneNode(true);el.querySelectorAll('.noprint,.bar2,label.chk,details').forEach(x=>x.remove());printHtml(t.dataset.title||'Informe',el.innerHTML)}catch(e){window.print()}}
   else if(a==='alqxl'){if(!window.XLSX)return toast('No se pudo cargar el generador de Excel.');const d=alqRows(false),w=XLSX.utils.json_to_sheet(d);w['!cols']=Object.keys(d[0]).map(c=>({wch:Math.max(16,c.length+2)}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,w,'Alquileres');XLSX.writeFile(wb,'alquileres.xlsx')}
@@ -1043,10 +1067,10 @@ document.addEventListener('change',async ev=>{
   if(t.dataset.gsel){const k=t.dataset.gsel;if(k==='*')GSEL=new Set(t.checked?GSECS.map(x=>x[0]):[]);else t.checked?GSEL.add(k):GSEL.delete(k);render();return}
   if(t.dataset.gl==='*'){F.gl=new Set(t.checked?GAL:[]);render();return}
   if(t.dataset.gl){F.gl=F.gl||new Set(GAL);t.checked?F.gl.add(t.dataset.gl):F.gl.delete(t.dataset.gl);render();return}
-  if(t.dataset.itg){t.checked?INF.tg.add(t.dataset.itg):INF.tg.delete(t.dataset.itg);INF.prev=null;render();return}
-  if(t.dataset.ig){t.checked?INF.g.add(t.dataset.ig):INF.g.delete(t.dataset.ig);INF.prev=null;render();return}
-  if(t.dataset.infchk){INF[t.dataset.infchk]=t.checked;INF.prev=null;render();return}
-  if(t.dataset.inf){INF[t.dataset.inf]=t.value;INF.prev=null;render();return}
+  if(t.dataset.itg){t.checked?INF.tg.add(t.dataset.itg):INF.tg.delete(t.dataset.itg);INF.q='';render();return}
+  if(t.dataset.ig){t.checked?INF.g.add(t.dataset.ig):INF.g.delete(t.dataset.ig);INF.q='';render();return}
+  if(t.dataset.infchk){INF[t.dataset.infchk]=t.checked;if(t.dataset.infchk!=='sub')INF.q='';render();return}
+  if(t.dataset.inf){INF[t.dataset.inf]=t.value;if(t.dataset.inf!=='ay')INF.q='';t.blur();render();return}
   if(t.dataset.mm){const key=t.dataset.mm,f=key==='mail'?'mail':'telefono',vals=[...document.querySelectorAll('[data-mm="'+key+'"]')].map(e=>e.value.trim()).filter(Boolean);F.pex=F.pex||{};F.pex[key]=0;upd('per',t.dataset.id,{[f]:vals.join('; ')||null});return}
   if(t.dataset.chk2){t.checked?SEL2.add(t.dataset.chk2):SEL2.delete(t.dataset.chk2);PREV2=null;render();return}
   if(t.dataset.chk){t.checked?SEL.add(t.dataset.chk):SEL.delete(t.dataset.chk);PREV=null;render();return}
