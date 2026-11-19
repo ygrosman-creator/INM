@@ -875,6 +875,8 @@ function dlInf(){
   const wb=XLSX.utils.book_new(),d=INF.prev,w=XLSX.utils.json_to_sheet(d);w['!cols']=Object.keys(d[0]).map(c=>({wch:/nota legal$|Personas|Etiquetas|Notas judiciales/.test(c)?50:Math.max(14,c.length+2)}));XLSX.utils.book_append_sheet(wb,w,'Informe consolidado');
   XLSX.writeFile(wb,'informe-consolidado.xlsx');
 }
+// Cerrado muestra solo el nombre ("Año de venta"); al abrirlo: "Todos" y los años
+const optAn=(tit,an,v)=>`<option value="" hidden ${v?'':'selected'}>${tit}</option><option value="">Todos</option>${an.map(a=>`<option value="${esc(a)}" ${String(v)===String(a)?'selected':''}>${esc(a)}</option>`).join('')}`;
 function vInf(){
   const cy=new Date().getFullYear(),y=INF.ay||String(cy),locs=[...new Set(S.prop.map(p=>p.localidad).filter(Boolean))].sort(),tipos=[...new Set(S.prop.map(p=>p.tipo).filter(Boolean))].sort(),anios=[...new Set(S.prop.map(anioVenta).filter(Boolean))].sort((a,b)=>b-a).map(String);
   const aniosI=[...new Set(S.prop.map(p=>p.fecha_ingreso?String(p.fecha_ingreso).slice(0,4):null).filter(Boolean))].sort((a,b)=>b-a);
@@ -885,7 +887,7 @@ function vInf(){
     return`<div class="igc${on?' on':''}"><label class="chk"><input type="checkbox" data-ig="${k}" ${on?'checked':''}> <span><b>${esc(tit)}</b>${r.length?`<small>${esc(r.join(':').trim())}</small>`:''}</span></label>${extra}</div>`};
   return`<div class="kpis noprint ikpis">${[...RAP].sort((a,b)=>a[2].localeCompare(b[2],'es')).map(([q,a,t,d,tag])=>`<div class="card${INF.q===q?' on':''}" data-act="${a}" title="Ver el reporte de ${t.toLowerCase()}"><span>${t}</span><b>${S.prop.filter(p=>tg(p).includes(tag)).length}</b><small>${d}</small></div>`).join('')}</div>
   <div class="infv"><div class="card noprint"><b class="ttl">Informe consolidado</b><div class="mut">Elegí qué inmuebles y qué datos querés ver. La tabla de abajo se arma sola mientras elegís.</div>
-  <h2>1. Qué inmuebles incluir</h2><div class="bar2 ibar">${DD('itg','Etiquetas',['TODAS',...OPC('etiqueta')],INF.tg,'data-itg',INF.tg.has('TODAS')?'Etiquetas: TODAS':'')}<select data-inf="av" class="infsel">${opts(anios,INF.av,'Cualquier año de venta')}</select><select data-inf="ai" class="infsel">${opts(aniosI,INF.ai,'Cualquier año de ingreso')}</select><select data-inf="amia" class="infsel">${opts([['si','DE AMIA (con título)'],['no','No son de AMIA']],INF.amia,'DE AMIA y no DE AMIA')}</select></div>
+  <h2>1. Qué inmuebles incluir</h2><div class="bar2 ibar">${DD('itg','Etiquetas',['TODAS',...OPC('etiqueta')],INF.tg,'data-itg',INF.tg.has('TODAS')?'Etiquetas: TODAS':'')}<select data-inf="av" class="infsel" title="Año de venta">${optAn('Año de venta',anios,INF.av)}</select><select data-inf="ai" class="infsel" title="Año de ingreso">${optAn('Año de ingreso',aniosI,INF.ai)}</select><select data-inf="amia" class="infsel">${opts([['si','DE AMIA (con título)'],['no','No son de AMIA']],INF.amia,'DE AMIA y no DE AMIA')}</select></div>
   <div class="isws"><label class="isw"><input type="checkbox" data-infchk="inc" ${INF.inc?'checked':''}><span class="iswt"></span> Incluir inmuebles vendidos y de testamento</label></div>
   ${INF.g.has('legal')?'<div class="iaviso">⚖ Estás viendo solo inmuebles con tema legal (con notas legales o etiqueta Judicializado, Usucapión o Usurpado), porque elegiste el contenido “Legal”.</div>':''}
   <h2>2. Qué contenido incluir</h2><div class="igrid">${[...GRUPOS].sort((a,b)=>a[1].localeCompare(b[1],'es')).map(IG).join('')}</div></div>
