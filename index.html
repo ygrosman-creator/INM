@@ -176,18 +176,15 @@ header h1:before{display:none}
 :root[data-skin="oscuro"] .infv,:root[data-theme="dark"] .infv{--ibg:#141517;--icd:#1C1D20;--ibd:#2E3035;--itx:#E5E7EB;--imu:#9CA3AF;--iac:#34D399;--iacbg:rgba(52,211,153,.12);--iav:rgba(251,191,36,.1);--iavtx:#FCD34D;--iavbd:rgba(251,191,36,.35)}
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .infv{--ibg:#141517;--icd:#1C1D20;--ibd:#2E3035;--itx:#E5E7EB;--imu:#9CA3AF;--iac:#34D399;--iacbg:rgba(52,211,153,.12);--iav:rgba(251,191,36,.1);--iavtx:#FCD34D;--iavbd:rgba(251,191,36,.35)}}
 .infv .card{background:var(--icd)!important;border:1px solid var(--ibd)!important;box-shadow:0 1px 2px rgba(0,0,0,.04)!important;color:var(--itx)}.infv .mut{color:var(--imu)}.infv h2{margin:16px 0 8px}
-.irap{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:8px}
-.irapc{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;padding:12px 14px;border:1px solid var(--ibd);border-radius:12px;background:var(--icd);color:var(--itx);cursor:pointer;font:inherit;transition:border-color .15s,background .15s}
-.irapc small{color:var(--imu);font-size:12px}.irapc:hover{border-color:var(--iac)}.irapc.on{border-color:var(--iac);background:var(--iacbg);box-shadow:inset 0 0 0 1px var(--iac)}
-.infv .card.irapw{background:var(--kpi,#161616)!important;border-color:var(--kpi,#161616)!important;color:var(--kpitx,#fff)}.irapw .ttl{color:var(--kpitx,#fff)}
-.irapw .irapc{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:var(--kpitx,#fff)}.irapw .irapc small{color:var(--kpimut,rgba(255,255,255,.6))}
-.irapw .irapc:hover{border-color:var(--iac);background:rgba(255,255,255,.1)}.irapw .irapc.on{background:rgba(52,211,153,.16);border-color:#34D399;box-shadow:inset 0 0 0 1px #34D399}
+.ikpis .card{transition:transform .15s,box-shadow .15s}.ikpis .card.on{box-shadow:0 0 0 3px var(--mint,#34D399)}
 .ibar{align-items:center}.ibar select.infsel,.igc select.infsel{width:auto!important;max-width:none!important;flex:0 0 auto}
 .isws{display:flex;flex-wrap:wrap;gap:4px 28px}.isw{display:inline-flex;align-items:center;gap:10px;margin-top:10px;cursor:pointer;font-size:14px;user-select:none}.isw input{position:absolute;opacity:0;pointer-events:none}
 .iswt{width:36px;height:20px;border-radius:20px;background:var(--ibd);position:relative;transition:background .15s;flex:0 0 auto}.iswt::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:left .15s}
 .isw input:checked+.iswt{background:var(--iac)}.isw input:checked+.iswt::after{left:18px}.isw input:focus-visible+.iswt{outline:2px solid var(--iac);outline-offset:2px}
 .iaviso{margin-top:10px;padding:8px 12px;border-radius:10px;background:var(--iav);color:var(--iavtx);border:1px solid var(--iavbd);font-size:13px}
-.igrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}@media(max-width:640px){.igrid{grid-template-columns:1fr}}
+.igrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}@media(max-width:980px){.igrid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.igrid{grid-template-columns:1fr}}
+.igrid .igc{padding:8px 10px;gap:4px 8px;border-radius:10px}.igrid .igc>label.chk{flex:1 1 100%;font-size:13px;gap:6px}.igrid .igc label small{font-size:11px;line-height:1.3}
+.igrid .igc>select.infsel{padding:2px 6px;font-size:12px;height:auto;margin-left:22px}.igrid .igc .ichk2{font-size:12px;margin-left:22px}
 .igc{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:10px 12px;border:1px solid var(--ibd);border-radius:12px;background:var(--ibg);transition:border-color .15s,background .15s}
 .igc.on{border-color:var(--iac);background:var(--iacbg)}.igc>label.chk{flex:1 1 200px;margin:0;display:flex;align-items:flex-start;gap:8px}.igc>label.chk input{margin-top:3px}
 .igc label span{display:flex;flex-direction:column}.igc label small{color:var(--imu);font-size:12px;font-weight:400}.igc select[disabled],.igc .ichk2.off{opacity:.45}.igc .ichk2{margin:0;font-size:13px}
@@ -882,13 +879,12 @@ function vInf(){
   const cy=new Date().getFullYear(),y=INF.ay||String(cy),locs=[...new Set(S.prop.map(p=>p.localidad).filter(Boolean))].sort(),tipos=[...new Set(S.prop.map(p=>p.tipo).filter(Boolean))].sort(),anios=[...new Set(S.prop.map(anioVenta).filter(Boolean))].sort((a,b)=>b-a).map(String);
   const aniosI=[...new Set(S.prop.map(p=>p.fecha_ingreso?String(p.fecha_ingreso).slice(0,4):null).filter(Boolean))].sort((a,b)=>b-a);
   INF.prev=buildInf();const ncol=INF.prev.length?Object.keys(INF.prev[0]).length:0;
-  const RAP=[['alq','infalq','Alquileres','Alquilados con monto, inquilino, inicio y fin del contrato'],['vend','infvend','Vendidos por año','Vendidos con año e importe de venta y subtotales'],['usu','infusu','Usucapión','Años, cuándo se puede hacer y notas judiciales'],['com','infcom','Comodatos','Vencimiento, estado y personas vinculadas']];
+  const RAP=[['alq','infalq','Alquileres','inmuebles alquilados','ALQUILADO'],['vend','infvend','Vendidos por año','inmuebles vendidos','VENDIDO'],['usu','infusu','Usucapión','inmuebles en usucapión','USUCAPIÓN'],['com','infcom','Comodatos','inmuebles en comodato','COMODATO']];
   const IG=([k,t])=>{const on=INF.g.has(k),[tit,...r]=t.split(':');
     const extra=k==='impuestos'?`<select data-inf="ay" class="infsel" ${on?'':'disabled'} title="Año de los impuestos">${opts([cy-1,cy,cy+1].map(String),y)}</select>`:k==='venta'?`<label class="chk ichk2${on?'':' off'}"><input type="checkbox" data-infchk="sub" ${INF.sub?'checked':''} ${on?'':'disabled'}> Subtotales por año</label>`:'';
     return`<div class="igc${on?' on':''}"><label class="chk"><input type="checkbox" data-ig="${k}" ${on?'checked':''}> <span><b>${esc(tit)}</b>${r.length?`<small>${esc(r.join(':').trim())}</small>`:''}</span></label>${extra}</div>`};
-  return`<div class="infv">
-  <div class="card noprint irapw"><b class="ttl">Reportes rápidos</b><div class="irap">${[...RAP].sort((a,b)=>a[2].localeCompare(b[2],'es')).map(([q,a,t,d])=>`<button class="irapc${INF.q===q?' on':''}" data-act="${a}"><b>${t}</b><small>${d}</small></button>`).join('')}</div></div>
-  <div class="card noprint" style="margin-top:12px"><b class="ttl">Informe consolidado</b><div class="mut">Elegí qué inmuebles y qué datos querés ver. La tabla de abajo se arma sola mientras elegís.</div>
+  return`<div class="kpis noprint ikpis">${[...RAP].sort((a,b)=>a[2].localeCompare(b[2],'es')).map(([q,a,t,d,tag])=>`<div class="card${INF.q===q?' on':''}" data-act="${a}" title="Ver el reporte de ${t.toLowerCase()}"><span>${t}</span><b>${S.prop.filter(p=>tg(p).includes(tag)).length}</b><small>${d}</small></div>`).join('')}</div>
+  <div class="infv"><div class="card noprint"><b class="ttl">Informe consolidado</b><div class="mut">Elegí qué inmuebles y qué datos querés ver. La tabla de abajo se arma sola mientras elegís.</div>
   <h2>1. Qué inmuebles incluir</h2><div class="bar2 ibar">${DD('itg','Etiquetas',OPC('etiqueta'),INF.tg,'data-itg')}<select data-inf="av" class="infsel">${opts(anios,INF.av,'Cualquier año de venta')}</select><select data-inf="ai" class="infsel">${opts(aniosI,INF.ai,'Cualquier año de ingreso')}</select><select data-inf="amia" class="infsel">${opts([['si','DE AMIA (con título)'],['no','No son de AMIA']],INF.amia,'DE AMIA y no DE AMIA')}</select></div>
   <div class="isws"><label class="isw" title="Apagado: alcanza con que tengan una de las etiquetas elegidas"><input type="checkbox" data-inftm="1" ${INF.tm!=='alguna'?'checked':''}><span class="iswt"></span> Con TODAS las etiquetas elegidas</label>
   <label class="isw"><input type="checkbox" data-infchk="inc" ${INF.inc?'checked':''}><span class="iswt"></span> Incluir inmuebles vendidos y de testamento</label></div>
