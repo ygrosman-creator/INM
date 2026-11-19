@@ -275,7 +275,7 @@ const ESTADOS=['PENDIENTE DE REVISIÓN','SOLICITADO PRESUPUESTO','EN EJECUCIÓN'
 const PRIO=['Baja','Normal','Alta','Urgente'],CATS=['Plomería','Electricidad','Albañilería','Pintura','Techos','Ascensores','Seguridad','Otros'];
 const PEST=['Recibido','En evaluación','Aprobado','Rechazado','Vencido'],MEDIOS=['Transferencia','Cheque','Efectivo','Otro'],EPROP=['ALQUILADO','EN ALQUILER','A LA VENTA','EN COMODATO','DE AMIA','VARIOS'];
 const DOCC=['Foto del problema','Foto del trabajo terminado','Factura','Comprobante','Otro'],MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-let FT='datos',BUSY=false,ARM=null,DB=null,ASSETS=null,view='kan',selProp=null,dlg=null,dragId=null,F={q:'',p:'',v:'',pr:'',e:'',y:'',rp:''};
+let FT='datos',BUSY=false,ARM=null,DB=null,ASSETS=null,view=(()=>{try{return sessionStorage.getItem('inm-view')||'ini'}catch(e){return'ini'}})(),selProp=(()=>{try{return sessionStorage.getItem('inm-prop')||null}catch(e){return null}})(),dlg=null,dragId=null,F={q:'',p:'',v:'',pr:'',e:'',y:'',rp:''};
 const sum=(a,f)=>a.reduce((t,x)=>t+(+f(x)||0),0),by=(a,id)=>a.find(x=>x.id===id);
 const nx=(a,f,p,n)=>p+String(Math.max(0,...a.map(x=>parseInt(String(x[f]||'').replace(/\D/g,''))||0))+1).padStart(n,'0');
 const me=()=>{try{return localStorage.getItem('me')||''}catch(e){return''}};
@@ -337,8 +337,12 @@ function anillos(){
   const ry=S.rep.filter(r=>String(r.fechaSol||r.created_at||'').startsWith(y)),rf=ry.filter(r=>estOf(r)===ESTADOS[3]).length;
   return`<div class="rings">${anillo(0,'alqs','Alquileres cobrados',cob,vig.length,'contratos vigentes · '+mes,'#1FC79A','#2BE0B0')}${anillo(0,'imps','Impuestos pagados',imp,im.length,'que paga AMIA · '+mes,'#F59E0B','#FBBF24')}${anillo(0,'reps','Reparaciones finalizadas',rf,ry.length,'pedidas en '+y,OSCURO()?'#E8E2D6':'#161616',OSCURO()?'#A8A39A':'#4A4744')}</div>`;
 }
+// Pantalla de inicio: accesos directos (números del mes + reportes rápidos de Informes)
+function vIni(){
+  return`<h2 style="margin-top:4px">Este mes</h2>`+kpis()+`<h2>Reportes rápidos</h2>`+rapidos();
+}
 function vKan(){
-  return kpis()+`<div class="bar2"><button class="btn" data-act="new" data-k="rep">+ Nueva reparación</button></div><div class="kan">`+ESTADOS.map((e,i)=>{const l=S.rep.filter(r=>estOf(r)===e);return`<div class="col c${i}" data-drop="${e}"><h3>${e} <span class="mut">${l.length}</span></h3>`+l.map(r=>{const p=by(S.prop,r.prop);return`<div class="kc" draggable="true" data-act="rep" data-id="${r.id}"><b>${esc(r.titulo||'Sin título')}</b><div class="mut">${esc(p?p.direccion:'')}</div>${kprov(r)}<div style="margin-top:4px">${pb(r.prioridad||'Normal')} ${xb(r)}</div></div>`}).join('')+'</div>'}).join('')+'</div><div class="mut">Arrastrá las tarjetas para cambiar el estado (en el celular, abrí la reparación).</div>';
+  return`<div class="bar2"><button class="btn" data-act="new" data-k="rep">+ Nueva reparación</button></div><div class="kan">`+ESTADOS.map((e,i)=>{const l=S.rep.filter(r=>estOf(r)===e);return`<div class="col c${i}" data-drop="${e}"><h3>${e} <span class="mut">${l.length}</span></h3>`+l.map(r=>{const p=by(S.prop,r.prop);return`<div class="kc" draggable="true" data-act="rep" data-id="${r.id}"><b>${esc(r.titulo||'Sin título')}</b><div class="mut">${esc(p?p.direccion:'')}</div>${kprov(r)}<div style="margin-top:4px">${pb(r.prioridad||'Normal')} ${xb(r)}</div></div>`}).join('')+'</div>'}).join('')+'</div><div class="mut">Arrastrá las tarjetas para cambiar el estado (en el celular, abrí la reparación).</div>';
 }
 const RK=[2,1,0,3];
 const OPS2=[['lista','Listado de reparaciones'],['estado','Por estado'],['inmueble','Por inmueble'],['proveedor','Por proveedor'],['tipo','Por tipo de arreglo']];let SEL2=new Set(),PREV2=null;
@@ -759,7 +763,7 @@ function vGraf(){
   <div class="wrap">${alr.length?`<table style="min-width:640px"><tr><th>Dirección</th><th>Etiquetas</th><th>Última nota legal</th></tr>${alr.map(p=>{const n=ult(p);return`<tr class="row" data-act="inm" data-id="${p.id}" data-t="legal"><td><b>${esc(p.direccion)}</b></td><td>${tg(p).filter(t=>GAL.includes(t)).map(t=>bd(t,'u')).join(' ')}</td><td>${n?'<span class="mut">'+fd(n.fecha)+'</span> '+esc(String(n.texto||'').slice(0,220)):'<span class="mut">Sin notas</span>'}</td></tr>`}).join('')}</table>`:`<div class="empty">${gl.size?'No hay inmuebles con esas alertas.':'Elegí una o más alertas para ver los inmuebles.'}</div>`}</div></div></div>`;
 }
 function vProp(){
-  const p=by(S.prop,selProp);if(!p){view='props';return vProps()}const l=S.rep.filter(r=>r.prop===p.id).sort((a,b)=>(b.fechaSol||'').localeCompare(a.fechaSol||''));
+  const p=by(S.prop,selProp);if(!p){if(!S.prop.length)return'<div class="card empty">Cargando…</div>';view='props';return vProps()}const l=S.rep.filter(r=>r.prop===p.id).sort((a,b)=>(b.fechaSol||'').localeCompare(a.fechaSol||''));
   return`<div class="bar2"><button class="btn s" data-act="tab" data-v="props">← Propiedades</button><button class="btn s" data-act="edit" data-k="prop" data-id="${p.id}">Editar datos</button><button class="btn" data-act="new" data-k="rep" data-p="${p.id}">+ Nueva reparación</button></div>
   <div class="card"><h1>${esc(p.direccion)}</h1><div class="mut">${esc([p.localidad,p.estado,p.responsable&&'Responsable: '+p.responsable].filter(Boolean).join(' · '))}</div><p>${esc(p.obs||'')}</p><div class="grid"><div class="kpi"><b>${fmt(sum(l,aprobado))}</b><span>importe total</span></div><div class="kpi"><b>${fmt(sum(l,paid))}</b><span>pagado</span></div><div class="kpi"><b>${fmt(sum(l,r=>Math.max(0,saldo(r))))}</b><span>saldo pendiente</span></div></div></div><h2>Historial de reparaciones</h2><div class="card">${repTable(l)}</div>`;
 }
@@ -877,15 +881,17 @@ function dlInf(){
 }
 // Cerrado muestra solo el nombre ("Año de venta"); al abrirlo: "Todos" y los años
 const optAn=(tit,an,v)=>`<option value="" hidden ${v?'':'selected'}>${tit}</option><option value="">Todos</option>${an.map(a=>`<option value="${esc(a)}" ${String(v)===String(a)?'selected':''}>${esc(a)}</option>`).join('')}`;
+// Reportes rápidos (se ven en Inicio y en Informes; al tocarlos se abre Informes con ese reporte)
+const RAP=[['alq','infalq','Alquileres','inmuebles alquilados','ALQUILADO'],['vend','infvend','Vendidos por año','inmuebles vendidos','VENDIDO'],['usu','infusu','Usucapión','inmuebles en usucapión','USUCAPIÓN'],['com','infcom','Comodatos','inmuebles en comodato','COMODATO']];
+const rapidos=()=>`<div class="kpis noprint ikpis">${[...RAP].sort((a,b)=>a[2].localeCompare(b[2],'es')).map(([q,a,t,d,tag])=>`<div class="card${view==='inf'&&INF.q===q?' on':''}" data-act="${a}" title="Ver el reporte de ${t.toLowerCase()}"><span>${t}</span><b>${S.prop.filter(p=>tg(p).includes(tag)).length}</b><small>${d}</small></div>`).join('')}</div>`;
 function vInf(){
   const cy=new Date().getFullYear(),y=INF.ay||String(cy),locs=[...new Set(S.prop.map(p=>p.localidad).filter(Boolean))].sort(),tipos=[...new Set(S.prop.map(p=>p.tipo).filter(Boolean))].sort(),anios=[...new Set(S.prop.map(anioVenta).filter(Boolean))].sort((a,b)=>b-a).map(String);
   const aniosI=[...new Set(S.prop.map(p=>p.fecha_ingreso?String(p.fecha_ingreso).slice(0,4):null).filter(Boolean))].sort((a,b)=>b-a);
   INF.prev=buildInf();const ncol=INF.prev.length?Object.keys(INF.prev[0]).length:0;
-  const RAP=[['alq','infalq','Alquileres','inmuebles alquilados','ALQUILADO'],['vend','infvend','Vendidos por año','inmuebles vendidos','VENDIDO'],['usu','infusu','Usucapión','inmuebles en usucapión','USUCAPIÓN'],['com','infcom','Comodatos','inmuebles en comodato','COMODATO']];
   const IG=([k,t])=>{const on=INF.g.has(k),[tit,...r]=t.split(':');
     const extra=k==='impuestos'?`<select data-inf="ay" class="infsel" ${on?'':'disabled'} title="Año de los impuestos">${opts([cy-1,cy,cy+1].map(String),y)}</select>`:k==='venta'?`<label class="chk ichk2${on?'':' off'}"><input type="checkbox" data-infchk="sub" ${INF.sub?'checked':''} ${on?'':'disabled'}> Subtotales por año</label>`:'';
     return`<div class="igc${on?' on':''}"><label class="chk"><input type="checkbox" data-ig="${k}" ${on?'checked':''}> <span><b>${esc(tit)}</b>${r.length?`<small>${esc(r.join(':').trim())}</small>`:''}</span></label>${extra}</div>`};
-  return`<div class="kpis noprint ikpis">${[...RAP].sort((a,b)=>a[2].localeCompare(b[2],'es')).map(([q,a,t,d,tag])=>`<div class="card${INF.q===q?' on':''}" data-act="${a}" title="Ver el reporte de ${t.toLowerCase()}"><span>${t}</span><b>${S.prop.filter(p=>tg(p).includes(tag)).length}</b><small>${d}</small></div>`).join('')}</div>
+  return`${rapidos()}
   <div class="infv"><div class="card noprint"><b class="ttl">Informe consolidado</b><div class="mut">Elegí qué inmuebles y qué datos querés ver.</div>
   <h2>1. Qué inmuebles incluir</h2><div class="bar2 ibar">${DD('itg','Etiquetas',['TODAS',...OPC('etiqueta')],INF.tg,'data-itg',INF.tg.has('TODAS')?'Etiquetas: TODAS':'')}<select data-inf="av" class="infsel" title="Año de venta">${optAn('Año de venta',anios,INF.av)}</select><select data-inf="ai" class="infsel" title="Año de ingreso">${optAn('Año de ingreso',aniosI,INF.ai)}</select><select data-inf="amia" class="infsel">${opts([['si','DE AMIA (con título)'],['no','No son de AMIA']],INF.amia,'DE AMIA y no DE AMIA')}</select></div>
   <div class="isws"><label class="isw"><input type="checkbox" data-infchk="inc" ${INF.inc?'checked':''}><span class="iswt"></span> Incluir inmuebles vendidos y de testamento</label></div>
@@ -894,12 +900,14 @@ function vInf(){
   <div class="card" style="margin-top:12px"><div class="ihead"><b class="ttl" style="margin:0">Informe de inmuebles</b><span class="ipill">${INF.cnt||0} inmuebles</span><span class="ipill">${ncol} columnas</span><span style="flex:1"></span>${INF.prev.length?'<button class="btn s noprint" data-act="infdl">Excel</button><button class="btn s noprint" data-act="printcard" data-title="Informe de inmuebles">PDF / Imprimir</button>':''}</div>
   ${INF.prev.length?tbl(INF.prev):'<div class="empty">No hay inmuebles con esos filtros.</div>'}</div></div>`;
 }
-const TABS=[['kan','Tablero',vKan],['reps','Reparaciones',vReps],['pagos','Control de pagos',vPagos],['res','Resumen económico',vRes],['provs','Proveedores',vProvs],['props','Inmuebles',vProps],['pers','Personas',vPers],['alqs','Alquileres',vAlqs],['imps','Impuestos',vImps],['inf','Informes',vInf],['graf','Gráficos',vGraf]];
+const TABS=[['ini','Inicio',vIni],['kan','Tablero',vKan],['reps','Reparaciones',vReps],['pagos','Control de pagos',vPagos],['res','Resumen económico',vRes],['provs','Proveedores',vProvs],['props','Inmuebles',vProps],['pers','Personas',vPers],['alqs','Alquileres',vAlqs],['imps','Impuestos',vImps],['inf','Informes',vInf],['graf','Gráficos',vGraf]];
 // Frase grande de cada pantalla (debajo del rótulo con el nombre de la sección)
-const FRASES={kan:'Qué se arregló, cuánto costó y qué falta pagar.',reps:'Cada arreglo, con su presupuesto y su pago.',pagos:'Lo aprobado, lo pagado y lo que falta.',res:'Cuánto se gastó en reparaciones y en qué.',provs:'Quién trabaja con nosotros y cuánto cobró.',props:'Todos los inmuebles, con su situación al día.',pers:'Inquilinos, donantes y contactos.',alqs:'Quién pagó, cuánto y cuándo ajusta.',imps:'Qué vence, qué se pagó y qué falta.',inf:'Informes listos para descargar.',graf:'La cartera en números.'};
+const FRASES={ini:'Todo de un vistazo.',kan:'Qué se arregló, cuánto costó y qué falta pagar.',reps:'Cada arreglo, con su presupuesto y su pago.',pagos:'Lo aprobado, lo pagado y lo que falta.',res:'Cuánto se gastó en reparaciones y en qué.',provs:'Quién trabaja con nosotros y cuánto cobró.',props:'Todos los inmuebles, con su situación al día.',pers:'Inquilinos, donantes y contactos.',alqs:'Quién pagó, cuánto y cuándo ajusta.',imps:'Qué vence, qué se pagó y qué falta.',inf:'Informes listos para descargar.',graf:'La cartera en números.'};
 function render(){
   if(!DB){$('#app').innerHTML='<div class="card empty">Cargando…</div>';return}
   const a=document.activeElement;if(a&&a.dataset&&a.dataset.flt&&a.tagName==='INPUT'&&a.type==='text')return;
+  if(view!=='prop'&&!TABS.some(t=>t[0]===view))view='ini';
+  try{sessionStorage.setItem('inm-view',view);if(selProp)sessionStorage.setItem('inm-prop',selProp)}catch(e){}
   const cur=view==='prop'?'props':view;
   $('#root').classList.toggle('navx',NAVX);
   $('#nav').innerHTML=TABS.map(([v,l])=>`<button class="${cur===v?'on':''}" data-act="tab" data-v="${v}">${ico(v)}<span>${l}</span></button>`).join('');
@@ -1013,10 +1021,10 @@ document.addEventListener('click',async ev=>{
   else if(a==='undo')doUndo();
   else if(a==='up'){const d=$('#dlg');if(d.open)d.scrollTo({top:0,behavior:'smooth'});else window.scrollTo({top:0,behavior:'smooth'})}
   else if(a==='addmm'){F.pex=F.pex||{};F.pex[t.dataset.k]=(F.pex[t.dataset.k]||0)+1;if(dlg&&dlg.type==='per')drawPer(),dupBtn()}
-  else if(a==='infalq'){INF.tg=new Set(['ALQUILADO']);INF.tm='todas';INF.g=new Set(['alquiler']);INF.sub=false;INF.av='';INF.ai='';INF.q='alq';render()}
-  else if(a==='infvend'){INF.tg=new Set(['VENDIDO']);INF.tm='todas';INF.g=new Set(['venta']);INF.sub=true;INF.av='';INF.q='vend';render()}
-  else if(a==='infusu'){INF.tg=new Set(['USUCAPIÓN']);INF.tm='todas';INF.g=new Set(['usucapion']);INF.sub=false;INF.av='';INF.ai='';INF.q='usu';render()}
-  else if(a==='infcom'){INF.tg=new Set(['COMODATO']);INF.tm='todas';INF.g=new Set(['comodato','personas']);INF.sub=false;INF.av='';INF.ai='';INF.q='com';render()}
+  else if(a==='infalq'){INF.tg=new Set(['ALQUILADO']);INF.tm='todas';INF.g=new Set(['alquiler']);INF.sub=false;INF.av='';INF.ai='';INF.q='alq';view='inf';render();scrollTo(0,0)}
+  else if(a==='infvend'){INF.tg=new Set(['VENDIDO']);INF.tm='todas';INF.g=new Set(['venta']);INF.sub=true;INF.av='';INF.q='vend';view='inf';render();scrollTo(0,0)}
+  else if(a==='infusu'){INF.tg=new Set(['USUCAPIÓN']);INF.tm='todas';INF.g=new Set(['usucapion']);INF.sub=false;INF.av='';INF.ai='';INF.q='usu';view='inf';render();scrollTo(0,0)}
+  else if(a==='infcom'){INF.tg=new Set(['COMODATO']);INF.tm='todas';INF.g=new Set(['comodato','personas']);INF.sub=false;INF.av='';INF.ai='';INF.q='com';view='inf';render();scrollTo(0,0)}
   else if(a==='infdl')dlInf();
   else if(a==='printcard'){try{const el=t.closest('.card').cloneNode(true);el.querySelectorAll('.noprint,.bar2,label.chk,details').forEach(x=>x.remove());printHtml(t.dataset.title||'Informe',el.innerHTML)}catch(e){window.print()}}
   else if(a==='alqxl'){if(!window.XLSX)return toast('No se pudo cargar el generador de Excel.');const d=alqRows(false),w=XLSX.utils.json_to_sheet(d);w['!cols']=Object.keys(d[0]).map(c=>({wch:Math.max(16,c.length+2)}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,w,'Alquileres');XLSX.writeFile(wb,'alquileres.xlsx')}
@@ -1220,6 +1228,7 @@ function ajFicha(c){
 }
 // Menú lateral plegable: achicado mientras se trabaja, se abre con un clic
 const ICO={menu:'<path d="M3 6h18M3 12h18M3 18h18"/>',
+  ini:'<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/>',
   kan:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
   reps:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
   pagos:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
@@ -1277,6 +1286,6 @@ function start(){
   DB=mkDB();ASSETS=mkAssets();$('#out').style.display='';
   for(const k of Object.keys(COL))DB.collection(COL[k]).onSnapshot(s=>{S[k]=s.docs.map(d=>({id:d.id,...d.data()}));if(k==='prov')S.prov.sort((a,b)=>String(a.nombre||'').trim().localeCompare(String(b.nombre||'').trim(),'es',{sensitivity:'base',numeric:true}));render()},e=>toast(e.message));
   render()}
-$('#out').onclick=async()=>{await sb.auth.signOut();location.reload()};
+$('#out').onclick=async()=>{try{sessionStorage.removeItem('inm-view');sessionStorage.removeItem('inm-prop')}catch(e){}await sb.auth.signOut();location.reload()};
 (async()=>{const r=await sb.auth.getSession();r.data.session?start():login()})();
 </script></body></html>
