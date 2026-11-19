@@ -437,7 +437,7 @@ const icoTipo=p=>{const N=s=>String(s||'').toUpperCase().normalize('NFD').replac
 const ICOS={casa:[ICO_CASA,'Casa'],depto:[ICO_DEPTO,'Departamento'],local:[ICO_LOCAL,'Local'],inst:[ICO_INST,'Institución'],estrella:[ICO_ESTRELLA,'Cementerio / terreno']};
 const icoInm=p=>ICOS[icoTipo(p)];
 function vProps(){
-  const sel=new Set(F.tg||[]),l=inmList();
+  const sel=new Set(F.tg||[]),vd=p=>tg(p).includes('VENDIDO')?1:0,l=inmList().sort((a,b)=>vd(a)-vd(b)||String(a.direccion).localeCompare(String(b.direccion)));
   const vacio=l.length?'':`<div class="card">${sel.size&&F.tm!=='alguna'?'Ningún inmueble tiene TODAS esas etiquetas a la vez. Probá con la opción “ALGUNA de las etiquetas elegidas”.':'No hay inmuebles con esos filtros.'}</div>`;
   const pers=p=>S.vin.filter(v=>v.inmueble===p.id).map(v=>({v:v.vinculo,n:(by(S.per,v.persona)||{}).nombre})).filter(x=>x.n);
   return`<div class="bar2" style="align-items:center"><input list="dlp" data-flt="pq" placeholder="Buscar por dirección, localidad o número…" value="${esc(F.pq||'')}">${DD('tg','Etiquetas',OPC('etiqueta'),sel,'data-tg')}<select data-flt="tm" style="max-width:300px">${opts([['todas','Que tengan TODAS las etiquetas'],['alguna','Que tengan ALGUNA de las etiquetas']],F.tm||'todas')}</select><label class="chk"><input type="checkbox" data-am="1" ${F.am?'checked':''}> DE AMIA (con título)</label><button class="btn" data-act="new" data-k="prop">+ Nueva propiedad</button></div>
