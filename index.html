@@ -794,7 +794,7 @@ function dl(){
   PREV.forEach(p=>{const n=p.label.replace('Por ','');sh(p.res,'Resumen '+n);sh(p.det,'Detalle '+n)});
   XLSX.writeFile(wb,`informe-${y}.xlsx`);
 }
-const tbl=d=>{const k=Object.keys(d[0]);return`<div class="wrap"><table style="min-width:520px"><tr>${k.map(x=>`<th>${esc(x)}</th>`).join('')}</tr>${d.map(r=>`<tr>${k.map(x=>`<td>${typeof r[x]==='number'?(/importe|alquiler|saldo|pagad|aprobad|presupuest|total|valor|monto/i.test(x)?fmt(r[x]):fnum(r[x])):esc(r[x]??'')}</td>`).join('')}</tr>`).join('')}</table></div>`};
+const tbl=d=>{const k=Object.keys(d[0]);return`<div class="wrap"><table style="min-width:520px"><tr>${k.map(x=>`<th>${esc(x)}</th>`).join('')}</tr>${d.map(r=>`<tr>${k.map(x=>`<td>${typeof r[x]==='number'?(/año/i.test(x)?String(r[x]):/importe|alquiler|saldo|pagad|aprobad|presupuest|total|valor|monto/i.test(x)?fmt(r[x]):fnum(r[x])):esc(r[x]??'')}</td>`).join('')}</tr>`).join('')}</table></div>`};
 function vRes(){
   const cy=new Date().getFullYear(),y=F.y||String(cy),th='<tr><th></th><th>Presupuestado</th><th>Aprobado</th><th>Pagado</th></tr>',row=(n,a)=>`<tr><td>${esc(n)}</td>${a.map(x=>`<td>${fmt(x)}</td>`).join('')}</tr>`;
   const ms=MESES.map((m,i)=>[m,agg(y+'-'+String(i+1).padStart(2,'0'),F.rp)]),tot=[0,1,2].map(i=>sum(ms,m=>m[1][i]));
