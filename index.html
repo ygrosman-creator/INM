@@ -804,7 +804,7 @@ function vRes(){
   <div class="card wrap"><table>${th}${ms.map(m=>row(m[0],m[1])).join('')}<tr><th>Total ${y}</th>${tot.map(x=>`<th>${fmt(x)}</th>`).join('')}</tr></table></div>
   <h2>Por inmueble en ${y}</h2><div class="card wrap"><table>${th}${S.prop.filter(p=>!tg(p).includes('VENDIDO')).map(p=>row(p.direccion,agg(y,p.id))).join('')}</table></div><div class="mut">Presupuestado = por fecha del presupuesto; aprobado = por fecha de aprobación; pagado = por fecha del pago. No incluye inmuebles vendidos.</div>`;
 }
-let INF={ai:'',tg:new Set(),tm:'todas',tipo:'',loc:'',av:'',amia:'',ay:'',g:new Set(['datos','alquiler']),sub:false,inc:false,q:'',prev:null};
+let INF={ai:'',tg:new Set(['TODAS']),tm:'todas',tipo:'',loc:'',av:'',amia:'',ay:'',g:new Set(['datos']),sub:false,inc:false,q:'',prev:null};
 const GRUPOS=[['datos','Datos del inmueble: superficie, etiquetas, DE AMIA y tipo'],['alquiler','Alquiler: último monto, inquilino, inicio y fin del contrato'],['venta','Venta: año e importe'],['impuestos','Impuestos del año: cantidad, total, no pagado y próximo vencimiento'],['reparaciones','Reparaciones: cantidad, importe total, pagado y saldo'],['legal','Legal: última nota y fecha'],['personas','Personas vinculadas y su vínculo'],['usucapion','Usucapión: año en que se puede hacer y notas judiciales'],['comodato','Comodato: fecha de vencimiento y estado']];
 const anioVenta=p=>p.anio_venta||(p.fecha_venta?+String(p.fecha_venta).slice(0,4):null);
 function infList(){
@@ -967,6 +967,8 @@ document.addEventListener('keydown',e=>{
 });
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&String(e.key).toLowerCase()==='z'&&!/INPUT|TEXTAREA|SELECT/.test((e.target&&e.target.tagName)||'')){e.preventDefault();doUndo()}});
 document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.dataset.dd){F.dd=F.dd||{};F.dd[d.dataset.dd]=d.open}},true);
+// Los desplegables de etiquetas se cierran solos al sacar el mouse de encima (en compu; en el celular se cierran tocando afuera)
+document.addEventListener('mouseout',e=>{const d=e.target.closest&&e.target.closest('details.dd[open],details.gdd[open]');if(!d||(e.relatedTarget&&d.contains(e.relatedTarget)))return;if(!matchMedia('(hover:hover)').matches)return;d.open=false;if(d.dataset.dd&&F.dd)F.dd[d.dataset.dd]=false;if(d.classList.contains('gdd'))GDD=false});
 if(window.addEventListener)window.addEventListener('scroll',()=>{$('#up').style.display=window.scrollY>500?'block':'none'});
 document.addEventListener('click',async ev=>{
   document.querySelectorAll('details.dd[open]').forEach(d=>{if(!d.contains(ev.target))d.open=false});
@@ -1067,7 +1069,7 @@ document.addEventListener('change',async ev=>{
   if(t.dataset.gsel){const k=t.dataset.gsel;if(k==='*')GSEL=new Set(t.checked?GSECS.map(x=>x[0]):[]);else t.checked?GSEL.add(k):GSEL.delete(k);render();return}
   if(t.dataset.gl==='*'){F.gl=new Set(t.checked?GAL:[]);render();return}
   if(t.dataset.gl){F.gl=F.gl||new Set(GAL);t.checked?F.gl.add(t.dataset.gl):F.gl.delete(t.dataset.gl);render();return}
-  if(t.dataset.itg){const k=t.dataset.itg;if(k==='TODAS')INF.tg=new Set(t.checked?['TODAS']:[]);else{INF.tg.delete('TODAS');t.checked?INF.tg.add(k):INF.tg.delete(k)}INF.q='';render();return}
+  if(t.dataset.itg){const k=t.dataset.itg;if(k==='TODAS'){INF.tg=new Set(t.checked?['TODAS']:[]);if(t.checked)INF.g.add('datos')}else{INF.tg.delete('TODAS');t.checked?INF.tg.add(k):INF.tg.delete(k)}INF.q='';render();return}
   if(t.dataset.ig){t.checked?INF.g.add(t.dataset.ig):INF.g.delete(t.dataset.ig);INF.q='';render();return}
   if(t.dataset.infchk){INF[t.dataset.infchk]=t.checked;if(t.dataset.infchk!=='sub')INF.q='';render();return}
   if(t.dataset.inf){INF[t.dataset.inf]=t.value;if(t.dataset.inf!=='ay')INF.q='';t.blur();render();return}
