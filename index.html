@@ -357,7 +357,7 @@ function repList(){
 }
 function reportRep(tipo){
   const l=repList(),pn=r=>{const x=by(S.prop,r.prop);return x?x.direccion:'Sin inmueble'},pv=r=>{const v=provN(r);return v==='—'?'Sin proveedor':v},pr=r=>sum(pres(r),x=>x.monto);
-  if(tipo==='lista')return{label:'Listado de reparaciones',res:l.map(r=>({Reparación:r.titulo||'',Inmueble:pn(r),Categoría:r.categoria||'',Proveedor:pv(r),Estado:estOf(r),Prioridad:r.prioridad||'',Fecha:r.fechaSol||'','Importe total':aprobado(r),Pagado:paid(r),'Saldo pendiente':saldo(r),'Estado de pago':epago(r)}))};
+  if(tipo==='lista')return{label:'Listado de reparaciones',res:l.map(r=>({Reparación:r.titulo||'',Inmueble:pn(r),Localidad:locP(r.prop),Categoría:r.categoria||'',Proveedor:pv(r),Estado:estOf(r),Prioridad:r.prioridad||'',Fecha:r.fechaSol||'','Importe total':aprobado(r),Pagado:paid(r),'Saldo pendiente':saldo(r),'Estado de pago':epago(r)}))};
   const lab={estado:'Estado',inmueble:'Inmueble',proveedor:'Proveedor',tipo:'Tipo de arreglo'}[tipo],key={estado:estOf,inmueble:pn,proveedor:pv,tipo:r=>r.categoria||'Sin categoría'}[tipo],g={};
   l.forEach(r=>{const k=key(r);const o=g[k]=g[k]||{[lab]:k,Reparaciones:0,Presupuestado:0,'Importe total':0,Pagado:0,'Saldo pendiente':0};o.Reparaciones++;o.Presupuestado+=pr(r);o['Importe total']+=aprobado(r);o.Pagado+=paid(r);o['Saldo pendiente']+=saldo(r)});
   const res=Object.values(g).sort((a,b)=>tipo==='estado'?RK[ESTADOS.indexOf(a[lab])]-RK[ESTADOS.indexOf(b[lab])]:String(a[lab]).localeCompare(String(b[lab])));
@@ -425,7 +425,7 @@ function inmList(){
 }
 function reportInm(tipo){
   const conOf=p=>S.con.filter(c=>c.inmueble===p.id).sort((a,b)=>(b.inicio||'').localeCompare(a.inicio||''))[0];
-  if(tipo==='lista')return{label:'Listado de inmuebles',res:inmListR().map(p=>{const o={'Dirección':p.direccion};
+  if(tipo==='lista')return{label:'Listado de inmuebles',res:inmListR().map(p=>{const o={'Dirección':p.direccion,'Localidad':p.localidad||''};
     if(COLS.has('Localidad'))o['Localidad']=p.localidad||'';
     if(COLS.has('Etiquetas'))o['Etiquetas']=tg(p).join(', ');
     if(COLS.has('Tipo'))o['Tipo']=p.tipo||'';
@@ -435,8 +435,8 @@ function reportInm(tipo){
     if(COLS.has('Venta')){o['Fecha de venta']=p.fecha_venta?fd(p.fecha_venta):(p.anio_venta||'');o['Importe de venta (USD)']=p.valor_venta==null?'':p.valor_venta}
     if(COLS.has('Notas'))o['Notas']=p.obs||'';
     return o})};
-  if(tipo==='vendidos')return{label:'Inmuebles vendidos',res:S.prop.filter(p=>tg(p).includes('VENDIDO')).sort((a,b)=>String(b.fecha_venta||b.anio_venta||'').localeCompare(String(a.fecha_venta||a.anio_venta||''))).map(p=>({'Dirección':p.direccion,'Fecha de venta':p.fecha_venta?fd(p.fecha_venta):(p.anio_venta||''),'Importe de venta (USD)':p.valor_venta==null?'':p.valor_venta}))};
-  const rows=[];inmListR().forEach(p=>S.nov.filter(n=>n.inmueble===p.id).sort(novOrd).forEach(n=>rows.push({'Inmueble':p.direccion,'Fecha':fd(n.fecha),'Nota':n.texto||'','Cargó':n.por||''})));
+  if(tipo==='vendidos')return{label:'Inmuebles vendidos',res:S.prop.filter(p=>tg(p).includes('VENDIDO')).sort((a,b)=>String(b.fecha_venta||b.anio_venta||'').localeCompare(String(a.fecha_venta||a.anio_venta||''))).map(p=>({'Dirección':p.direccion,'Localidad':p.localidad||'','Fecha de venta':p.fecha_venta?fd(p.fecha_venta):(p.anio_venta||''),'Importe de venta (USD)':p.valor_venta==null?'':p.valor_venta}))};
+  const rows=[];inmListR().forEach(p=>S.nov.filter(n=>n.inmueble===p.id).sort(novOrd).forEach(n=>rows.push({'Inmueble':p.direccion,'Localidad':p.localidad||'','Fecha':fd(n.fecha),'Nota':n.texto||'','Cargó':n.por||''})));
   return{label:'Situación legal por inmueble',res:rows};
 }
 function dl3(){
@@ -590,7 +590,7 @@ function impRows(m,PM){
 }
 function reportImp(tipo){
   const m=F.im||today().slice(0,7),PM=impPM(),rows=impRows(m,PM),t=today();
-  if(tipo==='lista')return{label:'Listado del mes',res:rows.map(i=>{const x=PM.get(i.id+'|'+m)||{};return{Inmueble:impDir(i),Impuesto:i.concepto||'',Tipo:i.tipo||'','Nº de cliente':i.nro_cliente||'','Forma de pago':i.forma_pago||'',Importe:x.importe==null?'':x.importe,Vencimiento:fd(x.vencimiento),Pagado:x.pagado?'Sí':'No'}})};
+  if(tipo==='lista')return{label:'Listado del mes',res:rows.map(i=>{const x=PM.get(i.id+'|'+m)||{};return{Inmueble:impDir(i),Localidad:locP(i.inmueble),Impuesto:i.concepto||'',Tipo:i.tipo||'','Nº de cliente':i.nro_cliente||'','Forma de pago':i.forma_pago||'',Importe:x.importe==null?'':x.importe,Vencimiento:fd(x.vencimiento),Pagado:x.pagado?'Sí':'No'}})};
   if(tipo==='forma'){
     const g={};rows.forEach(i=>{const x=PM.get(i.id+'|'+m)||{},k=i.forma_pago||'Sin forma de pago',o=g[k]=g[k]||{'Forma de pago':k,'Cantidad de impuestos':0,'Importe del mes':0,'Pagado':0,'No pagado':0},v=+x.importe||0;o['Cantidad de impuestos']++;o['Importe del mes']+=v;x.pagado?o['Pagado']+=v:o['No pagado']+=v});
     const res=Object.values(g).sort((a,b)=>String(a['Forma de pago']).localeCompare(String(b['Forma de pago'])));
@@ -599,7 +599,7 @@ function reportImp(tipo){
   }
   const ids=new Set(S.imp.filter(impBase).map(i=>i.id));
   const rk=z=>z.vencimiento>=t?[0,z.vencimiento]:[1,z.vencimiento];
-  const res=S.ipe.filter(z=>ids.has(z.impuesto)&&!z.pagado&&z.vencimiento).sort((a,b)=>{const x=rk(a),y=rk(b);return x[0]-y[0]||(x[0]===0?x[1].localeCompare(y[1]):y[1].localeCompare(x[1]))}).map(z=>{const i=by(S.imp,z.impuesto)||{};return{Vencimiento:fd(z.vencimiento),Estado:z.vencimiento>=t?'Próximo':'Vencido',Inmueble:impDir(i),Impuesto:i.concepto||'',Tipo:i.tipo||'','Nº de cliente':i.nro_cliente||'','Forma de pago':i.forma_pago||'',Importe:z.importe==null?'':z.importe}});
+  const res=S.ipe.filter(z=>ids.has(z.impuesto)&&!z.pagado&&z.vencimiento).sort((a,b)=>{const x=rk(a),y=rk(b);return x[0]-y[0]||(x[0]===0?x[1].localeCompare(y[1]):y[1].localeCompare(x[1]))}).map(z=>{const i=by(S.imp,z.impuesto)||{};return{Vencimiento:fd(z.vencimiento),Estado:z.vencimiento>=t?'Próximo':'Vencido',Inmueble:impDir(i),Localidad:locP(i.inmueble),Impuesto:i.concepto||'',Tipo:i.tipo||'','Nº de cliente':i.nro_cliente||'','Forma de pago':i.forma_pago||'',Importe:z.importe==null?'':z.importe}});
   return{label:'No pagados por vencimiento',res};
 }
 function dlI(){
@@ -710,12 +710,12 @@ function reportGasto(tipo){
   const total=res=>{if(res.length){const k0=Object.keys(res[0])[0],t={[k0]:'TOTAL'};Object.keys(res[0]).slice(1).forEach(c=>t[c]=sum(res,x=>x[c]));res.push(t)}return res};
   if(tipo==='imp'){
     const res=total(MESES.map((m,i)=>{const r=ipeY.filter(z=>String(z.periodo).startsWith(k(i)));return{Mes:m,'Total de impuestos':sum(r,z=>z.importe),'Pagado':sum(r.filter(z=>z.pagado),z=>z.importe),'No pagado':sum(r.filter(z=>!z.pagado),z=>z.importe)}}));
-    const det=ipeY.filter(z=>z.importe!=null||z.vencimiento).map(z=>{const i=by(S.imp,z.impuesto)||{};return{Inmueble:dirI(i),Impuesto:i.concepto||'',Tipo:i.tipo||'','Nº de cliente':i.nro_cliente||'','Forma de pago':i.forma_pago||'',Mes:my(z.periodo),Importe:z.importe==null?'':z.importe,Vencimiento:fd(z.vencimiento),Pagado:z.pagado?'Sí':'No'}}).sort((a,b)=>a.Inmueble.localeCompare(b.Inmueble));
+    const det=ipeY.filter(z=>z.importe!=null||z.vencimiento).map(z=>{const i=by(S.imp,z.impuesto)||{};return{Inmueble:dirI(i),Localidad:locP(i.inmueble),Impuesto:i.concepto||'',Tipo:i.tipo||'','Nº de cliente':i.nro_cliente||'','Forma de pago':i.forma_pago||'',Mes:my(z.periodo),Importe:z.importe==null?'':z.importe,Vencimiento:fd(z.vencimiento),Pagado:z.pagado?'Sí':'No'}}).sort((a,b)=>a.Inmueble.localeCompare(b.Inmueble));
     return{label:'Impuestos por mes',res,det,detLabel:'Impuestos detalle'};
   }
   if(tipo==='rep'){
     const res=total(MESES.map((m,i)=>{const r=pagY.filter(z=>String(z.fecha||'').startsWith(k(i)));return{Mes:m,'Pagos de reparaciones':sum(r,z=>z.monto),'Cantidad de pagos':r.length}}));
-    const det=pagY.map(z=>{const r=by(S.rep,z.rep)||{},v=by(S.prov,z.prov)||{};return{Fecha:fd(z.fecha),Inmueble:(by(S.prop,r.prop)||{}).direccion||'',Reparación:r.titulo||'',Proveedor:v.nombre||'',Importe:z.monto==null?'':z.monto,Medio:z.medio||'',Factura:z.factura||''}}).sort((a,b)=>a.Fecha.split('/').reverse().join('').localeCompare(b.Fecha.split('/').reverse().join('')));
+    const det=pagY.map(z=>{const r=by(S.rep,z.rep)||{},v=by(S.prov,z.prov)||{};return{Fecha:fd(z.fecha),Inmueble:(by(S.prop,r.prop)||{}).direccion||'',Localidad:locP(r.prop),Reparación:r.titulo||'',Proveedor:v.nombre||'',Importe:z.monto==null?'':z.monto,Medio:z.medio||'',Factura:z.factura||''}}).sort((a,b)=>a.Fecha.split('/').reverse().join('').localeCompare(b.Fecha.split('/').reverse().join('')));
     return{label:'Reparaciones por mes',res,det,detLabel:'Reparaciones detalle'};
   }
   return{label:'Total mensual',res:total(MESES.map((m,i)=>{const a=sum(ipeY.filter(z=>String(z.periodo).startsWith(k(i))),z=>z.importe),b=sum(pagY.filter(z=>String(z.fecha||'').startsWith(k(i))),z=>z.monto);return{Mes:m,Impuestos:a,Reparaciones:b,'Total':a+b}}))};
@@ -786,12 +786,12 @@ function report(tipo){
   let res,det;
   if(tipo==='mes'){
     res=MESES.map((m,i)=>{const a=agg(y+'-'+String(i+1).padStart(2,'0'),p);return{Mes:m,Presupuestado:a[0],Aprobado:a[1],Pagado:a[2]}});
-    det=S.pag.filter(x=>(x.fecha||'').startsWith(y)&&(()=>{const r=by(S.rep,x.rep);return r&&(!p||r.prop===p)&&!vendido(r.prop)})()).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')).map(x=>{const r=by(S.rep,x.rep),v=by(S.prov,x.prov);return{Fecha:x.fecha,Reparación:r.titulo||'',Inmueble:pn(r),Proveedor:v?v.nombre:'',Importe:x.monto,Medio:x.medio,Factura:x.factura||''}});
+    det=S.pag.filter(x=>(x.fecha||'').startsWith(y)&&(()=>{const r=by(S.rep,x.rep);return r&&(!p||r.prop===p)&&!vendido(r.prop)})()).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')).map(x=>{const r=by(S.rep,x.rep),v=by(S.prov,x.prov);return{Fecha:x.fecha,Reparación:r.titulo||'',Inmueble:pn(r),Localidad:locP(r.prop),Proveedor:v?v.nombre:'',Importe:x.monto,Medio:x.medio,Factura:x.factura||''}});
   }else{
     const lab={inmueble:'Inmueble',tipo:'Tipo de arreglo',proveedor:'Proveedor'}[tipo],key={inmueble:pn,tipo:r=>r.categoria||'Sin categoría',proveedor:pv}[tipo],g={};
     reps.forEach(r=>{const k=key(r);const o=g[k]=g[k]||{[lab]:k,Reparaciones:0,Presupuestado:0,Aprobado:0,Pagado:0,Saldo:0};o.Reparaciones++;o.Presupuestado+=pr(r);o.Aprobado+=aprobado(r);o.Pagado+=paid(r);o.Saldo+=saldo(r)});
     res=Object.values(g).sort((a,b)=>String(a[lab]).localeCompare(String(b[lab])));
-    det=reps.map(r=>({'Fecha solicitud':r.fechaSol||'',Reparación:r.titulo||'',Inmueble:pn(r),Categoría:r.categoria||'',Proveedor:pv(r),Estado:estOf(r),Prioridad:r.prioridad,Presupuestado:pr(r),Aprobado:aprobado(r),Pagado:paid(r),Saldo:saldo(r),'Estado de pago':epago(r)}));
+    det=reps.map(r=>({'Fecha solicitud':r.fechaSol||'',Reparación:r.titulo||'',Inmueble:pn(r),Localidad:locP(r.prop),Categoría:r.categoria||'',Proveedor:pv(r),Estado:estOf(r),Prioridad:r.prioridad,Presupuestado:pr(r),Aprobado:aprobado(r),Pagado:paid(r),Saldo:saldo(r),'Estado de pago':epago(r)}));
   }
   if(!res.length)return null;
   const k0=Object.keys(res[0])[0],tot={[k0]:'TOTAL'};Object.keys(res[0]).slice(1).forEach(c=>tot[c]=sum(res,x=>x[c]));res.push(tot);
@@ -804,6 +804,7 @@ function dl(){
   PREV.forEach(p=>{const n=p.label.replace('Por ','');sh(p.res,'Resumen '+n);sh(p.det,'Detalle '+n)});
   XLSX.writeFile(wb,`informe-${y}.xlsx`);
 }
+const locP=id=>(by(S.prop,id)||{}).localidad||'';
 const tbl=d=>{const k=Object.keys(d[0]);return`<div class="wrap"><table style="min-width:520px"><tr>${k.map(x=>`<th>${esc(x)}</th>`).join('')}</tr>${d.map(r=>`<tr${/^Subtotal /.test(String(r[k[0]]??''))?' class="tsubt"':/^TOTAL/.test(String(r[k[0]]??''))?' class="ttott"':''}>${k.map(x=>`<td>${typeof r[x]==='number'?(/año/i.test(x)?String(r[x]):/importe|alquiler|saldo|pagad|aprobad|presupuest|total|valor|monto/i.test(x)?fmt(r[x]):fnum(r[x])):esc(r[x]??'')}</td>`).join('')}</tr>`).join('')}</table></div>`};
 function vRes(){
   const cy=new Date().getFullYear(),y=F.y||String(cy),th='<tr><th></th><th>Presupuestado</th><th>Aprobado</th><th>Pagado</th></tr>',row=(n,a)=>`<tr><td>${esc(n)}</td>${a.map(x=>`<td>${fmt(x)}</td>`).join('')}</tr>`;
@@ -824,7 +825,7 @@ function infList(){
 function buildInf(){
   const y=INF.ay||String(new Date().getFullYear()),g=INF.g,t=today();
   let rows=infList().map(p=>{
-    const o={'Dirección':p.direccion};
+    const o={'Dirección':p.direccion,'Localidad':p.localidad||''};
     // Datos: superficie, etiquetas, DE AMIA y tipo (sin fecha ni notas de ingreso)
     if(g.has('datos')){o['Superficie (m²)']=p.m2==null?'':+p.m2;o['Etiquetas']=tg(p).join(', ');o['DE AMIA']=p.de_amia?'Sí':'No';o['Tipo']=p.tipo||''}
     if(g.has('alquiler')){const c=conUlt(p);o['Último alquiler']=c&&c.monto!=null?+c.monto:'';o['Moneda']=c&&c.monto!=null?(c.moneda||'ARS'):'';o['Inquilino']=c?((by(S.per,c.inquilino)||{}).nombre||''):'';o['Inicio del contrato']=c?my(c.inicio):'';o['Fin del contrato']=c?my(c.fin):''}
@@ -873,7 +874,7 @@ function alqRows(imprimir){
   const l=S.con.filter(c=>qm(dir(c)+' '+nom(c)+' '+((by(S.prop,c.inmueble)||{}).localidad||''),F.aq)&&(F.av==='vig'?vigente(c):F.av==='ven'?!vigente(c):!lim||(c.fin&&c.fin>=h&&c.fin<=lim))).sort((a,b)=>dir(a).localeCompare(dir(b)));
   {const pg=c=>{const y=PC.get(c.id+'|'+m);return!!(y&&y.pagado)};if(F.ap==='si'||F.ap==='no'){const q=F.ap==='si';for(let i=l.length-1;i>=0;i--)if(!cubreMes(l[i],m)||pg(l[i])!==q)l.splice(i,1)}else if(F.ap==='nop')l.sort((a,b)=>cubreMes(b,m)-cubreMes(a,m)||pg(a)-pg(b));else if(F.ap==='sip')l.sort((a,b)=>cubreMes(b,m)-cubreMes(a,m)||pg(b)-pg(a))}
   const col='Pagado '+my(m+'-01'),mon=c=>c.monto==null?'':(imprimir?((c.moneda==='USD'?'USD ':'$ ')+fnum(c.monto)):+c.monto);
-  const rows=l.map(c=>{const y=PC.get(c.id+'|'+m);return{'Dirección':dir(c),'Inquilino':nom(c),'Monto actual del alquiler':mon(c),'Moneda':c.moneda||'ARS','Inicio':my(c.inicio),'Finalización':my(c.fin),[col]:!cubreMes(c,m)?'—':y&&y.pagado?'Sí':'No'}});
+  const rows=l.map(c=>{const y=PC.get(c.id+'|'+m);return{'Dirección':dir(c),'Localidad':locP(c.inmueble),'Inquilino':nom(c),'Monto actual del alquiler':mon(c),'Moneda':c.moneda||'ARS','Inicio':my(c.inicio),'Finalización':my(c.fin),[col]:!cubreMes(c,m)?'—':y&&y.pagado?'Sí':'No'}});
   const ars=sum(l.filter(c=>c.moneda!=='USD'),c=>c.monto),usd=sum(l.filter(c=>c.moneda==='USD'),c=>c.monto);
   rows.push({'Dirección':'TOTAL MENSUAL EN PESOS','Monto actual del alquiler':imprimir?'$ '+fnum(ars):ars,'Moneda':'ARS'});
   rows.push({'Dirección':'TOTAL MENSUAL EN DÓLARES','Monto actual del alquiler':imprimir?'USD '+fnum(usd):usd,'Moneda':'USD'});
