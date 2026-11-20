@@ -284,7 +284,7 @@ const sum=(a,f)=>a.reduce((t,x)=>t+(+f(x)||0),0),by=(a,id)=>a.find(x=>x.id===id)
 const nx=(a,f,p,n)=>p+String(Math.max(0,...a.map(x=>parseInt(String(x[f]||'').replace(/\D/g,''))||0))+1).padStart(n,'0');
 let UEMAIL='';const SUPER_MAIL='ygrosman@amia.org.ar',SUPER=()=>UEMAIL===SUPER_MAIL;
 const DOC_EXTRA=['Acta','Boleto','Comodato','Informes','Reglamento'];
-const docTipos=()=>{const b=OPC('tipo_documento'),lo=new Set(b.map(x=>String(x).toLowerCase())),ex=DOC_EXTRA.filter(x=>!lo.has(x.toLowerCase())),i=b.indexOf('Otro');return i<0?[...b,...ex]:[...b.slice(0,i),...ex,...b.slice(i)]};
+const docTipos=()=>{const b=OPC('tipo_documento'),lo=new Set(b.map(x=>String(x).toLowerCase())),ex=DOC_EXTRA.filter(x=>!lo.has(x.toLowerCase())),ot=x=>/^otros?$/i.test(String(x).trim())?1:0;return[...b,...ex].sort((x,y)=>ot(x)-ot(y)||String(x).localeCompare(String(y),'es',{sensitivity:'base'}))};
 const me=()=>{try{return localStorage.getItem('me')||''}catch(e){return''}};
 const pres=r=>S.pre.filter(p=>p.rep===r.id),pagos=r=>S.pag.filter(p=>p.rep===r.id);
 const apr=r=>pres(r).find(p=>p.estado==='Aprobado');
