@@ -282,6 +282,9 @@ const DOCC=['Foto del problema','Foto del trabajo terminado','Factura','Comproba
 let FT='datos',BUSY=false,ARM=null,DB=null,ASSETS=null,view=(()=>{try{return sessionStorage.getItem('inm-view')||'ini'}catch(e){return'ini'}})(),selProp=(()=>{try{return sessionStorage.getItem('inm-prop')||null}catch(e){return null}})(),dlg=null,dragId=null,F={q:'',p:'',v:'',pr:'',e:'',y:'',rp:''};
 const sum=(a,f)=>a.reduce((t,x)=>t+(+f(x)||0),0),by=(a,id)=>a.find(x=>x.id===id);
 const nx=(a,f,p,n)=>p+String(Math.max(0,...a.map(x=>parseInt(String(x[f]||'').replace(/\D/g,''))||0))+1).padStart(n,'0');
+let UEMAIL='';const SUPER_MAIL='ygrosman@amia.org.ar',SUPER=()=>UEMAIL===SUPER_MAIL;
+const DOC_EXTRA=['Acta','Boleto','Comodato','Informes','Reglamento'];
+const docTipos=()=>{const b=OPC('tipo_documento'),lo=new Set(b.map(x=>String(x).toLowerCase())),ex=DOC_EXTRA.filter(x=>!lo.has(x.toLowerCase())),i=b.indexOf('Otro');return i<0?[...b,...ex]:[...b.slice(0,i),...ex,...b.slice(i)]};
 const me=()=>{try{return localStorage.getItem('me')||''}catch(e){return''}};
 const pres=r=>S.pre.filter(p=>p.rep===r.id),pagos=r=>S.pag.filter(p=>p.rep===r.id);
 const apr=r=>pres(r).find(p=>p.estado==='Aprobado');
@@ -502,13 +505,13 @@ function fPersonas(p){
 }
 function fDocs(p){
   const ds=S.doc.filter(d=>d.inmueble===p.id).sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
-  return`<div class="bar2" style="margin-top:8px;align-items:center">${ASSETS?`<select id="dtipo">${opts(OPC('tipo_documento'))}</select><input type="file" id="dfile" multiple><span class="mut">o arrastrá los archivos a la ficha</span>`:'<span class="mut">Adjuntar requiere permiso de edición.</span>'}<button class="btn s" data-act="adddoc">+ Documento pendiente</button></div>`+(ds.length?`<div class="docs">${ds.map(d=>`<div class="doc" style="max-width:260px">${SE('doc',d.id,'tipo',d.tipo,OPC('tipo_documento'),'')}${SE('doc',d.id,'estado',d.estado||'Disponible',['Disponible','Pendiente'])}${I('doc',d.id,'nombre',d.nombre)}${att(d.archivo)}${!d.archivo&&ASSETS?`<input type="file" data-up="doc" data-id="${d.id}">`:''}<textarea data-c="doc" data-id="${d.id}" data-f="obs" rows="2" placeholder="Notas" class="dnota">${esc(d.obs||'')}</textarea><div class="mut">${fd(d.fecha)}</div>${DEL('doc',d.id)}</div>`).join('')}</div>`:'<div class="empty">Sin documentos ni fotos.</div>');
+  return`<div class="bar2" style="margin-top:8px;align-items:center">${ASSETS?`<select id="dtipo">${opts(docTipos())}</select><input type="file" id="dfile" multiple><span class="mut">o arrastrá los archivos a la ficha</span>`:'<span class="mut">Adjuntar requiere permiso de edición.</span>'}<button class="btn s" data-act="adddoc">+ Documento pendiente</button></div>`+(ds.length?`<div class="docs">${ds.map(d=>`<div class="doc" style="max-width:260px">${SE('doc',d.id,'tipo',d.tipo,docTipos(),'')}${SE('doc',d.id,'estado',d.estado||'Disponible',['Disponible','Pendiente'])}${I('doc',d.id,'nombre',d.nombre)}${att(d.archivo)}${!d.archivo&&ASSETS?`<input type="file" data-up="doc" data-id="${d.id}">`:''}<textarea data-c="doc" data-id="${d.id}" data-f="obs" rows="2" placeholder="Notas" class="dnota">${esc(d.obs||'')}</textarea><div class="mut">${fd(d.fecha)}</div>${DEL('doc',d.id)}</div>`).join('')}</div>`:'<div class="empty">Sin documentos ni fotos.</div>');
 }
 function fLegal(p){
   const ns=S.nov.filter(n=>n.inmueble===p.id).sort(novOrd),ss=S.sep.filter(x=>x.inmueble===p.id);
   return`<div class="mut" style="margin-top:8px">Última actualización legal: <b>${p.legal_actualizado?new Date(p.legal_actualizado).toLocaleString('es-AR'):'—'}</b> (se completa sola)</div>
   <h2>Situación legal y notas</h2><div class="mut">Cada nota queda en su recuadro, con la fecha del día en que se carga. Arriba, la más nueva.</div><button class="btn" data-act="addnov" style="margin:8px 0">+ Nueva nota</button>
-  ${ns.map(n=>`<div class="sub"><div class="r2">${L('Fecha',I('nov',n.id,'fecha',n.fecha,'date'))}${L('Cargó',I('nov',n.id,'por',n.por))}</div>${L('Nota',`<textarea data-c="nov" data-id="${n.id}" data-f="texto" rows="4">${esc(n.texto||'')}</textarea>`)}<div class="bar2" style="margin-top:6px">${DEL('nov',n.id)}</div></div>`).join('')||'<div class="empty">Todavía no hay notas legales.</div>'}
+  ${ns.map(n=>`<div class="sub"><div class="r2">${L('Fecha',SUPER()?I('nov',n.id,'fecha',n.fecha,'date'):`<input value="${esc(fd(n.fecha))}" disabled title="La fecha queda fija. Solo la puede cambiar ${SUPER_MAIL}.">`)}${L('Cargó',I('nov',n.id,'por',n.por))}</div>${L('Nota',`<textarea data-c="nov" data-id="${n.id}" data-f="texto" rows="4">${esc(n.texto||'')}</textarea>`)}${SUPER()?`<div class="bar2" style="margin-top:6px">${DEL('nov',n.id)}</div>`:''}</div>`).join('')||'<div class="empty">Todavía no hay notas legales.</div>'}
   <h2>Sepelios</h2><div class="mut">Servicio o beneficio acordado en una donación, testamento u otra situación.</div><button class="btn s" data-act="addsep" style="margin-top:6px">+ Servicio de sepelio</button>${ss.map(x=>`<div class="sub"><div class="r2">${L('Origen (donación, testamento…)',I('sep',x.id,'origen',x.origen))}${L('Servicio acordado',I('sep',x.id,'servicio',x.servicio))}</div>${L('Observaciones',I('sep',x.id,'obs',x.obs))}<div class="bar2" style="margin-top:6px">${DEL('sep',x.id)}</div></div>`).join('')}`;
 }
 function conCard(c){
@@ -921,7 +924,7 @@ function render(){
   $('#nav').innerHTML=TABS.map(([v,l])=>`<button class="${cur===v?'on':''}" data-act="tab" data-v="${v}">${ico(v)}<span>${l}</span></button>`).join('');
   $('#app').innerHTML=`<div class="ptitle"><div class="over">${esc(TABS.find(t=>t[0]===cur)[1])}<button id="undo" class="noprint" data-act="undo" title="Deshacer el último cambio (Ctrl + Z)" aria-label="Deshacer">↶</button></div><h2 class="hl">${esc(FRASES[cur]||'')}</h2></div>`+(view==='prop'?vProp():TABS.find(t=>t[0]===view)[2]());
   updUndo();
-  $('#dlp').innerHTML=[...S.prop].sort((x,y)=>String(x.direccion).localeCompare(String(y.direccion))).map(p=>`<option value="${esc(pLabel(p))}"></option>`).join('');
+  $('#dlp').innerHTML=[...S.prop].sort((x,y)=>String(x.direccion).localeCompare(String(y.direccion))).map(p=>`<option value="${esc(pLabel(p))}"${tg(p).includes('VENDIDO')?' label="🔴 VENDIDO"':''}></option>`).join('');
   $('#dlper').innerHTML=[...S.per].sort((x,y)=>String(x.nombre).localeCompare(String(y.nombre))).map(x=>`<option value="${esc(perLabel(x))}"></option>`).join('');
   if(dlg&&DRAW[dlg.type]&&!(a&&$('#dlg').contains(a)&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)))DRAW[dlg.type]();
 }
@@ -1263,7 +1266,7 @@ function cmdDraw(){
   const q=$('#cmdq').value.trim(),it=[],add=(g,t,at,s)=>it.push({g,t,at,s}),pd=id=>(by(S.prop,id)||{}).direccion||'';
   TABS.forEach(([v,l])=>{if(!q||qm(l,q))add('Secciones',esc(l),`data-act="tab" data-v="${v}"`,'Ir a la sección')});
   if(q){
-    S.prop.filter(p=>qm(pLabel(p)+' '+(p.codigo||'')+' '+tg(p).join(' '),q)).slice(0,8).forEach(p=>add('Inmuebles',esc(p.direccion||'(sin dirección)'),`data-act="inm" data-id="${p.id}"`,esc([p.localidad,tg(p).slice(0,2).join(', ')].filter(Boolean).join(' · '))));
+    S.prop.filter(p=>qm(pLabel(p)+' '+(p.codigo||'')+' '+tg(p).join(' '),q)).slice(0,8).forEach(p=>add('Inmuebles',esc(p.direccion||'(sin dirección)')+(tg(p).includes('VENDIDO')?' '+bd('VENDIDO','u'):''),`data-act="inm" data-id="${p.id}"`,esc([p.localidad,tg(p).slice(0,2).join(', ')].filter(Boolean).join(' · '))));
     S.per.filter(x=>qm([x.nombre,x.apellido,x.dni,x.cuit,x.mail].join(' '),q)).slice(0,6).forEach(x=>add('Personas',esc(x.nombre||'(sin nombre)'),`data-act="perd" data-id="${x.id}"`,esc(x.dni||x.cuit||'')));
     S.con.filter(c=>qm((by(S.per,c.inquilino)||{}).nombre,q)).slice(0,6).forEach(c=>add('Alquileres',esc((by(S.per,c.inquilino)||{}).nombre||''),`data-act="inm" data-id="${c.inmueble}" data-t="alq"`,esc(pd(c.inmueble))));
     S.rep.filter(r=>qm([r.titulo,r.numero,pd(r.prop)].join(' '),q)).slice(0,6).forEach(r=>add('Reparaciones',esc(r.titulo||'Sin título'),`data-act="rep" data-id="${r.id}"`,esc(pd(r.prop))));
@@ -1296,6 +1299,7 @@ function login(){
   $('#go').onclick=go;$('#pw').onkeydown=e=>{if(e.key==='Enter')go()}}
 function start(){
   DB=mkDB();ASSETS=mkAssets();$('#out').style.display='';
+  sb.auth.getUser().then(r=>{UEMAIL=String((r&&r.data&&r.data.user&&r.data.user.email)||'').trim().toLowerCase();render()}).catch(()=>{});
   for(const k of Object.keys(COL))DB.collection(COL[k]).onSnapshot(s=>{S[k]=s.docs.map(d=>({id:d.id,...d.data()}));if(k==='prov')S.prov.sort((a,b)=>String(a.nombre||'').trim().localeCompare(String(b.nombre||'').trim(),'es',{sensitivity:'base',numeric:true}));render()},e=>toast(e.message));
   render()}
 $('#out').onclick=async()=>{try{sessionStorage.removeItem('inm-view');sessionStorage.removeItem('inm-prop')}catch(e){}await sb.auth.signOut();location.reload()};
