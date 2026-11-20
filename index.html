@@ -177,6 +177,8 @@ header h1:before{display:none}
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .infv{--ibg:#141517;--icd:#1C1D20;--ibd:#2E3035;--itx:#E5E7EB;--imu:#9CA3AF;--iac:#34D399;--iacbg:rgba(52,211,153,.12);--iav:rgba(251,191,36,.1);--iavtx:#FCD34D;--iavbd:rgba(251,191,36,.35)}}
 .infv .card{background:var(--icd)!important;border:1px solid var(--ibd)!important;box-shadow:0 1px 2px rgba(0,0,0,.04)!important;color:var(--itx)}.infv .mut{color:var(--imu)}.infv h2{margin:16px 0 8px}
 .ikpis .card{transition:transform .15s,box-shadow .15s}.ikpis .card.on{box-shadow:0 0 0 3px var(--mint,#34D399)}
+table tr.tsubt td{background:#D3EBE1!important;font-weight:700;border-top:1px solid var(--bd)}
+:root[data-skin="oscuro"] table tr.tsubt td,:root[data-theme="dark"] table tr.tsubt td{background:#1E3A33!important}table tr.ttott td{background:var(--head,var(--stripe))!important;font-weight:700}
 .ibar{align-items:center}.ibar>details.dd{flex:0 0 auto;min-width:0;margin:0}.ibar select.infsel,.igc select.infsel{width:auto!important;max-width:none!important;flex:0 0 auto}
 .isws{display:flex;flex-wrap:wrap;gap:4px 28px}.isw{display:inline-flex;align-items:center;gap:10px;margin-top:10px;cursor:pointer;font-size:14px;user-select:none}.isw input{position:absolute;opacity:0;pointer-events:none}
 .iswt{width:36px;height:20px;border-radius:20px;background:var(--ibd);position:relative;transition:background .15s;flex:0 0 auto}.iswt::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:left .15s}
@@ -802,7 +804,7 @@ function dl(){
   PREV.forEach(p=>{const n=p.label.replace('Por ','');sh(p.res,'Resumen '+n);sh(p.det,'Detalle '+n)});
   XLSX.writeFile(wb,`informe-${y}.xlsx`);
 }
-const tbl=d=>{const k=Object.keys(d[0]);return`<div class="wrap"><table style="min-width:520px"><tr>${k.map(x=>`<th>${esc(x)}</th>`).join('')}</tr>${d.map(r=>`<tr>${k.map(x=>`<td>${typeof r[x]==='number'?(/año/i.test(x)?String(r[x]):/importe|alquiler|saldo|pagad|aprobad|presupuest|total|valor|monto/i.test(x)?fmt(r[x]):fnum(r[x])):esc(r[x]??'')}</td>`).join('')}</tr>`).join('')}</table></div>`};
+const tbl=d=>{const k=Object.keys(d[0]);return`<div class="wrap"><table style="min-width:520px"><tr>${k.map(x=>`<th>${esc(x)}</th>`).join('')}</tr>${d.map(r=>`<tr${/^Subtotal /.test(String(r[k[0]]??''))?' class="tsubt"':/^TOTAL/.test(String(r[k[0]]??''))?' class="ttott"':''}>${k.map(x=>`<td>${typeof r[x]==='number'?(/año/i.test(x)?String(r[x]):/importe|alquiler|saldo|pagad|aprobad|presupuest|total|valor|monto/i.test(x)?fmt(r[x]):fnum(r[x])):esc(r[x]??'')}</td>`).join('')}</tr>`).join('')}</table></div>`};
 function vRes(){
   const cy=new Date().getFullYear(),y=F.y||String(cy),th='<tr><th></th><th>Presupuestado</th><th>Aprobado</th><th>Pagado</th></tr>',row=(n,a)=>`<tr><td>${esc(n)}</td>${a.map(x=>`<td>${fmt(x)}</td>`).join('')}</tr>`;
   const ms=MESES.map((m,i)=>[m,agg(y+'-'+String(i+1).padStart(2,'0'),F.rp)]),tot=[0,1,2].map(i=>sum(ms,m=>m[1][i]));
@@ -861,7 +863,7 @@ function searchGo(k,val,single){
 }
 function printHtml(title,html){
   const w=window.open('','_blank');if(!w)throw 0;
-  w.document.write(`<html><head><meta charset="utf-8"><title>${esc(title)}</title><style>body{font-family:Arial,sans-serif;font-size:12px;padding:16px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:4px 6px;text-align:left;vertical-align:top}th{background:#eee}.mut{color:#666}h1{font-size:18px;margin:0}h2{font-size:14px;text-transform:uppercase}.badge{border:1px solid #999;border-radius:8px;padding:0 5px}.wrap{overflow:visible}</style></head><body><h1>INMUEBLES AMIA</h1><div class="mut" style="margin-bottom:10px">${esc(title)} · ${fd(today())}</div>${html}</body></html>`);
+  w.document.write(`<html><head><meta charset="utf-8"><title>${esc(title)}</title><style>body{font-family:Arial,sans-serif;font-size:12px;padding:16px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:4px 6px;text-align:left;vertical-align:top}th{background:#eee}.mut{color:#666}h1{font-size:18px;margin:0}h2{font-size:14px;text-transform:uppercase}.badge{border:1px solid #999;border-radius:8px;padding:0 5px}.wrap{overflow:visible}tr.tsubt td{background:#e3e3e3;font-weight:bold}tr.ttott td{background:#eee;font-weight:bold}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}</style></head><body><h1>INMUEBLES AMIA</h1><div class="mut" style="margin-bottom:10px">${esc(title)} · ${fd(today())}</div>${html}</body></html>`);
   w.document.close();w.focus();w.print();
 }
 function alqRows(imprimir){
