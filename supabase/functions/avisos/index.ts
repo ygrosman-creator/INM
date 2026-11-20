@@ -4,6 +4,8 @@
 //   ?tipo=aumentos  -> los días 20 a las 8:00: alquileres que ajustan el mes siguiente
 //   ?tipo=respaldo  -> los viernes a las 16:00: copia de seguridad de toda la base en un .zip adjunto
 //                      (va a RESPALDO_DESTINATARIOS; si ese secreto no está, a AVISOS_DESTINATARIOS)
+//   ?tipo=comodatos -> todos los días a las 8:00: solo manda mail si a algún comodato le faltan exactamente 3 meses
+//                      para vencer (va a COMODATOS_DESTINATARIOS; si ese secreto no está, a jsegal y ygrosman)
 // Otros parámetros:  &ver=1 (muestra el mail en el navegador, NO lo manda; en el respaldo descarga el .zip)
 //                    &prueba=1 (agrega [PRUEBA] al asunto)
 //                    &hoy=AAAA-MM-DD (simula otra fecha, para probar)
@@ -170,6 +172,25 @@ export function armarAumentos(d, idx, hoy) {
     + (sinDatos.length ? h2('Contratos vigentes sin datos de ajuste', '#B45309') + `<p style="font-size:13px;margin:4px 0">Estos no se pueden calcular hasta completar índice, meses y "rige desde" en la ficha:</p>` +
       tabla(['Inmueble', 'Forma de incremento (planilla)'], sinDatos.map((c) => [`<b>${esc((P.get(c.inmueble) || {}).direccion || '')}</b>`, esc(c.forma_incremento || '—')])) : '');
   return { asunto: `Aumentos de alquiler de ${mesTxt.toLowerCase()} · ${filas.length} contratos`, html: marco('Alquileres que aumentan en ' + mesTxt.toLowerCase(), cuerpo), cantidad: filas.length, sinDatos: sinDatos.length };
+}
+
+// ---------- MAIL 3: comodatos que vencen dentro de 3 meses ----------
+// Se ejecuta todos los días; manda mail SOLO el día en que a un comodato le faltan exactamente 3 meses para vencer.
+export function armarComodatos(d, hoy, prueba = false) {
+  const PER = new Map(d.per.map((x) => [x.id, x]));
+  const quienes = (p) => d.vin.filter((v) => v.inmueble === p.id && /comodat/i.test(v.vinculo || '')).map((v) => (PER.get(v.persona) || {}).nombre).filter(Boolean).join(', ');
+  const con = d.prop.filter((p) => p.comodato_vence && !p.comodato_sin_vencimiento && !(p.etiquetas || []).map(norm).includes('VENDIDO'));
+  const hoyAviso = con.filter((p) => addM(s10(p.comodato_vence), -3) === hoy).sort((a, b) => String(a.direccion).localeCompare(String(b.direccion)));
+  const prox = con.filter((p) => s10(p.comodato_vence) >= hoy && s10(p.comodato_vence) <= addM(hoy, 12)).sort((a, b) => s10(a.comodato_vence).localeCompare(s10(b.comodato_vence)));
+  const fila = (p) => [`<b>${esc(p.direccion || '')}</b>`, esc(p.localidad || ''), `<b>${fd(p.comodato_vence)}</b>`, esc(quienes(p) || '—')];
+  const cols = ['Inmueble', 'Localidad', 'Vence el comodato', 'Comodatario'];
+  if (!hoyAviso.length && !prueba) return null;
+  const cuerpo = (hoyAviso.length
+    ? `<p style="margin:6px 0 0">Faltan <b>3 meses</b> para que venza${hoyAviso.length > 1 ? 'n estos comodatos' : ' este comodato'}:</p>` + tabla(cols, hoyAviso.map(fila))
+    : `<p style="margin:6px 0 0">Hoy (${fd(hoy)}) no hay comodatos a los que les falten exactamente 3 meses para vencer, así que este aviso no se mandaría.</p>`)
+    + (prueba ? h2('Próximos vencimientos de comodatos (12 meses)') + tabla(cols, prox.map(fila)) : '');
+  const asunto = hoyAviso.length ? `Comodato por vencer en 3 meses: ${hoyAviso.map((p) => p.direccion).join(', ')}` : 'Comodatos por vencer (prueba)';
+  return { asunto, html: marco('Comodatos que vencen en 3 meses', cuerpo), cantidad: hoyAviso.length };
 }
 
 // ---------- datos, envío y servidor ----------
@@ -806,7 +827,7 @@ async function atender(req) {
   const token = req.headers.get('x-avisos-token') || q('token');
   if (!ENV('AVISOS_TOKEN') || token !== ENV('AVISOS_TOKEN')) return new Response('No autorizado', { status: 401 });
   try {
-    const tipo = ['aumentos', 'respaldo'].includes(q('tipo')) ? q('tipo') : 'deuda', hoy = /^\d{4}-\d{2}-\d{2}$/.test(q('hoy') || '') ? q('hoy') : hoyAR();
+    const tipo = ['aumentos', 'respaldo', 'comodatos'].includes(q('tipo')) ? q('tipo') : 'deuda', hoy = /^\d{4}-\d{2}-\d{2}$/.test(q('hoy') || '') ? q('hoy') : hoyAR();
     if (tipo === 'respaldo') {
       const r = await armarRespaldo(hoy);
       // &ver=1: descarga el .zip directamente, sin mandar mail
@@ -817,6 +838,16 @@ async function atender(req) {
       if (!dest.length) throw new Error('Falta el secreto RESPALDO_DESTINATARIOS');
       const via = await enviar(r, dest);
       return Response.json({ ok: true, tipo, hoy, asunto: asciiAsunto(r.asunto), destinatarios: dest, mb: +r.mb.toFixed(2), via });
+    }
+    if (tipo === 'comodatos') {
+      const [prop, per, vin] = await Promise.all(['propiedades', 'personas', 'vinculos'].map(leerTodo));
+      const m = armarComodatos({ prop, per, vin }, hoy, !!(q('prueba') || q('ver')));
+      if (!m) return Response.json({ ok: true, tipo, hoy, enviado: false, motivo: 'Hoy no hay comodatos a 3 meses de vencer' });
+      if (q('prueba')) m.asunto = '[PRUEBA] ' + m.asunto;
+      if (q('ver')) return new Response(m.html, { headers: { 'content-type': 'text/html; charset=utf-8' } });
+      const dest = ENV('COMODATOS_DESTINATARIOS', 'jsegal@amia.org.ar, ygrosman@amia.org.ar').split(/[,;\s]+/).filter(Boolean);
+      const via = await enviar(m, dest);
+      return Response.json({ ok: true, tipo, hoy, enviado: true, cantidad: m.cantidad, asunto: asciiAsunto(m.asunto), destinatarios: dest, via });
     }
     const [prop, per, con] = await Promise.all(['propiedades', 'personas', 'contratos'].map(leerTodo));
     let mail;

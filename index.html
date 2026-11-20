@@ -389,6 +389,7 @@ const OPC=l=>S.opc.filter(o=>o.lista===l).sort((a,b)=>l==='etiqueta'?String(a.va
 const tg=p=>p.etiquetas||[];
 const DEL=(c,id,txt='Eliminar')=>`<button class="btn x" data-act="delc" data-c="${c}" data-id="${id}">${ARM==='delc'+id?'¿Seguro?':txt}</button>`;
 const liveNum=el=>{
+  if(/anio|año/i.test(el.dataset.f||'')){const v=String(el.value).replace(/\D/g,'');if(v!==el.value)el.value=v;return} // años: solo dígitos, sin punto de miles
   const raw=String(el.value).replace(/[^\d.,]/g,'');let intp=raw,dec=null;const lc=raw.lastIndexOf(','),ld=raw.lastIndexOf('.');
   if(lc>=0&&ld>=0){const i=Math.max(lc,ld);intp=raw.slice(0,i);dec=raw.slice(i+1).replace(/\D/g,'').slice(0,4)}
   else if(lc>=0){intp=raw.slice(0,lc);dec=raw.slice(lc+1).replace(/\D/g,'').slice(0,4)}
@@ -935,7 +936,7 @@ function drawForm(){
   const{k,id,pre}=dlg,v=id?by(S[k],id)||{}:(pre||{});
   $('#dlg').innerHTML=`<h2 style="margin-top:0">${id?'Editar':(FORMS[k].m?'Nuevo':'Nueva')} ${FORMS[k].t}</h2>`+FORMS[k].f.map(([f,l,t0])=>{const t=typeof t0==='function'?t0():t0;const val=v[f]??(f==='codigo'?nx(S.prop,'codigo','INM-',3):f==='prioridad'?'Normal':'');return`<label>${l}</label>`+(t==='area'?`<textarea data-f="${f}" rows="3">${esc(val)}</textarea>`:t==='prop'?PS(`data-f="${f}"`,val):t==='per'?PP(`data-f="${f}"`,val):t==='num'?`<input data-f="${f}" data-num="1" inputmode="decimal" value="${esc(val)}">`:Array.isArray(t)?`<select data-f="${f}">${opts(t,val,'')}</select>`:`<input data-f="${f}" value="${esc(val)}">`)}).join('')+`<div class="bar2" style="margin-top:14px"><button class="btn" data-act="save">Guardar</button><button class="btn s" data-act="close">Cancelar</button>${id?'<button class="btn d" data-act="delete">Eliminar</button>':''}</div>`;
 }
-const I=(c,id,f,v,t='text',x='')=>`<input data-c="${c}" data-id="${id}" data-f="${f}" type="${t==='number'?'text':t}" ${t==='number'?'inputmode="decimal" data-num="1"':''} value="${esc(t==='number'?fnum(v):(v??''))}" ${x}>`;
+const I=(c,id,f,v,t='text',x='')=>`<input data-c="${c}" data-id="${id}" data-f="${f}" type="${t==='number'?'text':t}" ${t==='number'?'inputmode="decimal" data-num="1"':''} value="${esc(t==='number'?(/anio|año/i.test(f)?(v??''):fnum(v)):(v??''))}" ${x}>`;
 const SE=(c,id,f,v,l,b)=>`<select data-c="${c}" data-id="${id}" data-f="${f}">${opts(l,v,b)}</select>`;
 const L=(l,h)=>`<div><label>${l}</label>${h}</div>`;
 function drawRep(){
@@ -1139,7 +1140,11 @@ let mdOut=false;const outside=e=>{const r=$('#dlg').getBoundingClientRect();retu
 $('#dlg').addEventListener('mousedown',e=>{mdOut=outside(e)});
 $('#dlg').addEventListener('click',e=>{if(mdOut&&outside(e))$('#dlg').close();mdOut=false});
 document.addEventListener('paste',e=>{const t=e.target;if(t.type!=='date')return;const x=(e.clipboardData.getData('text')||'').trim(),m=x.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);const iso=m?`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`:/^\d{4}-\d{2}-\d{2}$/.test(x)?x:null;if(iso){e.preventDefault();t.value=iso;t.dispatchEvent(new Event('change',{bubbles:true}))}});
-$('#dlg').addEventListener('close',()=>{dlg=null;ARM=null});
+$('#dlg').addEventListener('close',()=>{const era=dlg;dlg=null;ARM=null;
+  // Al cerrar una ficha, el cursor vuelve al buscador de la pantalla para poder escribir directamente
+  setTimeout(()=>{if($('#dlg').open||($('#cmdk')&&$('#cmdk').open))return;const s=document.querySelector('#app input[data-flt]:not([type=month]):not([type=date]):not([type=checkbox])');if(s){try{s.focus({preventScroll:true});s.select()}catch(e){}}},0)});
+// Escape cierra la ficha abierta en cualquier sección (también si el cursor está en un campo)
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const d=$('#dlg');if(!d||!d.open)return;if(document.querySelector('details.dd[open],details.gdd[open]')){document.querySelectorAll('details.dd[open],details.gdd[open]').forEach(x=>x.open=false);return}e.preventDefault();try{const a=document.activeElement;if(a&&d.contains(a)&&a.blur)a.blur()}catch(x){}d.close()},true);
 $('#me').value=me();
 const sb=supabase.createClient(CFG.url,CFG.key);
 const clean=o=>Object.fromEntries(Object.entries(o).map(([k,v])=>[k,v===''?null:v]));
