@@ -388,7 +388,7 @@ function vPagos(){
 }
 const fd=d=>d?String(d).slice(0,10).split('-').reverse().join('/'):'';
 const my=d=>d?MESES[+String(d).slice(5,7)-1]+' '+String(d).slice(0,4):'';
-const OPC=l=>S.opc.filter(o=>o.lista===l).sort((a,b)=>l==='etiqueta'?String(a.valor).localeCompare(String(b.valor)):(a.orden||0)-(b.orden||0)).map(o=>o.valor);
+const OPC=l=>S.opc.filter(o=>o.lista===l).sort((a,b)=>l==='etiqueta'||l==='forma_pago'?String(a.valor).localeCompare(String(b.valor),'es',{sensitivity:'base',numeric:true}):(a.orden||0)-(b.orden||0)).map(o=>o.valor);
 const tg=p=>p.etiquetas||[];
 const DEL=(c,id,txt='Eliminar')=>`<button class="btn x" data-act="delc" data-c="${c}" data-id="${id}">${ARM==='delc'+id?'¿Seguro?':txt}</button>`;
 const liveNum=el=>{
