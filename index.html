@@ -263,6 +263,17 @@ tr.tot th{background:var(--head);color:var(--tx);font-size:13px;letter-spacing:.
 .skin{width:34px;height:34px;border-radius:50%;border:1px solid var(--bd);background:var(--card);color:var(--tx);font-size:17px;cursor:pointer;padding:0;flex:0 0 auto}
 .skin:hover{background:var(--acbg)}
 @media print{:root[data-skin="oscuro"]{color-scheme:light;--bg:#fff;--card:#fff;--tx:#161616;--mut:#6E6A63;--bd:#E6E0D5;--head:#FAF8F3;--stripe:#F6F2EA;--kpi:#fff;--kpitx:#161616}body{background:#fff!important}.ptitle .hl{font-size:22px}}
+/* Necesidades y donaciones */
+.drow{display:grid;grid-template-columns:1fr auto;gap:10px 16px;align-items:start;padding:12px 4px;border-bottom:1px solid var(--bd2)}.drow:last-child{border-bottom:0}
+.drow.d3{grid-template-columns:1fr 1fr auto}
+.drow .badge{margin-right:4px}.dlab{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.dacts{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}.dacts small,.drow .btn small{font-weight:500;opacity:.8}
+.dtabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}.dtabs button,.dchips button{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:999px;padding:6px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.dtabs button.on,.dchips button.on{background:var(--kpi);color:var(--kpitx);border-color:var(--kpi)}.dtabs small{opacity:.7;font-weight:500}
+.dchips{display:flex;flex-wrap:wrap;gap:6px;margin:-2px 0 12px}.dchips button{padding:4px 11px;font-size:12.5px}
+.ditem{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;align-items:center}.ditem>select[data-k=elemento]{flex:1 1 200px;width:auto}.ditem>input[data-k=detalle]{flex:2 1 200px;width:auto}.ditem>select[data-k=estado_producto]{flex:1 1 150px;width:auto}
+#ddlg h2{text-transform:none}#dlist td input{min-width:110px}
+@media(max-width:640px){.drow,.drow.d3{grid-template-columns:1fr}.dacts{justify-content:flex-start}}
 </style></head><body>
 <script>try{if(localStorage.getItem('skin')==='oscuro')document.documentElement.dataset.skin='oscuro'}catch(e){}</script>
 <div id="root"><header><div class="brand"><div class="mwrap noprint"><button class="hamb" data-act="navt" title="Menú" aria-label="Menú"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><nav id="nav"></nav></div><h1>INMUEBLES AMIA</h1></div><button class="srch noprint" id="srch" title="Buscar inmuebles, personas, reparaciones… (Ctrl + K)"><span>🔍 Buscar…</span><kbd>Ctrl K</kbd></button><div class="hdr-r"><button class="skin noprint" data-act="tab" data-v="ini" title="Ir a Inicio" aria-label="Ir a Inicio"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg></button><button class="skin noprint" id="skin" title="Modo claro / oscuro" aria-label="Cambiar entre modo claro y oscuro">◐</button><input id="me" placeholder="Tu nombre" title="Se usa en pagos y novedades"><button class="btn s" id="out" style="display:none">Salir</button></div></header><div id="app"></div></div>
@@ -819,7 +830,7 @@ function vRes(){
   ${PREV?(PREV.length?PREV.map(p=>`<h2>${p.label}</h2>${tbl(p.res)}<div class="mut noprint">El Excel incluye además una hoja de detalle con ${p.det.length} renglones.</div>`).join(''):'<div class="empty">No hay datos para ese año.</div>'):''}</div>`;
   return`<div class="bar2"><select data-flt="y">${opts([cy-2,cy-1,cy,cy+1].map(String),y)}</select>${PS('data-flt="rp"',F.rp,'Filtrar por inmueble…')}</div>${panel}
   <div class="card wrap"><table>${th}${ms.map(m=>row(m[0],m[1])).join('')}<tr><th>Total ${y}</th>${tot.map(x=>`<th>${fmt(x)}</th>`).join('')}</tr></table></div>
-  <h2>Por inmueble en ${y}</h2><div class="card wrap"><table>${th}${S.prop.filter(p=>!tg(p).includes('VENDIDO')).map(p=>row(p.direccion,agg(y,p.id))).join('')}</table></div><div class="mut">Presupuestado = por fecha del presupuesto; aprobado = por fecha de aprobación; pagado = por fecha del pago. No incluye inmuebles vendidos.</div>`;
+  <h2>Por inmueble en ${y}</h2><div class="card wrap"><table>${(()=>{const pr=S.prop.filter(p=>!tg(p).includes('VENDIDO')).map(p=>[p,agg(y,p.id)]).filter(([,a])=>a.some(v=>+v)).sort((a,b)=>String(a[0].direccion).localeCompare(String(b[0].direccion)));return pr.length?th+pr.map(([p,a])=>row(p.direccion,a)).join(''):`<tr><td class="empty">Ningún inmueble tuvo reparaciones con importes en ${y}.</td></tr>`})()}</table></div><div class="mut">Presupuestado = por fecha del presupuesto; aprobado = por fecha de aprobación; pagado = por fecha del pago. No incluye inmuebles vendidos.</div>`;
 }
 let INF={ai:'',tg:new Set(['TODAS']),tm:'todas',tipo:'',loc:'',av:'',amia:'',ay:'',g:new Set(['datos']),sub:false,inc:false,q:'',prev:null};
 const GRUPOS=[['datos','Datos del inmueble: superficie, etiquetas, DE AMIA y tipo'],['alquiler','Alquiler: último monto, inquilino, inicio y fin del contrato'],['venta','Venta: año e importe'],['impuestos','Impuestos del año: cantidad, total, no pagado y próximo vencimiento'],['reparaciones','Reparaciones: cantidad, importe total, pagado y saldo'],['legal','Legal: última nota y fecha'],['personas','Personas vinculadas y su vínculo'],['usucapion','Usucapión: año en que se puede hacer y notas judiciales'],['comodato','Comodato: fecha de vencimiento y estado']];
@@ -919,7 +930,10 @@ const FRASES={ini:'Todo de un vistazo.',kan:'Qué se arregló, cuánto costó y 
 function render(){
   if(!DB){$('#app').innerHTML='<div class="card empty">Cargando…</div>';return}
   const a=document.activeElement;if(a&&a.dataset&&a.dataset.flt&&a.tagName==='INPUT'&&a.type==='text')return;
-  if(view!=='prop'&&!TABS.some(t=>t[0]===view))view='ini';
+  if(a&&a.hasAttribute&&a.hasAttribute('data-dq'))return;
+  const TABS=TT(),sol=ROL==='solicitante';
+  if((view!=='prop'||sol)&&!TABS.some(t=>t[0]===view))view=TABS[0][0];
+  $('#srch').style.display=sol?'none':'';
   try{sessionStorage.setItem('inm-view',view);if(selProp)sessionStorage.setItem('inm-prop',selProp)}catch(e){}
   const cur=view==='prop'?'props':view;
   $('#root').classList.toggle('navx',NAVX);
@@ -1263,10 +1277,10 @@ document.addEventListener('click',e=>{if(NAVX&&e.target.isConnected&&!e.target.c
 $('.mwrap').addEventListener('mouseleave',()=>$('.mwrap').classList.remove('shut'));
 // Buscador global (Ctrl + K)
 const CMD={i:0};
-function cmdOpen(){if(!DB)return;const d=$('#cmdk');$('#cmdq').value='';cmdDraw();if(!d.open)d.showModal();setTimeout(()=>$('#cmdq').focus(),0)}
+function cmdOpen(){if(!DB||ROL==='solicitante')return;const d=$('#cmdk');$('#cmdq').value='';cmdDraw();if(!d.open)d.showModal();setTimeout(()=>$('#cmdq').focus(),0)}
 function cmdDraw(){
   const q=$('#cmdq').value.trim(),it=[],add=(g,t,at,s)=>it.push({g,t,at,s}),pd=id=>(by(S.prop,id)||{}).direccion||'';
-  TABS.forEach(([v,l])=>{if(!q||qm(l,q))add('Secciones',esc(l),`data-act="tab" data-v="${v}"`,'Ir a la sección')});
+  TT().forEach(([v,l])=>{if(!q||qm(l,q))add('Secciones',esc(l),`data-act="tab" data-v="${v}"`,'Ir a la sección')});
   if(q){
     S.prop.filter(p=>qm(pLabel(p)+' '+(p.codigo||'')+' '+tg(p).join(' '),q)).slice(0,8).forEach(p=>add('Inmuebles',esc(p.direccion||'(sin dirección)')+(tg(p).includes('VENDIDO')?' '+bd('VENDIDO','u'):''),`data-act="inm" data-id="${p.id}"`,esc([p.localidad,tg(p).slice(0,2).join(', ')].filter(Boolean).join(' · '))));
     S.per.filter(x=>qm([x.nombre,x.apellido,x.dni,x.cuit,x.mail].join(' '),q)).slice(0,6).forEach(x=>add('Personas',esc(x.nombre||'(sin nombre)'),`data-act="perd" data-id="${x.id}"`,esc(x.dni||x.cuit||'')));
@@ -1285,6 +1299,227 @@ $('#cmdq').addEventListener('keydown',e=>{const b=[...document.querySelectorAll(
   else if(e.key==='Enter'){e.preventDefault();b[CMD.i].click()}});
 $('#cmdk').addEventListener('click',e=>{const d=$('#cmdk');if(e.target===d||e.target.closest('[data-act]'))d.close()});
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&String(e.key).toLowerCase()==='k'){e.preventDefault();cmdOpen()}});
+/* =====================================================================
+   NECESIDADES Y DONACIONES (Servicio Social)
+   - Solicitante: solo ve "Pedidos" (cargar necesidad / donación y ver lo que cargó).
+   - Admin: sección "Donaciones" (asignar, entregar, elementos, equipo) y "Usuarios" (roles).
+   - Editor y lector: no ven nada de esto.
+   ===================================================================== */
+let ROL=null,DERR='',DV=(()=>{try{return sessionStorage.getItem('inm-dv')||'res'}catch(e){return'res'}})(),DQ='';
+const DF={nec:'activas',don:'disponible'};
+const DCOL={del:'elementos',deq:'equipo',dnec:'necesidades',ddon:'donaciones'};
+Object.assign(S,{del:[],deq:[],dnec:[],ddon:[],dper:[]});
+const TABS_SOL=[['sol','Pedidos',()=>vSol()]],TABS_ADM=[['don','Donaciones',()=>vDon()],['usr','Usuarios',()=>vUsr()]];
+const TT=()=>ROL==='solicitante'?TABS_SOL:ROL==='admin'?[...TABS,...TABS_ADM]:TABS;
+Object.assign(FRASES,{sol:'Cargá lo que alguien necesita o lo que se recibió.',don:'Necesidades, donaciones y entregas.',usr:'Quién entra y qué puede ver.'});
+Object.assign(ICO,{sol:'<path d="M12 5v14M5 12h14"/><rect x="3" y="3" width="18" height="18" rx="3"/>',
+  don:'<path d="M20 12v9H4v-9"/><rect x="2" y="7" width="20" height="5" rx="1"/><path d="M12 21V7M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7z"/>',
+  usr:'<circle cx="9" cy="8" r="4"/><path d="M2 21v-1a7 7 0 0 1 14 0v1"/><path d="M17 11l2 2 4-4"/>'});
+const ROLES=[['admin','Administrador','Ve y edita todo: inmuebles, donaciones y usuarios. Asigna las donaciones.'],['editor','Editor','Ve y edita inmuebles. No ve donaciones.'],['lector','Lector','Solo consulta inmuebles. No ve donaciones.'],['solicitante','Solicitante','Solo carga necesidades y donaciones y ve lo que cargó. No ve inmuebles.']];
+const EST_PROD=['Nuevo','Muy bueno','Bueno','Regular','Necesita arreglo'];
+const dn=s=>String(s??'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+const dcmp=(a,b)=>String(a??'').localeCompare(String(b??''),'es',{sensitivity:'base'});
+const dcap=s=>{const t=String(s??'').trim();return t?t[0].toUpperCase()+t.slice(1):''};
+const dName=(a,n)=>[dcap(a),dcap(n)].filter(Boolean).join(', ');
+const necN=n=>dName(n.apellido,n.nombre),donN=d=>dName(d.donante_apellido,d.donante_nombre),eqN=e=>dName(e.apellido,e.nombre);
+const necK=n=>(n.apellido||'')+' '+(n.nombre||'');
+const dItem=x=>(x.elemento||'')+(x.detalle?` (${x.detalle})`:''),dItemQ=x=>dItem(x)+(x.cantidad&&x.cantidad!=='1'?` × ${x.cantidad}`:'');
+const sameEl=(a,b)=>!!a&&dn(a).trim()===dn(b).trim();
+const dqm=(q,...f)=>{const t=dn(q).trim();if(!t)return true;const h=dn(f.join(' '));return t.split(/\s+/).every(w=>h.includes(w))};
+const ESTB={pendiente:['Pendiente','w'],asignada:['Asignada','v'],entregada:['Entregada','o'],cerrada:['Cerrada',''],disponible:['Disponible','o']};
+const estB=e=>bd((ESTB[e]||[e||'—'])[0],(ESTB[e]||[])[1]||'');
+const prioB=p=>p?bd('Prioridad '+p,p==='alta'?'u':p==='media'?'y':''):'';
+const profN=ini=>{const e=S.deq.find(x=>x.iniciales===ini);return e?eqN(e):ini||''};
+const miEquipo=()=>S.deq.find(e=>dn(e.mail).trim()===UEMAIL&&UEMAIL);
+const elems=cur=>{const l=S.del.filter(e=>e.activo||e.nombre===cur).map(e=>e.nombre).sort(dcmp);if(cur&&!l.includes(cur))l.unshift(cur);return l};
+const dErr=e=>{const m=(e&&e.message)||String(e||'');toast(/row-level security|permission/i.test(m)?'Tu usuario no tiene permiso para esto.':m||'No se pudo guardar',8000)};
+async function dRun(fn,ok){try{const r=await fn();if(r&&r.error)throw r.error;if(ok)toast(ok,3500);for(const n of Object.values(DCOL))LOAD[n]&&await LOAD[n]();return true}catch(e){dErr(e);return false}}
+// Ventana propia (centrada), se cierra con Escape
+document.body.insertAdjacentHTML('beforeend','<dialog id="ddlg" style="width:min(760px,95vw)"></dialog>');
+const dOpen=h=>{const d=$('#ddlg');d.innerHTML=h;if(!d.open)d.showModal();const f=d.querySelector('[autofocus]');if(f)setTimeout(()=>f.focus(),0)};
+const dClose=()=>{const d=$('#ddlg');if(d.open)d.close()};
+const dHead=(t,sub)=>`<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><h2 style="margin:0 0 4px">${esc(t)}</h2>${sub?`<div class="mut">${esc(sub)}</div>`:''}</div><button class="btn x" data-dact="cerrar" aria-label="Cerrar">✕</button></div>`;
+
+/* ---------- Solicitante ---------- */
+function vSol(){
+  const mine=x=>true; // la base ya devuelve solo lo propio
+  const ns=S.dnec.filter(mine).sort((a,b)=>String(b.fecha||'').localeCompare(String(a.fecha||''))||dcmp(necK(a),necK(b)));
+  const ds=S.ddon.filter(mine).sort((a,b)=>String(b.fecha||'').localeCompare(String(a.fecha||''))||dcmp(dItem(a),dItem(b)));
+  return`${DERR?`<div class="card" style="margin-bottom:12px">Todavía no está habilitada esta sección. Avisale a un administrador.</div>`:''}
+  <div class="bar2"><button class="btn" data-dact="fnec">+ Cargar necesidad</button><button class="btn s" data-dact="fdon">+ Cargar donación</button></div>
+  <h2>Necesidades que cargué</h2><div class="card">${ns.length?ns.map(n=>`<div class="drow"><div><b>${esc(necN(n))}</b> · ${esc(dItemQ(n))}<div class="mut">${esc([n.localidad,n.telefono,n.fecha?'Cargada '+fd(n.fecha):''].filter(Boolean).join(' · '))}</div><div style="margin-top:4px">${estB(n.estado)} ${prioB(n.prioridad)}${n.fecha_entrega&&n.estado==='entregada'?' <span class="mut">Entregada el '+fd(n.fecha_entrega)+'</span>':''}</div></div><div>${n.estado==='pendiente'?`<button class="btn x" data-dact="fnec" data-id="${n.id}">Editar</button>`:''}</div></div>`).join(''):'<div class="empty">Todavía no cargaste necesidades.</div>'}</div>
+  <h2>Donaciones que cargué</h2><div class="card">${ds.length?ds.map(d=>`<div class="drow"><div><b>${esc(dItemQ(d))}</b>${donN(d)?' · de '+esc(donN(d)):''}<div class="mut">${d.fecha?'Recibida '+fd(d.fecha):''}</div><div style="margin-top:4px">${estB(d.estado)}</div></div><div>${d.estado==='disponible'?`<button class="btn x" data-dact="fdon" data-id="${d.id}">Editar</button>`:''}</div></div>`).join(''):'<div class="empty">Todavía no cargaste donaciones.</div>'}</div>`;
+}
+
+/* ---------- Admin: Donaciones ---------- */
+const DTABS=[['res','Resumen'],['nec','Necesidades'],['don','Donaciones'],['ent','Entregas'],['ele','Elementos'],['eq','Equipo']];
+const DFIL={nec:[['activas','Activas'],['pendiente','Pendientes'],['asignada','Asignadas'],['entregada','Entregadas'],['cerrada','Cerradas'],['todas','Todas']],don:[['disponible','Disponibles'],['asignada','Asignadas'],['entregada','Entregadas'],['todas','Todas']]};
+function vDon(){
+  if(DERR)return`<div class="card">No se pudieron leer las tablas de donaciones (${esc(DERR)}). Falta ejecutar <b>migracion-15-donaciones.sql</b> en Supabase.</div>`;
+  const cnt={nec:S.dnec.filter(n=>n.estado==='pendiente'||n.estado==='asignada').length,don:S.ddon.filter(d=>d.estado==='disponible').length,ent:S.ddon.filter(d=>d.estado==='entregada').length};
+  const ph={nec:'Buscar persona, elemento, localidad, profesional…',don:'Buscar objeto, donante, destinatario…',ent:'Buscar objeto, donante, destinatario…',ele:'Buscar elemento o rubro…',eq:'Buscar por apellido, sector, mail…'}[DV];
+  const btn={nec:'<button class="btn" data-dact="fnec">+ Nueva necesidad</button>',don:'<button class="btn" data-dact="fdon">+ Nueva donación</button>',ele:'<button class="btn" data-dact="fele">+ Agregar elemento</button>',eq:'<button class="btn" data-dact="feq">+ Agregar al equipo</button>'}[DV]||'';
+  return`<div class="dtabs">${DTABS.map(([k,l])=>`<button class="${DV===k?'on':''}" data-dact="dv" data-v="${k}">${l}${cnt[k]!=null?` <small>${cnt[k]}</small>`:''}</button>`).join('')}</div>
+  ${DV!=='res'?`<div class="bar2"><input data-dq placeholder="${ph}" value="${esc(DQ)}">${btn}</div>${DFIL[DV]?`<div class="dchips">${DFIL[DV].map(([v,l])=>`<button class="${DF[DV]===v?'on':''}" data-dact="dfil" data-v="${v}">${l}</button>`).join('')}</div>`:''}`:''}
+  <div id="dlist">${dList()}</div>`;
+}
+function dList(){
+  if(DV==='res')return dRes();
+  if(DV==='nec'){const f=DF.nec,l=S.dnec.filter(n=>(f==='activas'?(n.estado==='pendiente'||n.estado==='asignada'):f==='todas'||n.estado===f)&&dqm(DQ,n.apellido,n.nombre,n.elemento,n.detalle,n.localidad,n.domicilio,n.telefono,n.notas,profN(n.profesional))).sort((a,b)=>dcmp(necK(a),necK(b))||dcmp(dItem(a),dItem(b)));
+    return`<div class="card">${l.length?l.map(necRow).join(''):`<div class="empty">${S.dnec.length?'No hay necesidades con ese filtro.':'Todavía no hay necesidades cargadas.'}</div>`}</div>`}
+  if(DV==='don'){const f=DF.don,l=S.ddon.filter(d=>{if(f!=='todas'&&d.estado!==f)return false;const n=by(S.dnec,d.necesidad_id);return dqm(DQ,d.elemento,d.detalle,d.donante_apellido,d.donante_nombre,d.donante_domicilio,d.donante_telefono,d.notas,d.destino_externo,n?necK(n):'')}).sort((a,b)=>dcmp(dItem(a),dItem(b))||dcmp(donN(a),donN(b)));
+    return`<div class="card">${l.length?l.map(donRow).join(''):`<div class="empty">${S.ddon.length?'No hay donaciones con ese filtro.':'Todavía no hay donaciones cargadas.'}</div>`}</div>`}
+  if(DV==='ent'){const l=S.ddon.filter(d=>d.estado==='entregada').map(d=>{const n=by(S.dnec,d.necesidad_id);return{d,n,dest:n?necN(n):d.destino_externo||''}}).filter(r=>dqm(DQ,dItem(r.d),donN(r.d),r.dest,r.n&&r.n.localidad,r.n?profN(r.n.profesional):'')).sort((a,b)=>String(b.d.fecha_entrega||'').localeCompare(String(a.d.fecha_entrega||''))||dcmp(a.dest,b.dest));
+    return l.length?`<div class="card wrap"><table><tr><th>Destinatario</th><th>Objeto</th><th>Donante</th><th>Profesional</th><th>Fecha</th></tr>${l.map(({d,n,dest})=>`<tr><td><b>${esc(dest||'—')}</b>${n&&n.localidad?`<div class="mut">${esc(n.localidad)}</div>`:''}</td><td>${esc(dItemQ(d))}</td><td>${esc(donN(d)||'—')}</td><td>${esc(n&&n.profesional?profN(n.profesional):'—')}</td><td>${fd(d.fecha_entrega)||'—'}</td></tr>`).join('')}</table></div>`:'<div class="card empty">Todavía no hay entregas registradas.</div>'}
+  if(DV==='ele'){const l=S.del.filter(e=>dqm(DQ,e.nombre,e.rubro)).sort((a,b)=>dcmp(a.rubro,b.rubro)||dcmp(a.nombre,b.nombre));
+    return`<div class="card wrap"><table><tr><th>Elemento</th><th>Rubro</th><th>En la lista</th><th>Pedidos / donaciones</th><th></th></tr>${l.map(e=>`<tr style="${e.activo?'':'opacity:.55'}"><td><input data-dt="elementos" data-id="${e.id}" data-f="nombre" value="${esc(e.nombre)}"></td><td><input data-dt="elementos" data-id="${e.id}" data-f="rubro" value="${esc(e.rubro)}" list="drubros"></td><td><input type="checkbox" data-dt="elementos" data-id="${e.id}" data-f="activo" ${e.activo?'checked':''} style="width:auto"></td><td class="mut">${S.dnec.filter(n=>n.elemento===e.nombre).length} / ${S.ddon.filter(d=>d.elemento===e.nombre).length}</td><td>${!S.dnec.some(n=>n.elemento===e.nombre)&&!S.ddon.some(d=>d.elemento===e.nombre)?`<button class="btn x" data-dact="delele" data-id="${e.id}">Eliminar</button>`:''}</td></tr>`).join('')}</table><datalist id="drubros">${[...new Set(S.del.map(e=>e.rubro))].sort(dcmp).map(r=>`<option value="${esc(r)}">`).join('')}</datalist></div><div class="mut" style="margin-top:6px">Usar nombres generales (“Silla”); la marca o las medidas van en el detalle. Cambiar el nombre lo cambia en todos los pedidos y donaciones. Para sacarlo de la lista sin perder lo cargado, destildá “En la lista”.</div>`}
+  if(DV==='eq'){const l=S.deq.filter(e=>dqm(DQ,e.apellido,e.nombre,e.iniciales,e.sector,e.mail)).sort((a,b)=>dcmp(eqN(a),eqN(b)));
+    const F=(e,f,w)=>`<input data-dt="equipo" data-id="${e.id}" data-f="${f}" value="${esc(e[f]||'')}"${w?` style="min-width:${w}px"`:''}>`;
+    return`<div class="card wrap"><table style="min-width:900px"><tr><th>Apellido</th><th>Nombre</th><th>Inic.</th><th>Sector</th><th>Interno</th><th>Mail</th><th>Casos activos</th><th>Activo</th></tr>${l.map(e=>`<tr style="${e.activo?'':'opacity:.55'}"><td>${F(e,'apellido')}</td><td>${F(e,'nombre')}</td><td>${F(e,'iniciales',60)}</td><td>${F(e,'sector')}</td><td>${F(e,'interno',70)}</td><td>${F(e,'mail',180)}</td><td>${S.dnec.filter(n=>n.profesional===e.iniciales&&(n.estado==='pendiente'||n.estado==='asignada')).length}</td><td><input type="checkbox" data-dt="equipo" data-id="${e.id}" data-f="activo" ${e.activo?'checked':''} style="width:auto"></td></tr>`).join('')}</table></div><div class="mut" style="margin-top:6px">Las necesidades que carga una persona del equipo quedan a su nombre si su mail acá coincide con el de su usuario.</div>`}
+  return'';
+}
+function dRes(){
+  const pend=S.dnec.filter(n=>n.estado==='pendiente'),asig=S.dnec.filter(n=>n.estado==='asignada').sort((a,b)=>dcmp(necK(a),necK(b))),disp=S.ddon.filter(d=>d.estado==='disponible'),ent=S.ddon.filter(d=>d.estado==='entregada');
+  const mes=today().slice(0,7),urg=pend.filter(n=>n.prioridad==='alta').sort((a,b)=>dcmp(necK(a),necK(b)));
+  const pares=[];for(const n of pend)for(const d of disp)if(sameEl(n.elemento,d.elemento))pares.push({n,d});
+  pares.sort((a,b)=>({alta:0,media:1,baja:2}[a.n.prioridad]??3)-({alta:0,media:1,baja:2}[b.n.prioridad]??3)||String(a.n.fecha||'').localeCompare(String(b.n.fecha||''))||dcmp(necK(a.n),necK(b.n)));
+  const cnt=(l,e)=>l.filter(x=>sameEl(x.elemento,e)).length,els=[...new Set([...disp,...pend].map(x=>x.elemento))].sort(dcmp);
+  const k=(v,l,s,act)=>`<div class="card" ${act}><span>${l}</span><b>${v}</b><small>${s}</small></div>`;
+  return`<div class="kpis">${k(pend.length,'Necesidades pendientes',urg.length+' de prioridad alta','data-dact="dv" data-v="nec" data-f="pendiente"')}${k(disp.length,'Donaciones disponibles','listas para asignar','data-dact="dv" data-v="don" data-f="disponible"')}${k(asig.length,'Asignadas sin entregar','falta la entrega','data-dact="dv" data-v="nec" data-f="asignada"')}${k(ent.length,'Entregas realizadas',ent.filter(d=>String(d.fecha_entrega||'').startsWith(mes)).length+' este mes','data-dact="dv" data-v="ent"')}</div>
+  <h2>Posibles coincidencias</h2><div class="mut" style="margin-bottom:8px">Donaciones disponibles del mismo elemento que alguien pidió. Primero las de prioridad alta y las más antiguas.</div>
+  <div class="card">${pares.length?pares.slice(0,20).map(({n,d})=>`<div class="drow d3"><div><div class="mut dlab">Necesidad</div><b>${esc(necN(n))}</b> · ${esc(dItemQ(n))} ${prioB(n.prioridad)}<div class="mut">${esc([n.localidad,n.fecha?'Cargada '+fd(n.fecha):''].filter(Boolean).join(' · '))}</div></div><div><div class="mut dlab">Donación</div><b>${esc(dItemQ(d))}</b><div class="mut">${donN(d)?'De '+esc(donN(d)):'Donante sin cargar'}</div></div><div><button class="btn" data-dact="asig" data-n="${n.id}" data-d="${d.id}">Asignar</button></div></div>`).join(''):`<div class="empty">${disp.length?'Ninguna donación disponible coincide con las necesidades pendientes. Podés asignar a mano desde cada necesidad.':'No hay donaciones disponibles.'}</div>`}</div>
+  ${els.length?`<h2>Por elemento</h2><div class="card wrap"><table style="min-width:420px"><tr><th>Elemento</th><th>Disponibles</th><th>Lo piden</th></tr>${els.map(e=>{const d=cnt(disp,e),p=cnt(pend,e);return`<tr><td><b>${esc(e)}</b></td><td>${d||'—'}</td><td>${p||'—'}${d&&p?' '+bd('Se puede asignar','o'):''}</td></tr>`}).join('')}</table></div>`:''}
+  ${asig.length?`<h2>Asignadas, falta entregar</h2><div class="card">${asig.map(necRow).join('')}</div>`:''}
+  ${urg.length?`<h2>Pendientes de prioridad alta</h2><div class="card">${urg.map(necRow).join('')}</div>`:''}`;
+}
+function necRow(n){
+  const d=by(S.ddon,n.donacion_id),pos=n.estado==='pendiente'?S.ddon.filter(x=>x.estado==='disponible'&&sameEl(x.elemento,n.elemento)).length:0;
+  return`<div class="drow"><div><b>${esc(necN(n))}</b> · ${esc(dItemQ(n))}
+  <div class="mut">${esc([[n.domicilio,n.localidad].filter(Boolean).join(', '),n.telefono,n.profesional?'Prof.: '+profN(n.profesional):'',n.fecha?'Cargada '+fd(n.fecha):''].filter(Boolean).join(' · '))}</div>
+  ${n.notas?`<div class="mut">Notas: ${esc(n.notas)}</div>`:''}
+  <div style="margin-top:4px">${prioB(n.prioridad)} ${estB(n.estado)} ${d?`<span>${n.estado==='entregada'?'Recibió':'Asignada:'} <b>${esc(dItemQ(d))}</b>${donN(d)?' (de '+esc(donN(d))+')':''}${n.fecha_entrega?' · '+fd(n.fecha_entrega):''}</span>`:''}</div></div>
+  <div class="dacts">${n.estado==='pendiente'?`<button class="btn" data-dact="asigN" data-id="${n.id}">Asignar donación${pos?` <small>(${pos} posible${pos>1?'s':''})</small>`:''}</button>`:''}${n.estado==='asignada'&&d?`<button class="btn" data-dact="entr" data-id="${d.id}">Marcar entregada</button><button class="btn s" data-dact="desh" data-id="${d.id}">Deshacer asignación</button>`:''}<button class="btn x" data-dact="fnec" data-id="${n.id}">Editar</button></div></div>`;
+}
+function donRow(d){
+  const n=by(S.dnec,d.necesidad_id),pos=d.estado==='disponible'?S.dnec.filter(x=>x.estado==='pendiente'&&sameEl(x.elemento,d.elemento)).length:0,dest=n?necN(n)+(n.localidad?` (${n.localidad})`:''):d.destino_externo;
+  return`<div class="drow"><div><b>${esc(dItemQ(d))}</b> · ${donN(d)?'Donante: '+esc(donN(d)):'<span class="mut">Donante sin cargar</span>'}
+  <div class="mut">${esc([d.donante_domicilio,d.donante_telefono,d.estado_producto?'Estado: '+d.estado_producto:'',d.fecha?'Recibida '+fd(d.fecha):''].filter(Boolean).join(' · '))}</div>
+  ${d.notas?`<div class="mut">Notas: ${esc(d.notas)}</div>`:''}
+  <div style="margin-top:4px">${estB(d.estado)} ${dest?`<span>${d.estado==='entregada'?'Entregada a':'Para'} <b>${esc(dest)}</b>${d.fecha_entrega?' · '+fd(d.fecha_entrega):''}</span>`:''}</div></div>
+  <div class="dacts">${d.estado==='disponible'?`<button class="btn" data-dact="asigD" data-id="${d.id}">Asignar a necesidad${pos?` <small>(${pos} posible${pos>1?'s':''})</small>`:''}</button><button class="btn s" data-dact="ext" data-id="${d.id}">Entregar a otro destino</button>`:''}${d.estado==='asignada'?`<button class="btn" data-dact="entr" data-id="${d.id}">Marcar entregada</button><button class="btn s" data-dact="desh" data-id="${d.id}">Deshacer asignación</button>`:''}<button class="btn x" data-dact="fdon" data-id="${d.id}">Editar</button></div></div>`;
+}
+
+/* ---------- Usuarios (solo admin) ---------- */
+async function loadPer(){const r=await sb.from('perfiles').select('user_id,email,rol');if(r.error){DERR=DERR||r.error.message;return}S.dper=r.data||[];render()}
+function vUsr(){
+  const l=[...S.dper].sort((a,b)=>ROLES.findIndex(r=>r[0]===a.rol)-ROLES.findIndex(r=>r[0]===b.rol)||dcmp(a.email,b.email));
+  return`<div class="card wrap"><table style="min-width:560px"><tr><th>Usuario</th><th>Rol</th><th>Qué puede hacer</th></tr>${l.map(p=>`<tr><td><b>${esc(p.email||'(sin mail)')}</b>${p.email===UEMAIL?' <span class="mut">(vos)</span>':''}</td><td><select data-drol="${p.user_id}" style="width:auto">${opts(ROLES.map(r=>[r[0],r[1]]),p.rol)}</select></td><td class="mut">${esc((ROLES.find(r=>r[0]===p.rol)||[,,''])[2])}</td></tr>`).join('')||'<tr><td colspan="3" class="empty">No se pudo leer la lista de usuarios.</td></tr>'}</table></div>
+  <div class="mut" style="margin-top:8px">Para agregar a alguien: en Supabase, <b>Authentication → Users → Add user</b> (mail y contraseña provisoria). Entra como <b>Solicitante</b>: solo ve “Pedidos”. Si es del equipo de inmuebles, cambiale el rol acá.</div>`;
+}
+
+/* ---------- Formularios ---------- */
+function itemRow(r,i,conEst){
+  return`<div class="ditem" data-i="${i}"><select data-k="elemento" required><option value="">Elegí el elemento…</option>${opts(elems(r.elemento),r.elemento)}</select><input data-k="cantidad" value="${esc(r.cantidad||'1')}" placeholder="Cant." style="max-width:80px"><input data-k="detalle" value="${esc(r.detalle||'')}" placeholder="${conEst?'Marca, medidas, color…':'Medidas, características…'}">${conEst?`<select data-k="estado_producto">${opts(EST_PROD,r.estado_producto||'','Estado: sin definir')}</select>`:''}${i?'<button type="button" class="btn x" data-dact="itemdel" aria-label="Quitar">✕</button>':''}</div>`;
+}
+function fNec(id){
+  const o=id?by(S.dnec,id):null,adm=ROL==='admin',me=miEquipo();
+  const v=o||{apellido:'',nombre:'',telefono:'',domicilio:'',localidad:'',profesional:me?me.iniciales:'',prioridad:'media',fecha:today(),notas:''};
+  const prof=S.deq.filter(e=>e.activo||e.iniciales===v.profesional).sort((a,b)=>dcmp(eqN(a),eqN(b)));
+  const locs=[...new Set(S.dnec.map(n=>dcap(n.localidad)).filter(Boolean))].sort(dcmp);
+  dOpen(`${dHead(o?'Editar necesidad':'Nueva necesidad',o?necN(o):'Qué necesita la persona y cómo contactarla. Un elemento por renglón.')}
+  <form id="dform" data-tipo="nec" data-id="${id||''}"><div class="r2">${L('Apellido *','<input name="apellido" required autofocus value="'+esc(v.apellido)+'">')}${L('Nombre','<input name="nombre" value="'+esc(v.nombre)+'">')}${L('Teléfono','<input name="telefono" type="tel" value="'+esc(v.telefono)+'" placeholder="11 1234-5678">')}${L('Domicilio','<input name="domicilio" value="'+esc(v.domicilio)+'">')}${L('Localidad','<input name="localidad" list="dlocs" value="'+esc(v.localidad)+'">')}${adm?L('Profesional a cargo',`<select name="profesional">${opts(prof.map(e=>[e.iniciales,eqN(e)+' ('+e.iniciales+')']),v.profesional||'','— Sin asignar —')}</select>`):''}</div>
+  <datalist id="dlocs">${locs.map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
+  <h3 style="margin:14px 0 6px;font-size:14px">${o?'Elemento':'Qué necesita'}</h3><div id="ditems">${itemRow(o||{},0,false)}</div>${o?'':'<button type="button" class="btn s" data-dact="itemadd">+ Agregar otro elemento</button>'}
+  <div class="r2">${L('Prioridad',`<select name="prioridad">${opts([['alta','Alta'],['media','Media'],['baja','Baja'],['','Sin definir']],v.prioridad||'')}</select>`)}${L('Fecha de carga','<input name="fecha" type="date" value="'+esc(v.fecha||'')+'">')}</div>
+  ${L('Notas','<textarea name="notas" rows="3">'+esc(v.notas||'')+'</textarea>')}
+  <div class="bar2" style="margin-top:14px;justify-content:flex-end">${o&&adm?`<button type="button" class="btn d" data-dact="delnec" data-id="${o.id}" style="margin-right:auto">Eliminar</button>`:''}${o&&adm&&o.estado==='pendiente'?`<button type="button" class="btn s" data-dact="cerrarN" data-id="${o.id}">Cerrar sin donación</button>`:''}${o&&adm&&o.estado==='cerrada'?`<button type="button" class="btn s" data-dact="reabrirN" data-id="${o.id}">Reabrir</button>`:''}<button type="button" class="btn s" data-dact="cerrar">Cancelar</button><button class="btn" type="submit">${o?'Guardar cambios':'Guardar necesidad'}</button></div></form>`);
+}
+function fDon(id){
+  const o=id?by(S.ddon,id):null,adm=ROL==='admin';
+  const v=o||{donante_apellido:'',donante_nombre:'',donante_telefono:'',donante_domicilio:'',fecha:today(),notas:''};
+  dOpen(`${dHead(o?'Editar donación':'Nueva donación',o?dItemQ(o):'Lo que se recibió y de quién. Un elemento por renglón.')}
+  <form id="dform" data-tipo="don" data-id="${id||''}"><h3 style="margin:6px 0 6px;font-size:14px">${o?'Elemento':'Qué se recibió'}</h3><div id="ditems" data-est="1">${itemRow(o||{},0,true)}</div>${o?'':'<button type="button" class="btn s" data-dact="itemadd">+ Agregar otro elemento</button>'}
+  <div class="r2">${L('Apellido del donante','<input name="donante_apellido" value="'+esc(v.donante_apellido)+'">')}${L('Nombre del donante','<input name="donante_nombre" value="'+esc(v.donante_nombre)+'">')}${L('Teléfono del donante','<input name="donante_telefono" type="tel" value="'+esc(v.donante_telefono)+'">')}${L('Fecha de recepción','<input name="fecha" type="date" value="'+esc(v.fecha||'')+'">')}</div>
+  ${L('Domicilio del donante (para retirar)','<input name="donante_domicilio" value="'+esc(v.donante_domicilio)+'">')}${L('Notas','<textarea name="notas" rows="3" placeholder="Cómo retirar, horarios…">'+esc(v.notas||'')+'</textarea>')}
+  <div class="bar2" style="margin-top:14px;justify-content:flex-end">${o&&adm?`<button type="button" class="btn d" data-dact="deldon" data-id="${o.id}" style="margin-right:auto">Eliminar</button>`:''}<button type="button" class="btn s" data-dact="cerrar">Cancelar</button><button class="btn" type="submit">${o?'Guardar cambios':'Guardar donación'}</button></div></form>`);
+}
+async function dSave(f){
+  const tipo=f.dataset.tipo,id=f.dataset.id,fd2=new FormData(f),v={};for(const[k,x]of fd2.entries())v[k]=String(x).trim();
+  const items=[...f.querySelectorAll('.ditem')].map(r=>{const o={};r.querySelectorAll('[data-k]').forEach(x=>o[x.dataset.k]=x.value.trim());return o});
+  if(items.some(r=>!r.elemento)){toast('Elegí el elemento de cada renglón.');return}
+  if(tipo==='nec'&&!v.apellido){toast('Falta el apellido.');return}
+  if(!v.fecha)v.fecha=null;
+  if(tipo==='nec'){if(ROL!=='admin'){const me=miEquipo();v.profesional=id?(by(S.dnec,id)||{}).profesional||null:(me?me.iniciales:null)}else v.profesional=v.profesional||null;v.apellido=dcap(v.apellido);v.nombre=dcap(v.nombre)}
+  else{v.donante_apellido=dcap(v.donante_apellido);v.donante_nombre=dcap(v.donante_nombre)}
+  const t=tipo==='nec'?'necesidades':'donaciones',filas=items.map(r=>({...v,...r,cantidad:r.cantidad||'1'}));
+  const ok=id?await dRun(()=>sb.from(t).update(filas[0]).eq('id',id).select('id').then(r=>{if(!r.error&&(!r.data||!r.data.length))r.error={message:'No se pudo guardar: ya no se puede editar (quizás ya fue asignada).'};return r}),'Cambios guardados')
+    :await dRun(()=>sb.from(t).insert(filas),tipo==='nec'?(filas.length>1?filas.length+' necesidades cargadas':'Necesidad cargada'):(filas.length>1?filas.length+' donaciones cargadas':'Donación cargada'));
+  if(ok){dClose();render()}
+}
+function dPick(titulo,sub,rows,empty){
+  dOpen(`${dHead(titulo,sub)}<input id="dpq" placeholder="Filtrar…" autofocus style="margin:10px 0"><div id="dpl">${rows.length?rows.map(r=>`<div class="drow" data-txt="${esc(dn(r.txt))}"><div>${r.html}</div><div><button class="btn" data-dact="asig" data-n="${r.n}" data-d="${r.d}">Asignar</button></div></div>`).join(''):`<div class="empty">${empty}</div>`}</div>`);
+}
+const coin='<span class="badge o">Coincide</span>';
+
+/* ---------- Acciones ---------- */
+document.addEventListener('click',async e=>{
+  const b=e.target.closest('[data-dact]');if(!b)return;e.preventDefault();
+  const a=b.dataset.dact,id=b.dataset.id;
+  if(a==='cerrar')return dClose();
+  if(a==='dv'){DV=b.dataset.v;DQ='';if(b.dataset.f)DF[DV]=b.dataset.f;try{sessionStorage.setItem('inm-dv',DV)}catch(x){}if(view!=='don'){view='don'}render();return}
+  if(a==='dfil'){DF[DV]=b.dataset.v;render();return}
+  if(a==='fnec')return fNec(id);
+  if(a==='fdon')return fDon(id);
+  if(a==='itemadd'){const c=$('#ditems'),i=c.querySelectorAll('.ditem').length;c.insertAdjacentHTML('beforeend',itemRow({},i,!!c.dataset.est));return}
+  if(a==='itemdel'){b.closest('.ditem').remove();return}
+  if(a==='asigN'){const n=by(S.dnec,id);const rows=S.ddon.filter(d=>d.estado==='disponible').map(d=>({n:n.id,d:d.id,s:sameEl(n.elemento,d.elemento),txt:dItem(d)+' '+donN(d),html:`<b>${esc(dItemQ(d))}</b><div class="mut">${esc([donN(d)?'De '+donN(d):'',d.fecha?'Recibida '+fd(d.fecha):'',d.estado_producto].filter(Boolean).join(' · '))}</div>`})).sort((x,y)=>(y.s-x.s)||dcmp(x.txt,y.txt)).map(r=>({...r,html:r.html+(r.s?coin:'')}));
+    return dPick('Asignar donación',`${necN(n)} necesita: ${dItemQ(n)}`,rows,'No hay donaciones disponibles. Cargá la donación primero.')}
+  if(a==='asigD'){const d=by(S.ddon,id);const rows=S.dnec.filter(n=>n.estado==='pendiente').map(n=>({n:n.id,d:d.id,s:sameEl(n.elemento,d.elemento),txt:necK(n)+' '+dItem(n)+' '+(n.localidad||''),html:`<b>${esc(necN(n))}</b><div class="mut">${esc([dItemQ(n),n.localidad].filter(Boolean).join(' · '))} ${prioB(n.prioridad)}</div>`})).sort((x,y)=>(y.s-x.s)||dcmp(x.txt,y.txt)).map(r=>({...r,html:r.html+(r.s?coin:'')}));
+    return dPick('Asignar a una necesidad',`Donación: ${dItemQ(d)}${donN(d)?' (de '+donN(d)+')':''}`,rows,'No hay necesidades pendientes.')}
+  if(a==='asig'){const n=by(S.dnec,b.dataset.n),d=by(S.ddon,b.dataset.d);if(!n||!d)return;
+    if(b.dataset.ok!=='1'){b.dataset.ok='1';b.textContent='¿Confirmar?';setTimeout(()=>{if(b.isConnected){b.dataset.ok='';b.textContent='Asignar'}},4000);return}
+    if(await dRun(()=>sb.rpc('asignar',{p_necesidad:n.id,p_donacion:d.id}),`Asignada: ${dItemQ(d)} para ${necN(n)}. Cuando se entregue, marcala como entregada.`)){dClose();render()}return}
+  if(a==='entr'){const d=by(S.ddon,id),n=by(S.dnec,d.necesidad_id);
+    return dOpen(`${dHead('Marcar como entregada',`${dItemQ(d)} → ${n?necN(n):d.destino_externo}`)}<form id="dentr" data-id="${d.id}">${L('Fecha de entrega',`<input name="f" type="date" value="${today()}" autofocus style="max-width:200px">`)}<div class="mut" style="margin-top:8px">La donación sale de las disponibles y la necesidad queda resuelta.</div><div class="bar2" style="margin-top:14px;justify-content:flex-end"><button type="button" class="btn s" data-dact="cerrar">Cancelar</button><button class="btn" type="submit">Confirmar entrega</button></div></form>`)}
+  if(a==='ext'){const d=by(S.ddon,id),ds=[...new Set(S.ddon.map(x=>x.destino_externo).filter(Boolean))].sort(dcmp);
+    return dOpen(`${dHead('Entregar a otro destino',dItemQ(d)+' — para destinos que no están en la lista de necesidades')}<form id="dext" data-id="${d.id}"><div class="r2">${L('Destino (institución o persona) *','<input name="dest" required autofocus list="ddest">')}${L('Fecha de entrega',`<input name="f" type="date" value="${today()}">`)}</div><datalist id="ddest">${ds.map(x=>`<option value="${esc(x)}">`).join('')}</datalist><div class="bar2" style="margin-top:14px;justify-content:flex-end"><button type="button" class="btn s" data-dact="cerrar">Cancelar</button><button class="btn" type="submit">Registrar entrega</button></div></form>`)}
+  if(a==='desh'){if(b.dataset.ok!=='1'){b.dataset.ok='1';b.textContent='¿Seguro?';return}
+    await dRun(()=>sb.rpc('deshacer_asignacion',{p_donacion:id}),'Asignación deshecha: la donación vuelve a estar disponible');render();return}
+  if(a==='cerrarN'||a==='reabrirN'){const c=a==='cerrarN';if(await dRun(()=>sb.from('necesidades').update({estado:c?'cerrada':'pendiente',fecha_entrega:c?today():null}).eq('id',id),c?'Necesidad cerrada':'Necesidad reabierta')){dClose();render()}return}
+  if(a==='delnec'||a==='deldon'){if(b.dataset.ok!=='1'){b.dataset.ok='1';b.textContent='¿Eliminar? No se puede deshacer';return}
+    const nec=a==='delnec',x=nec?by(S.dnec,id):by(S.ddon,id);
+    if(x&&x.estado==='asignada'){const did=nec?x.donacion_id:x.id;if(did){const r=await sb.rpc('deshacer_asignacion',{p_donacion:did});if(r.error)return dErr(r.error)}}
+    if(await dRun(()=>sb.from(nec?'necesidades':'donaciones').delete().eq('id',id),nec?'Necesidad eliminada':'Donación eliminada')){dClose();render()}return}
+  if(a==='fele')return dOpen(`${dHead('Agregar elemento','Usar nombres generales (“Silla”, “Heladera”). La marca o las medidas van en el detalle de cada pedido.')}<form id="dele"><div class="r2">${L('Elemento *','<input name="nombre" required autofocus>')}${L('Rubro',`<input name="rubro" list="drub2" value="Otros"><datalist id="drub2">${[...new Set(S.del.map(e=>e.rubro))].sort(dcmp).map(r=>`<option value="${esc(r)}">`).join('')}</datalist>`)}</div><div class="bar2" style="margin-top:14px;justify-content:flex-end"><button type="button" class="btn s" data-dact="cerrar">Cancelar</button><button class="btn" type="submit">Agregar</button></div></form>`);
+  if(a==='delele'){if(b.dataset.ok!=='1'){b.dataset.ok='1';b.textContent='¿Seguro?';return}await dRun(()=>sb.from('elementos').delete().eq('id',id),'Elemento eliminado');render();return}
+  if(a==='feq')return dOpen(`${dHead('Agregar al equipo','Profesionales del Servicio Social, para “profesional a cargo”.')}<form id="deq"><div class="r2">${L('Apellido *','<input name="apellido" required autofocus>')}${L('Nombre','<input name="nombre">')}${L('Iniciales *','<input name="iniciales" required maxlength="8">')}${L('Sector','<input name="sector">')}${L('Interno','<input name="interno">')}${L('Mail (el de su usuario)','<input name="mail" type="email">')}</div><div class="bar2" style="margin-top:14px;justify-content:flex-end"><button type="button" class="btn s" data-dact="cerrar">Cancelar</button><button class="btn" type="submit">Agregar</button></div></form>`);
+});
+document.addEventListener('submit',async e=>{
+  const f=e.target;if(!f.closest||!f.closest('#ddlg'))return;e.preventDefault();
+  const v=Object.fromEntries([...new FormData(f).entries()].map(([k,x])=>[k,String(x).trim()]));
+  if(f.id==='dform')return dSave(f);
+  if(f.id==='dentr'){if(await dRun(()=>sb.rpc('entregar',{p_donacion:f.dataset.id,p_fecha:v.f||today()}),'Entrega registrada')){dClose();render()}return}
+  if(f.id==='dext'){if(!v.dest)return toast('Indicá el destino.');if(await dRun(()=>sb.rpc('entregar_externo',{p_donacion:f.dataset.id,p_destino:v.dest,p_fecha:v.f||today()}),'Entrega registrada')){dClose();render()}return}
+  if(f.id==='dele'){if(S.del.some(x=>dn(x.nombre).trim()===dn(v.nombre)))return toast('Ese elemento ya está en la lista.');if(await dRun(()=>sb.from('elementos').insert({nombre:dcap(v.nombre),rubro:v.rubro||'Otros'}),'Elemento agregado')){dClose();render()}return}
+  if(f.id==='deq'){if(S.deq.some(x=>x.iniciales.toUpperCase()===v.iniciales.toUpperCase()))return toast('Esas iniciales ya están usadas.');if(await dRun(()=>sb.from('equipo').insert({...v,iniciales:v.iniciales.toUpperCase(),apellido:dcap(v.apellido),nombre:dcap(v.nombre),mail:v.mail.toLowerCase()}),'Agregado al equipo')){dClose();render()}return}
+});
+// Edición en línea (Elementos y Equipo) y cambio de rol
+document.addEventListener('change',async e=>{
+  const t=e.target;
+  if(t.dataset&&t.dataset.dt){const val=t.type==='checkbox'?t.checked:t.value.trim();if(t.dataset.f==='nombre'&&!val){render();return}
+    await dRun(()=>sb.from(t.dataset.dt).update({[t.dataset.f]:t.dataset.f==='iniciales'?String(val).toUpperCase():val}).eq('id',t.dataset.id).select('id'),'Guardado');render();return}
+  if(t.dataset&&t.dataset.drol){const uid=t.dataset.drol,p=S.dper.find(x=>x.user_id===uid);
+    if(p&&p.email===UEMAIL&&t.value!=='admin'&&!confirm('Te estás sacando el rol de administrador. Vas a dejar de ver Donaciones y Usuarios. ¿Seguir?')){t.value=p.rol;return}
+    const r=await sb.from('perfiles').update({rol:t.value}).eq('user_id',uid).select('user_id');
+    if(r.error||!r.data||!r.data.length){dErr(r.error||{message:'No se pudo cambiar el rol.'});t.value=p?p.rol:t.value;return}
+    toast('Rol actualizado: '+(ROLES.find(x=>x[0]===t.value)||[,''])[1],3000);await loadPer()}
+});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.hasAttribute&&t.hasAttribute('data-dq')){DQ=t.value;const l=$('#dlist');if(l)l.innerHTML=dList();return}
+  if(t.id==='dpq'){const q=dn(t.value).trim();document.querySelectorAll('#dpl .drow').forEach(r=>r.style.display=!q||q.split(/\s+/).every(w=>r.dataset.txt.includes(w))?'':'none')}
+});
+
 function mkDB(){return{
   collection:n=>({
     async add(d){const r=await sb.from(n).insert(clean(d)).select('id').single();ck(r.error);pushU({op:'del',n,id:r.data.id});await(LOAD[n]&&LOAD[n]());return r.data},
@@ -1299,10 +1534,18 @@ function login(){
   $('#nav').innerHTML='';$('#app').innerHTML='<div class="card" style="max-width:340px;margin:30px auto"><h2 style="margin-top:0">Ingresar</h2><label>Correo</label><input id="em" type="email"><label>Contraseña</label><input id="pw" type="password"><div style="margin-top:12px"><button class="btn" id="go">Entrar</button></div></div>';
   const go=async()=>{const r=await sb.auth.signInWithPassword({email:$('#em').value.trim(),password:$('#pw').value});r.error?toast('No se pudo ingresar: '+r.error.message):start()};
   $('#go').onclick=go;$('#pw').onkeydown=e=>{if(e.key==='Enter')go()}}
-function start(){
+async function start(){
+  $('#app').innerHTML='<div class="card empty">Cargando…</div>';
+  // Quién entra y con qué rol: el solicitante solo ve "Pedidos"
+  let uid='';
+  try{const r=await sb.auth.getUser();const u=r&&r.data&&r.data.user;uid=u?u.id:'';UEMAIL=String((u&&u.email)||'').trim().toLowerCase()}catch(e){}
+  try{const r=await sb.from('perfiles').select('rol').eq('user_id',uid).maybeSingle();ROL=(r&&r.data&&r.data.rol)||'lector'}catch(e){ROL='lector'}
   DB=mkDB();ASSETS=mkAssets();$('#out').style.display='';
-  sb.auth.getUser().then(r=>{UEMAIL=String((r&&r.data&&r.data.user&&r.data.user.email)||'').trim().toLowerCase();render()}).catch(()=>{});
-  for(const k of Object.keys(COL))DB.collection(COL[k]).onSnapshot(s=>{S[k]=s.docs.map(d=>({id:d.id,...d.data()}));if(k==='prov')S.prov.sort((a,b)=>String(a.nombre||'').trim().localeCompare(String(b.nombre||'').trim(),'es',{sensitivity:'base',numeric:true}));render()},e=>toast(e.message));
+  if(ROL!=='solicitante')for(const k of Object.keys(COL))DB.collection(COL[k]).onSnapshot(s=>{S[k]=s.docs.map(d=>({id:d.id,...d.data()}));if(k==='prov')S.prov.sort((a,b)=>String(a.nombre||'').trim().localeCompare(String(b.nombre||'').trim(),'es',{sensitivity:'base',numeric:true}));render()},e=>toast(e.message));
+  if(ROL==='admin'||ROL==='solicitante'){
+    for(const k of Object.keys(DCOL))DB.collection(DCOL[k]).onSnapshot(s=>{S[k]=s.docs.map(d=>({id:d.id,...d.data()}));DERR='';render()},e=>{DERR=(e&&e.message)||'error';render()});
+    if(ROL==='admin'){loadPer();sb.channel('rt-perfiles').on('postgres_changes',{event:'*',schema:'public',table:'perfiles'},()=>loadPer()).subscribe()}
+  }
   render()}
 $('#out').onclick=async()=>{try{sessionStorage.removeItem('inm-view');sessionStorage.removeItem('inm-prop')}catch(e){}await sb.auth.signOut();location.reload()};
 (async()=>{const r=await sb.auth.getSession();r.data.session?start():login()})();
