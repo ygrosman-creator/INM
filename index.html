@@ -277,7 +277,7 @@ tr.tot th{background:var(--head);color:var(--tx);font-size:13px;letter-spacing:.
 </style></head><body>
 <script>try{if(localStorage.getItem('skin')==='oscuro')document.documentElement.dataset.skin='oscuro'}catch(e){}</script>
 <div id="root"><header><div class="brand"><div class="mwrap noprint"><button class="hamb" data-act="navt" title="Menú" aria-label="Menú"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><nav id="nav"></nav></div><h1>INMUEBLES AMIA</h1></div><button class="srch noprint" id="srch" title="Buscar inmuebles, personas, reparaciones… (Ctrl + K)"><span>🔍 Buscar…</span><kbd>Ctrl K</kbd></button><div class="hdr-r"><button class="skin noprint" data-act="tab" data-v="ini" title="Ir a Inicio" aria-label="Ir a Inicio"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg></button><button class="skin noprint" id="skin" title="Modo claro / oscuro" aria-label="Cambiar entre modo claro y oscuro">◐</button><input id="me" placeholder="Tu nombre" title="Se usa en pagos y novedades"><button class="btn s" id="out" style="display:none">Salir</button></div></header><div id="app"></div></div>
-<dialog id="dlg"></dialog><dialog id="cmdk"><input id="cmdq" placeholder="Buscar inmueble, persona, inquilino, reparación o sección…" autocomplete="off"><div class="res" id="cmdr"></div></dialog><datalist id="dlp"></datalist><datalist id="dlper"></datalist><button id="up" data-act="up" title="Volver arriba">↑</button><div id="toast"></div>
+<dialog id="dlg"></dialog><dialog id="cmdk"><input id="cmdq" placeholder="Buscar inmueble, persona, inquilino o reparación…" autocomplete="off"><div class="res" id="cmdr"></div></dialog><datalist id="dlp"></datalist><datalist id="dlper"></datalist><button id="up" data-act="up" title="Volver arriba">↑</button><div id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="config.js"></script>
 <script>
 const $=s=>document.querySelector(s);
@@ -488,7 +488,7 @@ function vProps(){
   const pers=p=>S.vin.filter(v=>v.inmueble===p.id).map(v=>({v:v.vinculo,n:(by(S.per,v.persona)||{}).nombre})).filter(x=>x.n);
   return`<div class="bar2" style="align-items:center"><input list="dlp" data-flt="pq" placeholder="Buscar por dirección, localidad o número…" value="${esc(F.pq||'')}">${DD('tg','Etiquetas',OPC('etiqueta'),sel,'data-tg')}<select data-flt="tm" style="max-width:300px">${opts([['todas','Que tengan TODAS las etiquetas'],['alguna','Que tengan ALGUNA de las etiquetas']],F.tm||'todas')}</select><label class="chk"><input type="checkbox" data-am="1" ${F.am?'checked':''}> DE AMIA (con título)</label><button class="btn" data-act="new" data-k="prop">+ Nueva propiedad</button></div>
   <div class="mut" style="margin-bottom:8px">${l.length} de ${S.prop.length} inmuebles</div>
-  <div class="grid">${l.map(p=>`<div class="card cc ccu${tg(p).includes('VENDIDO')?' ccv':''}" style="cursor:pointer" data-act="inm" data-id="${p.id}"><span class="ccic" title="${icoInm(p)[1]}">${icoInm(p)[0]}</span><b>${esc(p.direccion)}</b><div class="mut">${esc([p.localidad,p.tipo,p.m2?fnum(p.m2)+' m²':''].filter(Boolean).join(' · '))}</div><div style="margin-top:6px">${tg(p).map(t=>bd(t,t==='VENDIDO'?'u':t==='TESTAMENTO'?'n':'')).join(' ')}${p.de_amia?' '+bd('DE AMIA (con título)','f'):''}</div>${pers(p).length?`<div class="mut" style="margin-top:6px">${pers(p).map(x=>esc((x.v?x.v+': ':'')+x.n)).join('<br>')}</div>`:''}</div>`).join('')}</div>${vacio}`;
+  <div class="grid">${l.map(p=>`<div class="card cc ccu${tg(p).includes('VENDIDO')?' ccv':''}" style="cursor:pointer" data-act="inm" data-id="${p.id}"><span class="ccic" title="${icoInm(p)[1]}">${icoInm(p)[0]}</span><b>${esc(p.direccion)}</b><div style="font-size:13px">${p.localidad?esc(p.localidad):'<span class="mut">Sin localidad</span>'}</div><div class="mut">${esc([p.tipo,p.m2?fnum(p.m2)+' m²':''].filter(Boolean).join(' · '))}</div><div style="margin-top:6px">${tg(p).map(t=>bd(t,t==='VENDIDO'?'u':t==='TESTAMENTO'?'n':'')).join(' ')}${p.de_amia?' '+bd('DE AMIA (con título)','f'):''}</div>${pers(p).length?`<div class="mut" style="margin-top:6px">${pers(p).map(x=>esc((x.v?x.v+': ':'')+x.n)).join('<br>')}</div>`:''}</div>`).join('')}</div>${vacio}`;
 }
 const FTABS=[['datos','Datos'],['personas','Personas'],['docs','Documentos'],['legal','Legal'],['alq','Alquiler'],['imp','Impuestos'],['llaves','Llaves'],['rep','Reparaciones']];
 function drawInm(){
@@ -581,11 +581,11 @@ const grpPer=x=>{const vs=S.vin.filter(v=>v.persona===x.id).map(v=>nrm(v.vinculo
 const colPer=x=>{const g=grpPer(x);return g?g[1]:CC_PER_OTRO};
 const inic=n=>String(n||'?').replace(/[^\p{L}\s]/gu,' ').trim().split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'?';
 function vPers(){
-  const dirDe=v=>(by(S.prop,v.inmueble)||{}).direccion||'';
-  const l=S.per.filter(x=>qm([x.nombre,x.dni,x.cuit,x.mail,x.telefono,...S.vin.filter(v=>v.persona===x.id).map(dirDe)].join(' '),F.eq)).sort((a,b)=>String(a.nombre).localeCompare(String(b.nombre)));
+  const dirDe=v=>(by(S.prop,v.inmueble)||{}).direccion||'',locDe=v=>(by(S.prop,v.inmueble)||{}).localidad||'';
+  const l=S.per.filter(x=>qm([x.nombre,x.dni,x.cuit,x.mail,x.telefono,...S.vin.filter(v=>v.persona===x.id).flatMap(v=>[dirDe(v),locDe(v)])].join(' '),F.eq)).sort((a,b)=>String(a.nombre).localeCompare(String(b.nombre)));
   return`<div class="bar2"><input list="dlper" data-flt="eq" placeholder="Buscar nombre, DNI, CUIT, mail, teléfono o inmueble…" value="${esc(F.eq||'')}"><button class="btn" data-act="newper">+ Nueva persona</button></div>
   <div class="mut" style="margin-bottom:6px">${l.length} personas</div>
-  <div class="grid">${l.map(x=>`<div class="card cc" style="cursor:pointer;--cc:${colPer(x)};--ccbg:${colPer(x)}0a;--ccsh:${colPer(x)}55" data-act="perd" data-id="${x.id}"><span class="ccav" aria-hidden="true">${esc(inic(x.nombre))}</span><b>${esc(x.nombre||'(sin nombre)')}</b><div class="mut">${splitC(x.telefono).map(esc).join(' · ')}</div><div style="margin-top:6px">${S.vin.filter(v=>v.persona===x.id).map(v=>`<div><span class="mut">${esc(v.vinculo||'Vínculo')}:</span> ${esc(dirDe(v))}</div>`).join('')||'<span class="mut">Sin inmuebles vinculados</span>'}</div></div>`).join('')}</div>`;
+  <div class="grid">${l.map(x=>`<div class="card cc" style="cursor:pointer;--cc:${colPer(x)};--ccbg:${colPer(x)}0a;--ccsh:${colPer(x)}55" data-act="perd" data-id="${x.id}"><span class="ccav" aria-hidden="true">${esc(inic(x.nombre))}</span><b>${esc(x.nombre||'(sin nombre)')}</b><div class="mut">${splitC(x.telefono).map(esc).join(' · ')}</div><div style="margin-top:6px">${S.vin.filter(v=>v.persona===x.id).map(v=>`<div><span class="mut">${esc(v.vinculo||'Vínculo')}:</span> ${esc(dirDe(v))}${locDe(v)?` <span class="mut">· ${esc(locDe(v))}</span>`:''}</div>`).join('')||'<span class="mut">Sin inmuebles vinculados</span>'}</div></div>`).join('')}</div>`;
 }
 let SELI=new Set(),PREVI=null;
 const OPSI=[['forma','Por forma de pago (mes elegido)'],['pend','No pagados por fecha de vencimiento (lo más próximo primero)'],['lista','Listado del mes (con los filtros de arriba)']];
@@ -1280,7 +1280,6 @@ const CMD={i:0};
 function cmdOpen(){if(!DB||ROL==='solicitante')return;const d=$('#cmdk');$('#cmdq').value='';cmdDraw();if(!d.open)d.showModal();setTimeout(()=>$('#cmdq').focus(),0)}
 function cmdDraw(){
   const q=$('#cmdq').value.trim(),it=[],add=(g,t,at,s)=>it.push({g,t,at,s}),pd=id=>(by(S.prop,id)||{}).direccion||'';
-  TT().forEach(([v,l])=>{if(!q||qm(l,q))add('Secciones',esc(l),`data-act="tab" data-v="${v}"`,'Ir a la sección')});
   if(q){
     S.prop.filter(p=>qm(pLabel(p)+' '+(p.codigo||'')+' '+tg(p).join(' '),q)).slice(0,8).forEach(p=>add('Inmuebles',esc(p.direccion||'(sin dirección)')+(tg(p).includes('VENDIDO')?' '+bd('VENDIDO','u'):''),`data-act="inm" data-id="${p.id}"`,esc([p.localidad,tg(p).slice(0,2).join(', ')].filter(Boolean).join(' · '))));
     S.per.filter(x=>qm([x.nombre,x.apellido,x.dni,x.cuit,x.mail].join(' '),q)).slice(0,6).forEach(x=>add('Personas',esc(x.nombre||'(sin nombre)'),`data-act="perd" data-id="${x.id}"`,esc(x.dni||x.cuit||'')));
@@ -1289,7 +1288,7 @@ function cmdDraw(){
     S.prov.filter(v=>qm([v.nombre,v.rubro,v.cuit].join(' '),q)).slice(0,5).forEach(v=>add('Proveedores',esc(v.nombre||''),`data-act="edit" data-k="prov" data-id="${v.id}"`,esc(v.rubro||'')));
   }
   CMD.i=0;let g='';
-  $('#cmdr').innerHTML=it.length?it.map((x,i)=>(x.g!==g?`<div class="grp">${(g=x.g)}</div>`:'')+`<button class="it${i?'':' sel'}" ${x.at}><span>${x.t}</span><small>${x.s||''}</small></button>`).join(''):'<div class="empty">Sin resultados.</div>';
+  $('#cmdr').innerHTML=it.length?it.map((x,i)=>(x.g!==g?`<div class="grp">${(g=x.g)}</div>`:'')+`<button class="it${i?'':' sel'}" ${x.at}><span>${x.t}</span><small>${x.s||''}</small></button>`).join(''):`<div class="empty">${q?'Sin resultados.':'Escribí para buscar.'}</div>`;
 }
 $('#srch').onclick=cmdOpen;
 $('#skin').onclick=()=>{const r=document.documentElement,on=r.dataset.skin!=='oscuro';if(on)r.dataset.skin='oscuro';else delete r.dataset.skin;try{localStorage.setItem('skin',on?'oscuro':'claro')}catch(e){}render();toast(on?'Modo oscuro':'Modo claro',1500)};
