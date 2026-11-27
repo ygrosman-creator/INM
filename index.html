@@ -1346,16 +1346,17 @@ const dClose=()=>{const d=$('#ddlg');if(d.querySelector('#dficha'))fichaSave();i
 const dHead=(t,sub)=>`<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><h2 style="margin:0 0 4px">${esc(t)}</h2>${sub?`<div class="mut">${esc(sub)}</div>`:''}</div><button class="btn x" data-dact="cerrar" aria-label="Cerrar">✕</button></div>`;
 
 /* ---------- Donaciones (admin y solicitante; el solicitante no asigna, no entrega ni borra) ---------- */
-const DTABS=[['res','Resumen'],['nec','Necesidades'],['don','Donaciones'],['ele','Elementos'],['eq','Equipo']];
+const DTABS_ALL=[['res','Resumen'],['nec','Necesidades'],['don','Donaciones'],['ele','Elementos'],['eq','Equipo']];
+const DTB=()=>DTABS_ALL.filter(t=>t[0]!=='ele'||ADM());
 const DFIL={nec:[['activas','Activas'],['pendiente','Pendientes'],['asignada','Asignadas'],['entregada','Entregadas'],['cerrada','Cerradas'],['todas','Todas']],don:[['disponible','Disponibles'],['asignada','Asignadas'],['entregada','Entregadas'],['todas','Todas']]};
 function vDon(){
   if(DERR)return`<div class="card">${ADM()?`No se pudieron leer las tablas de donaciones (${esc(DERR)}). Falta ejecutar <b>migracion-15-donaciones.sql</b> en Supabase.`:'Todavía no está habilitada esta sección. Avisale a un administrador.'}</div>`;
-  if(!DTABS.some(t=>t[0]===DV))DV='res';
+  if(!DTB().some(t=>t[0]===DV))DV='res';
   const cnt={nec:S.dnec.filter(n=>n.estado==='pendiente'||n.estado==='asignada').length,don:S.ddon.filter(d=>d.estado==='disponible').length};
   const ph={nec:'Buscar persona, elemento, localidad, profesional…',don:'Buscar objeto, donante, destinatario…',ele:'Buscar elemento o rubro…',eq:'Buscar por apellido, sector, mail…'}[DV];
   const btn={nec:'<button class="btn" data-dact="fnec">+ Nueva necesidad</button>',don:'<button class="btn" data-dact="fdon">+ Nueva donación</button>',ele:ADM()?'<button class="btn" data-dact="fele">+ Agregar elemento</button>':'',eq:ADM()?'<button class="btn" data-dact="feq">+ Agregar al equipo</button>':''}[DV]||'';
   const top=ROL==='solicitante'&&DV==='res'?'<div class="bar2"><button class="btn" data-dact="fnec">+ Nueva necesidad</button><button class="btn s" data-dact="fdon">+ Nueva donación</button></div>':'';
-  return`${top}<div class="dtabs">${DTABS.map(([k,l])=>`<button class="${DV===k?'on':''}" data-dact="dv" data-v="${k}">${l}${cnt[k]!=null?` <small>${cnt[k]}</small>`:''}</button>`).join('')}</div>
+  return`${top}<div class="dtabs">${DTB().map(([k,l])=>`<button class="${DV===k?'on':''}" data-dact="dv" data-v="${k}">${l}${cnt[k]!=null?` <small>${cnt[k]}</small>`:''}</button>`).join('')}</div>
   ${DV!=='res'?`<div class="bar2"><input data-dq placeholder="${ph}" value="${esc(DQ)}">${btn}</div>${DFIL[DV]?`<div class="dchips">${DFIL[DV].map(([v,l])=>`<button class="${DF[DV]===v?'on':''}" data-dact="dfil" data-v="${v}">${l}</button>`).join('')}</div>`:''}`:''}
   <div id="dlist">${dList()}</div>`;
 }
@@ -1599,6 +1600,7 @@ document.addEventListener('click',async e=>{
   const b=e.target.closest('[data-dact]');if(!b)return;e.preventDefault();
   const a=b.dataset.dact,id=b.dataset.id;
   if(!b.closest('#ddlg')){NFICHA=null;NDON=null}
+  if(['fele','delele','feq'].includes(a)&&!ADM())return toast('Solo los administradores pueden modificar la lista.');
   if(a==='nficha')return fFicha(b.dataset.k);
   if(a==='dficha')return fDonF(id);
   if(a==='destv'){const v=b.dataset.v,l=S.ddon.filter(x=>x.destino_externo===v).sort((x,y)=>String(y.fecha_entrega||'').localeCompare(String(x.fecha_entrega||'')));
@@ -1659,6 +1661,7 @@ document.addEventListener('submit',async e=>{
 // Edición en línea (Elementos y Equipo) y cambio de rol
 document.addEventListener('change',async e=>{
   const t=e.target;
+  if(t.dataset&&t.dataset.dt&&!ADM()){toast('Solo los administradores pueden modificar la lista.');render();return}
   if(t.dataset&&t.dataset.dt){const val=t.type==='checkbox'?t.checked:t.value.trim();if(t.dataset.f==='nombre'&&!val){render();return}
     await dRun(()=>sb.from(t.dataset.dt).update({[t.dataset.f]:t.dataset.f==='iniciales'?String(val).toUpperCase():val}).eq('id',t.dataset.id).select('id'),'Guardado');render();return}
   if(t.dataset&&t.dataset.drol){const uid=t.dataset.drol,p=S.dper.find(x=>x.user_id===uid);
