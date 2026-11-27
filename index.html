@@ -271,7 +271,7 @@ tr.tot th{background:var(--head);color:var(--tx);font-size:13px;letter-spacing:.
 .dtabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}.dtabs button,.dchips button{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:999px;padding:6px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
 .dtabs button.on,.dchips button.on{background:var(--kpi);color:var(--kpitx);border-color:var(--kpi)}.dtabs small{opacity:.7;font-weight:500}
 .dchips{display:flex;flex-wrap:wrap;gap:6px;margin:-2px 0 12px}.dchips button{padding:4px 11px;font-size:12.5px}
-.dfichas{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-items:start}.dficha{border-top:4px solid var(--ac)}.dficha.urg{border-top-color:#dc2626}.dfh{display:flex;gap:10px;align-items:flex-start}.dfav{flex:none;width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#64748b;color:#fff;font-weight:700;font-size:13px}.dfits{margin-top:8px}.dfit{border-top:1px solid var(--bd2);padding:8px 0}.dfit:last-child{padding-bottom:0}.dficha.clk{cursor:pointer;transition:transform .15s,box-shadow .15s}.dficha.clk:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.12)}.dfit2{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:5px 0;border-top:1px solid var(--bd2);font-size:14px}.dfit2>span:last-child{text-align:right;white-space:nowrap}.dfrow{margin-bottom:0}
+.dfichas{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-items:start}.dficha{border-top:4px solid var(--ac)}.dficha.urg{border-top-color:#dc2626}.dfh{display:flex;gap:10px;align-items:flex-start}.dfav{flex:none;width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#64748b;color:#fff;font-weight:700;font-size:13px}.dfits{margin-top:8px}.dfit{border-top:1px solid var(--bd2);padding:8px 0}.dfit:last-child{padding-bottom:0}.dficha.dfd-asignada{border-top-color:#f59e0b}.dficha.dfd-entregada{border-top-color:#16a34a}.dficha.clk{cursor:pointer;transition:transform .15s,box-shadow .15s}.dficha.clk:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.12)}.dfit2{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:5px 0;border-top:1px solid var(--bd2);font-size:14px}.dfit2>span:last-child{text-align:right;white-space:nowrap}.dfrow{margin-bottom:0}
 .ditem{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;align-items:center}.ditem>select[data-k=elemento]{flex:1 1 200px;width:auto}.ditem>input[data-k=detalle]{flex:2 1 200px;width:auto}.ditem>select[data-k=estado_producto]{flex:1 1 150px;width:auto}
 #ddlg h2{text-transform:none}#dlist td input{min-width:110px}
 @media(max-width:640px){.drow,.drow.d3{grid-template-columns:1fr}.dacts{justify-content:flex-start}}
@@ -1342,7 +1342,7 @@ async function dRun(fn,ok){try{const r=await fn();if(r&&r.error)throw r.error;if
 // Ventana propia (centrada), se cierra con Escape
 document.body.insertAdjacentHTML('beforeend','<dialog id="ddlg" style="width:min(760px,95vw)"></dialog>');
 const dOpen=h=>{const d=$('#ddlg');d.innerHTML=h;if(!d.open)d.showModal();const f=d.querySelector('[autofocus]');if(f)setTimeout(()=>f.focus(),0)};
-const dClose=()=>{const d=$('#ddlg');if(d.querySelector('#dficha'))fichaSave();if(d.open)d.close()};
+const dClose=()=>{const d=$('#ddlg');if(d.querySelector('#dficha'))fichaSave();if(d.querySelector('#ddficha'))donSave();if(d.open)d.close()};
 const dHead=(t,sub)=>`<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><h2 style="margin:0 0 4px">${esc(t)}</h2>${sub?`<div class="mut">${esc(sub)}</div>`:''}</div><button class="btn x" data-dact="cerrar" aria-label="Cerrar">✕</button></div>`;
 
 /* ---------- Donaciones (admin y solicitante; el solicitante no asigna, no entrega ni borra) ---------- */
@@ -1364,7 +1364,7 @@ function dList(){
   if(DV==='nec'){const f=DF.nec,l=S.dnec.filter(n=>(f==='activas'?(n.estado==='pendiente'||n.estado==='asignada'):f==='todas'||n.estado===f)&&dqm(DQ,n.apellido,n.nombre,n.elemento,n.detalle,n.localidad,n.domicilio,n.telefono,n.notas,profN(n.profesional))).sort((a,b)=>dcmp(necK(a),necK(b))||dcmp(dItem(a),dItem(b)));
     return l.length?necFichas(l):`<div class="card"><div class="empty">${S.dnec.length?'No hay necesidades con ese filtro.':'Todavía no hay necesidades cargadas.'}</div></div>`}
   if(DV==='don'){const f=DF.don,l=S.ddon.filter(d=>{if(f!=='todas'&&d.estado!==f)return false;const n=by(S.dnec,d.necesidad_id);return dqm(DQ,d.elemento,d.detalle,d.donante_apellido,d.donante_nombre,d.donante_domicilio,d.donante_telefono,d.notas,d.destino_externo,n?necK(n):'')}).sort((a,b)=>dcmp(dItem(a),dItem(b))||dcmp(donN(a),donN(b)));
-    return`<div class="card">${l.length?l.map(donRow).join(''):`<div class="empty">${S.ddon.length?'No hay donaciones con ese filtro.':'Todavía no hay donaciones cargadas.'}</div>`}</div>`}
+    return l.length?`<div class="dfichas">${l.map(donCard).join('')}</div>`:`<div class="card"><div class="empty">${S.ddon.length?'No hay donaciones con ese filtro.':'Todavía no hay donaciones cargadas.'}</div></div>`}
   if(DV==='ele'&&!ADM()){const l=S.del.filter(e=>e.activo&&dqm(DQ,e.nombre,e.rubro)).sort((a,b)=>dcmp(a.rubro,b.rubro)||dcmp(a.nombre,b.nombre));
     return`<div class="card wrap"><table style="min-width:420px"><tr><th>Elemento</th><th>Rubro</th><th>Pedidos / donaciones</th></tr>${l.map(e=>`<tr><td><b>${esc(e.nombre)}</b></td><td>${esc(e.rubro)}</td><td class="mut">${S.dnec.filter(n=>n.elemento===e.nombre).length} / ${S.ddon.filter(d=>d.elemento===e.nombre).length}</td></tr>`).join('')}</table></div><div class="mut" style="margin-top:6px">La lista la mantienen los administradores. Si falta un elemento, pediles que lo agreguen.</div>`}
   if(DV==='eq'&&!ADM()){const l=S.deq.filter(e=>e.activo&&dqm(DQ,e.apellido,e.nombre,e.iniciales,e.sector,e.mail)).sort((a,b)=>dcmp(eqN(a),eqN(b)));
@@ -1453,10 +1453,44 @@ async function fichaSave(){
   FSAVE=dRun(async()=>{for(const op of ops){const r=await op();if(r&&r.error)return r}return{}},nuevos.length?'Ficha guardada ('+nuevos.length+' elemento'+(nuevos.length>1?'s':'')+' agregado'+(nuevos.length>1?'s':'')+')':'Ficha guardada').then(ok=>{render();return ok});
   return FSAVE;
 }
-$('#ddlg').addEventListener('close',()=>{if($('#dficha'))fichaSave()});
-$('#ddlg').addEventListener('cancel',()=>{if($('#dficha'))fichaSave()});
+$('#ddlg').addEventListener('close',()=>{if($('#dficha'))fichaSave();if($('#ddficha'))donSave()});
+$('#ddlg').addEventListener('cancel',()=>{if($('#dficha'))fichaSave();if($('#ddficha'))donSave()});
 // Después de una acción hecha desde la ficha, volver a la ficha
-const dVolver=()=>{const k=NFICHA;dClose();render();if(k&&S.dnec.some(x=>necP(x)===k))fFicha(k)};
+const dVolver=()=>{const k=NFICHA,dn2=NDON;dClose();render();if(k&&S.dnec.some(x=>necP(x)===k))fFicha(k);else if(dn2&&by(S.ddon,dn2))fDonF(dn2)};
+// Donaciones en tarjetas: se abren con un clic y se guardan solas al cerrar
+let NDON=null;
+const donDest=d=>{const n=by(S.dnec,d.necesidad_id);return n?necN(n)+(n.localidad?` (${n.localidad})`:''):d.destino_externo||''};
+function donCard(d){
+  const dest=donDest(d),pos=d.estado==='disponible'?S.dnec.filter(x=>x.estado==='pendiente'&&sameEl(x.elemento,d.elemento)).length:0;
+  return`<div class="card dficha clk dfd-${d.estado}" data-dact="dficha" data-id="${d.id}" title="Abrir la donación">
+  <div style="display:flex;justify-content:space-between;gap:8px;align-items:start"><b>${esc(dItemQ(d))}</b>${estB(d.estado)}</div>
+  <div class="mut" style="margin-top:4px">${donN(d)?'Donante: '+esc(donN(d)):'Donante sin cargar'}</div>
+  ${d.estado_producto||d.fecha?`<div class="mut">${esc([d.estado_producto?'Estado: '+d.estado_producto:'',d.fecha?'Recibida '+fd(d.fecha):''].filter(Boolean).join(' · '))}</div>`:''}
+  ${dest?`<div class="dfit2"><span>${d.estado==='entregada'?'Entregada a':'Para'} <b>${esc(dest)}</b></span><span class="mut">${d.fecha_entrega?fd(d.fecha_entrega):''}</span></div>`:''}
+  ${pos?`<div style="margin-top:6px">${bd(pos+' lo pide'+(pos>1?'n':''),'o')}</div>`:''}</div>`;
+}
+const DFLD=['elemento','cantidad','detalle','estado_producto','donante_apellido','donante_nombre','donante_telefono','donante_domicilio','fecha','notas'];
+function fDonF(id){
+  const d=by(S.ddon,id);if(!d){dClose();return}NDON=id;
+  const adm=ADM(),ed=adm||puedeEditar(d,'disponible'),dis=ed?'':' disabled',dest=donDest(d),pos=d.estado==='disponible'?S.dnec.filter(x=>x.estado==='pendiente'&&sameEl(x.elemento,d.elemento)).length:0;
+  const I2=(n,v,t)=>`<input name="${n}"${t?` type="${t}"`:''} value="${esc(v||'')}"${dis}>`;
+  dOpen(`${dHead(dItemQ(d),ed?'Los cambios se guardan solos al cerrar la tarjeta.':'Solo lectura.')}
+  <form id="ddficha" data-id="${d.id}" onsubmit="return false">
+  <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0">${estB(d.estado)}${dest?`<span>${d.estado==='entregada'?'Entregada a':'Para'} <b>${esc(dest)}</b>${d.fecha_entrega?' · '+fd(d.fecha_entrega):''}</span>`:''}</div>
+  <div class="r2">${L('Elemento',`<select name="elemento"${dis}>${opts(elems(d.elemento),d.elemento)}</select>`)}${L('Cantidad',I2('cantidad',d.cantidad))}${L('Detalle (marca, medidas, color…)',I2('detalle',d.detalle))}${L('Estado del producto',`<select name="estado_producto"${dis}>${opts(EST_PROD,d.estado_producto||'','Sin definir')}</select>`)}
+  ${L('Apellido del donante',I2('donante_apellido',d.donante_apellido))}${L('Nombre del donante',I2('donante_nombre',d.donante_nombre))}${L('Teléfono del donante',I2('donante_telefono',d.donante_telefono,'tel'))}${L('Fecha de recepción',I2('fecha',d.fecha,'date'))}</div>
+  ${L('Domicilio del donante (para retirar)',I2('donante_domicilio',d.donante_domicilio))}${L('Notas',`<textarea name="notas" rows="3"${dis}>${esc(d.notas||'')}</textarea>`)}
+  <div class="bar2" style="margin-top:14px;justify-content:flex-end">${adm?`${d.estado==='disponible'?`<button type="button" class="btn" data-dact="asigD" data-id="${d.id}">Asignar a necesidad${pos?` <small>(${pos} posible${pos>1?'s':''})</small>`:''}</button><button type="button" class="btn s" data-dact="ext" data-id="${d.id}">Entregar a otro destino</button>`:''}${d.estado==='asignada'?`<button type="button" class="btn" data-dact="entr" data-id="${d.id}">Marcar entregada</button><button type="button" class="btn s" data-dact="desh" data-id="${d.id}">Deshacer asignación</button>`:''}<button type="button" class="btn x" data-dact="deldon" data-id="${d.id}" style="margin-right:auto;order:-1">Eliminar</button>`:''}<button type="button" class="btn" data-dact="cerrar">Listo</button></div></form>`);
+}
+let DSAVE=null;
+function donSave(){
+  const fm=$('#ddficha');if(!fm||fm.dataset.saved)return DSAVE;fm.dataset.saved='1';
+  const d=by(S.ddon,fm.dataset.id);if(!d||!(ADM()||puedeEditar(d,'disponible')))return;
+  const p={};DFLD.forEach(k=>{const i=fm.querySelector(`[name=${k}]`);if(!i)return;let v=i.value.trim();if(k==='donante_apellido'||k==='donante_nombre')v=dcap(v);if(k==='cantidad'&&!v)v='1';if(k==='elemento'&&!v)return;if((v||'')!==(d[k]||''))p[k]=v||(k==='fecha'?null:'')});
+  if(!Object.keys(p).length)return;
+  DSAVE=dRun(()=>sb.from('donaciones').update(p).eq('id',d.id).select('id').then(r=>{if(!r.error&&(!r.data||!r.data.length))r.error={message:'No se pudo guardar: ya no se puede editar (quizás ya fue asignada).'};return r}),'Donación guardada').then(ok=>{render();return ok});
+  return DSAVE;
+}
 function donRow(d){
   const n=by(S.dnec,d.necesidad_id),pos=d.estado==='disponible'?S.dnec.filter(x=>x.estado==='pendiente'&&sameEl(x.elemento,d.elemento)).length:0,dest=n?necN(n)+(n.localidad?` (${n.localidad})`:''):d.destino_externo;
   return`<div class="drow"><div><b>${esc(dItemQ(d))}</b> · ${donN(d)?'Donante: '+esc(donN(d)):'<span class="mut">Donante sin cargar</span>'}
@@ -1546,9 +1580,12 @@ const coin='<span class="badge o">Coincide</span>';
 document.addEventListener('click',async e=>{
   const b=e.target.closest('[data-dact]');if(!b)return;e.preventDefault();
   const a=b.dataset.dact,id=b.dataset.id;
-  if(!b.closest('#ddlg'))NFICHA=null;
+  if(!b.closest('#ddlg')){NFICHA=null;NDON=null}
   if(a==='nficha')return fFicha(b.dataset.k);
-  if(b.closest('#dficha')&&!['itemadd','itemdel','cerrar'].includes(a)&&!((a==='desh'||a==='delnec')&&b.dataset.ok!=='1'))await fichaSave();
+  if(a==='dficha')return fDonF(id);
+  const conf1=(a==='desh'||a==='delnec'||a==='deldon')&&b.dataset.ok!=='1';
+  if(b.closest('#dficha')&&!['itemadd','itemdel','cerrar'].includes(a)&&!conf1)await fichaSave();
+  if(b.closest('#ddficha')&&a!=='cerrar'&&!conf1)await donSave();
   if(a==='cerrar')return dClose();
   if(a==='unew')return dOpen(`${dHead('Nuevo usuario','Se crea ya confirmado, con una contraseña provisoria.')}<form id="dunew"><div class="r2">${L('Mail *','<input name="email" type="email" required autofocus autocomplete="off">')}${L('Rol',`<select name="rol">${opts(ROLES.map(r=>[r[0],r[1]]),'solicitante')}</select>`)}${L('Contraseña provisoria',`<input name="clave" value="${nuevaClave()}" minlength="8" required autocomplete="off" style="font-family:monospace">`)}</div><div class="mut" style="margin-top:6px">${ROLES.map(r=>`<b>${r[1]}</b>: ${esc(r[2])}`).join('<br>')}</div><div class="bar2" style="margin-top:14px;justify-content:flex-end"><button type="button" class="btn s" data-dact="cerrar">Cancelar</button><button class="btn" type="submit">Crear usuario</button></div></form>`);
   if(a==='uclave'){const u=(UL||[]).find(x=>x.id===id);if(b.dataset.ok!=='1'){b.dataset.ok='1';b.textContent='¿Generar una nueva?';return}
@@ -1595,7 +1632,7 @@ document.addEventListener('submit',async e=>{
     const r=await sb.auth.updateUser({password:v.a,data:{debe_cambiar_clave:false}});if(r.error)return toast('No se pudo guardar: '+r.error.message,8000);
     delete $('#ddlg').dataset.forzado;dClose();toast('Contraseña guardada',3000);return}
   if(f.id==='dentr'){if(await dRun(()=>sb.rpc('entregar',{p_donacion:f.dataset.id,p_fecha:v.f||today()}),'Entrega registrada'))dVolver();return}
-  if(f.id==='dext'){if(!v.dest)return toast('Indicá el destino.');if(await dRun(()=>sb.rpc('entregar_externo',{p_donacion:f.dataset.id,p_destino:v.dest,p_fecha:v.f||today()}),'Entrega registrada')){dClose();render()}return}
+  if(f.id==='dext'){if(!v.dest)return toast('Indicá el destino.');if(await dRun(()=>sb.rpc('entregar_externo',{p_donacion:f.dataset.id,p_destino:v.dest,p_fecha:v.f||today()}),'Entrega registrada'))dVolver();return}
   if(f.id==='dele'){if(S.del.some(x=>dn(x.nombre).trim()===dn(v.nombre)))return toast('Ese elemento ya está en la lista.');if(await dRun(()=>sb.from('elementos').insert({nombre:dcap(v.nombre),rubro:v.rubro||'Otros'}),'Elemento agregado')){dClose();render()}return}
   if(f.id==='deq'){if(S.deq.some(x=>x.iniciales.toUpperCase()===v.iniciales.toUpperCase()))return toast('Esas iniciales ya están usadas.');if(await dRun(()=>sb.from('equipo').insert({...v,iniciales:v.iniciales.toUpperCase(),apellido:dcap(v.apellido),nombre:dcap(v.nombre),mail:v.mail.toLowerCase()}),'Agregado al equipo')){dClose();render()}return}
 });
