@@ -1384,7 +1384,7 @@ function dRes(){
   pares.sort((a,b)=>({alta:0,media:1,baja:2}[a.n.prioridad]??3)-({alta:0,media:1,baja:2}[b.n.prioridad]??3)||String(a.n.fecha||'').localeCompare(String(b.n.fecha||''))||dcmp(necK(a.n),necK(b.n)));
   const cnt=(l,e)=>l.filter(x=>sameEl(x.elemento,e)).length,els=[...new Set([...disp,...pend].map(x=>x.elemento))].sort(dcmp);
   const k=(v,l,s,act)=>`<div class="card" ${act}><span>${l}</span><b>${v}</b><small>${s}</small></div>`;
-  return`<div class="kpis">${k(pend.length,'Necesidades pendientes',urg.length+' de prioridad alta','data-dact="dv" data-v="nec" data-f="pendiente"')}${k(disp.length,'Donaciones disponibles','listas para asignar','data-dact="dv" data-v="don" data-f="disponible"')}${k(asig.length,'Asignadas sin entregar','falta la entrega','data-dact="dv" data-v="nec" data-f="asignada"')}${k(ent.length,'Entregas realizadas',ent.filter(d=>String(d.fecha_entrega||'').startsWith(mes)).length+' este mes','data-dact="dv" data-v="don" data-f="entregada"')}</div>
+  return`<div class="kpis">${k(pend.length,'Necesidades pendientes',urg.length+' de prioridad alta','data-dact="dv" data-v="nec" data-f="pendiente"')}${k(disp.length,'Donaciones disponibles','listas para asignar','data-dact="dv" data-v="don" data-f="disponible"')}${k(asig.length,'Asignadas sin entregar','falta la entrega','data-dact="dv" data-v="nec" data-f="asignada"')}${k(ent.filter(d=>String(d.fecha_entrega||'').startsWith(mes)).length,'Entregas de este mes',ent.filter(d=>String(d.fecha_entrega||'').startsWith(mes.slice(0,4))).length+' en '+mes.slice(0,4)+' · '+ent.length+' en total','data-dact="dv" data-v="don" data-f="entregada"')}</div>
   ${urg.length?`<h2>Pendientes de prioridad alta</h2>${necFichas(urg)}`:''}
   ${asig.length?`<h2>Asignadas, falta entregar</h2>${necFichas(asig)}`:''}
   <h2>Posibles coincidencias</h2><div class="mut" style="margin-bottom:8px">Donaciones disponibles del mismo elemento que alguien pidió. Primero las de prioridad alta y las más antiguas.</div>
@@ -1463,7 +1463,8 @@ const EL_SVG={
  cama:'<path d="M3 18V7"/><path d="M3 14h18v4"/><path d="M21 18v-4a3 3 0 0 0-3-3h-8v3"/><circle cx="6.5" cy="11.5" r="1.5"/>',
  colchon:'<rect x="2" y="9" width="20" height="7" rx="2"/><path d="M6 9v7M10 9v7M14 9v7M18 9v7"/>',
  cuna:'<path d="M4 6v14M20 6v14M4 10h16M4 17h16M8 10v7M12 10v7M16 10v7"/>',
- silla:'<path d="M7 3v18M7 12h10v9M17 12V3"/><path d="M7 7h10"/>',
+ silla:'<rect x="6.5" y="2" width="11" height="9" rx="1.5"/><path d="M9 5h6M9 8h6"/><path d="M4.5 11h15v3h-15z"/><path d="M6 14v8M18 14v8"/>',
+ luz:'<path d="M9 2.5h6l-1.5 4.5h-3z"/><path d="M12 7v3"/><rect x="5" y="10" width="14" height="11" rx="1"/><path d="M5 15.5h14M11 12.8h2M11 18.3h2M6.5 21v1.5M17.5 21v1.5"/>',
  sillon:'<path d="M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3"/><path d="M2 13a2 2 0 0 1 4 0v2h12v-2a2 2 0 0 1 4 0v5H2z"/><path d="M5 18v2M19 18v2"/>',
  mesa:'<path d="M2 8h20M5 8v12M19 8v12M5 13h14"/>',
  mueble:'<rect x="4" y="3" width="16" height="18" rx="1"/><path d="M4 9h16M4 15h16M11 6h2M11 12h2M11 18h2"/>',
@@ -1471,7 +1472,7 @@ const EL_SVG={
  heladera:'<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M5 9h14M8 5v2M8 12v3"/>',
  cocina:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><circle cx="8" cy="6" r="1"/><circle cx="16" cy="6" r="1"/><rect x="7" y="12" width="10" height="6" rx="1"/>',
  micro:'<rect x="2" y="5" width="20" height="14" rx="2"/><rect x="5" y="8" width="10" height="8" rx="1"/><path d="M18 9v1M18 13v1"/>',
- lavarropas:'<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M4 7h16"/><circle cx="12" cy="14" r="4.5"/><circle cx="8" cy="4.5" r=".6"/>',
+ lavarropas:'<rect x="3" y="2" width="18" height="20" rx="2"/><path d="M3 7h18"/><circle cx="6.5" cy="4.5" r=".9" fill="currentColor"/><circle cx="9.5" cy="4.5" r=".9" fill="currentColor"/><path d="M14 4.5h4"/><circle cx="12" cy="14.5" r="5.2"/><path d="M8.3 15.2c1.2-1 2.5 1 3.7 0s2.5 1 3.7 0"/>',
  estufa:'<rect x="4" y="4" width="16" height="15" rx="2"/><path d="M8 4v15M12 4v15M16 4v15M6 19v2M18 19v2"/>',
  tv:'<rect x="2" y="5" width="20" height="13" rx="2"/><path d="M8 22h8M12 18v4"/>',
  ventilador:'<circle cx="12" cy="10" r="1.5"/><path d="M12 8.5C11 5 13 2 15 3s1 5-1.5 6M13.4 10.7c3 1.5 4 4.8 2 5.8s-4-2-3.6-4.8M10.6 10.7C7.5 12 5 10 6 8s4.6-.8 5 0.8"/><path d="M12 11.5V20M8 21h8"/>',
@@ -1481,7 +1482,7 @@ const EL_SVG={
  ropa:'<path d="M3 7h18v12H3z"/><path d="M3 11h18M7 7V5h10v2"/>',
  vajilla:'<circle cx="10" cy="13" r="7"/><circle cx="10" cy="13" r="3.5"/><path d="M20 4v16M18 4v5a2 2 0 0 0 4 0V4"/>',
  caja:'<path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/>'};
-const EL_KEY=[[/ropa|s[aá]bana|frazada|acolchado|toalla/,'ropa'],[/colch/,'colchon'],[/cuna/,'cuna'],[/cama|sommier/,'cama'],[/sill[oó]n|sof[aá]/,'sillon'],[/silla|banqueta/,'silla'],[/mesa de luz|c[oó]moda|cajonera|biblioteca|repisa/,'mueble'],[/placard|ropero|armario/,'placard'],[/mesa|escritorio/,'mesa'],[/heladera|freezer/,'heladera'],[/microondas/,'micro'],[/cocina|anafe|horno/,'cocina'],[/lavarropas|secarropas/,'lavarropas'],[/estufa|calefactor|radiador|caloventor/,'estufa'],[/televisor|tv\b|monitor/,'tv'],[/ventilador|aire/,'ventilador'],[/pava/,'pava'],[/termotanque|calef[oó]n/,'termo'],[/celular|tel[eé]fono|tablet/,'celular'],[/ropa|s[aá]bana|frazada|acolchado|toalla/,'ropa'],[/vajilla|plato|olla|cubierto|taza|vaso/,'vajilla']];
+const EL_KEY=[[/lavarropas|secarropas/,'lavarropas'],[/\bropa\b|s[aá]bana|frazada|acolchado|toalla/,'ropa'],[/colch/,'colchon'],[/cuna/,'cuna'],[/cama|sommier/,'cama'],[/sill[oó]n|sof[aá]/,'sillon'],[/silla|banqueta/,'silla'],[/mesa de (luz|noche)|mesita/,'luz'],[/c[oó]moda|cajonera|biblioteca|repisa/,'mueble'],[/placard|ropero|armario/,'placard'],[/mesa|escritorio/,'mesa'],[/heladera|freezer/,'heladera'],[/microondas/,'micro'],[/cocina|anafe|horno/,'cocina'],[/lavarropas|secarropas/,'lavarropas'],[/estufa|calefactor|radiador|caloventor/,'estufa'],[/televisor|tv\b|monitor/,'tv'],[/ventilador|aire/,'ventilador'],[/pava/,'pava'],[/termotanque|calef[oó]n/,'termo'],[/celular|tel[eé]fono|tablet/,'celular'],[/ropa|s[aá]bana|frazada|acolchado|toalla/,'ropa'],[/vajilla|plato|olla|cubierto|taza|vaso/,'vajilla']];
 const elIco=n=>{const s=String(n||'').toLowerCase(),k=(EL_KEY.find(([r])=>r.test(s))||[,'caja'])[1];return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${EL_SVG[k]}</svg>`};
 // Donaciones en tarjetas: se abren con un clic y se guardan solas al cerrar
 let NDON=null;
@@ -1493,7 +1494,8 @@ function donCard(d){
   return`<div class="card dficha clk dfd-${d.estado}" data-dact="dficha" data-id="${d.id}" title="Abrir la donación">
   <div style="display:flex;justify-content:space-between;gap:8px;align-items:start"><b>${esc(dItemQ(d))}</b>${d.estado==='disponible'?`<span class="delic"><span title="${esc(d.elemento||'')}">${elIco(d.elemento)}</span>${estB(d.estado)}</span>`:estB(d.estado)}</div>
   <div class="mut" style="margin-top:4px">${donN(d)?'Donante: '+esc(donN(d)):'Donante sin cargar'}</div>
-  ${d.estado_producto||d.fecha?`<div class="mut">${esc([d.estado_producto?'Estado: '+d.estado_producto:'',d.fecha?'Recibida '+fd(d.fecha):''].filter(Boolean).join(' · '))}</div>`:''}
+  ${d.estado==='disponible'?`<div style="margin-top:4px;font-size:13px">${d.donante_domicilio?'Retirar en: <b>'+esc(d.donante_domicilio)+'</b>':'<span class="mut">Sin dirección de retiro</span>'}</div>${d.estado_producto?`<div class="mut">Estado: ${esc(d.estado_producto)}</div>`:''}`
+  :d.estado_producto||d.fecha?`<div class="mut">${esc([d.estado_producto?'Estado: '+d.estado_producto:'',d.fecha?'Recibida '+fd(d.fecha):''].filter(Boolean).join(' · '))}</div>`:''}
   ${dest?`<div class="dfit2"><span>${d.estado==='entregada'?'Entregada a':'Para'} <b>${destLink(d)}</b></span><span class="mut">${d.fecha_entrega?fd(d.fecha_entrega):''}</span></div>`:''}
   ${pos?`<div style="margin-top:6px">${bd(pos+' lo pide'+(pos>1?'n':''),'o')}</div>`:''}</div>`;
 }
