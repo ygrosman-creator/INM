@@ -1309,13 +1309,17 @@ let ROL=null,DERR='',DV=(()=>{try{return sessionStorage.getItem('inm-dv')||'res'
 const DF={nec:'activas',don:'disponible'};
 const DCOL={del:'elementos',deq:'equipo',dnec:'necesidades',ddon:'donaciones'};
 Object.assign(S,{del:[],deq:[],dnec:[],ddon:[],dper:[]});
-const TABS_SOL=[['sol','Pedidos',()=>vSol()]],TABS_ADM=[['don','Donaciones',()=>vDon()],['usr','Usuarios',()=>vUsr()]];
+let UID='';
+const ADM=()=>ROL==='admin';
+// Puede corregir: el admin siempre; el solicitante solo lo que cargó él, mientras siga pendiente / disponible
+const puedeEditar=(x,libre)=>ADM()||(x.created_by===UID&&x.estado===libre);
+const TABS_SOL=[['don','Donaciones',()=>vDon()]],TABS_ADM=[['don','Donaciones',()=>vDon()],['usr','Usuarios',()=>vUsr()]];
 const TT=()=>ROL==='solicitante'?TABS_SOL:ROL==='admin'?[...TABS,...TABS_ADM]:TABS;
-Object.assign(FRASES,{sol:'Cargá lo que alguien necesita o lo que se recibió.',don:'Necesidades, donaciones y entregas.',usr:'Quién entra y qué puede ver.'});
-Object.assign(ICO,{sol:'<path d="M12 5v14M5 12h14"/><rect x="3" y="3" width="18" height="18" rx="3"/>',
+Object.assign(FRASES,{don:'Necesidades y donaciones.',usr:'Quién entra y qué puede ver.'});
+Object.assign(ICO,{
   don:'<path d="M20 12v9H4v-9"/><rect x="2" y="7" width="20" height="5" rx="1"/><path d="M12 21V7M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7z"/>',
   usr:'<circle cx="9" cy="8" r="4"/><path d="M2 21v-1a7 7 0 0 1 14 0v1"/><path d="M17 11l2 2 4-4"/>'});
-const ROLES=[['admin','Administrador','Ve y edita todo: inmuebles, donaciones y usuarios. Asigna las donaciones.'],['editor','Editor','Ve y edita inmuebles. No ve donaciones.'],['lector','Lector','Solo consulta inmuebles. No ve donaciones.'],['solicitante','Solicitante','Solo carga necesidades y donaciones y ve lo que cargó. No ve inmuebles.']];
+const ROLES=[['admin','Administrador','Ve y edita todo: inmuebles, donaciones y usuarios. Asigna las donaciones.'],['editor','Editor','Ve y edita inmuebles. No ve donaciones.'],['lector','Lector','Solo consulta inmuebles. No ve donaciones.'],['solicitante','Solicitante','Ve todas las necesidades y donaciones y carga nuevas. No asigna, no entrega ni borra. No ve inmuebles.']];
 const EST_PROD=['Nuevo','Muy bueno','Bueno','Regular','Necesita arreglo'];
 const dn=s=>String(s??'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 const dcmp=(a,b)=>String(a??'').localeCompare(String(b??''),'es',{sensitivity:'base'});
@@ -1340,26 +1344,17 @@ const dOpen=h=>{const d=$('#ddlg');d.innerHTML=h;if(!d.open)d.showModal();const 
 const dClose=()=>{const d=$('#ddlg');if(d.open)d.close()};
 const dHead=(t,sub)=>`<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><h2 style="margin:0 0 4px">${esc(t)}</h2>${sub?`<div class="mut">${esc(sub)}</div>`:''}</div><button class="btn x" data-dact="cerrar" aria-label="Cerrar">✕</button></div>`;
 
-/* ---------- Solicitante ---------- */
-function vSol(){
-  const mine=x=>true; // la base ya devuelve solo lo propio
-  const ns=S.dnec.filter(mine).sort((a,b)=>String(b.fecha||'').localeCompare(String(a.fecha||''))||dcmp(necK(a),necK(b)));
-  const ds=S.ddon.filter(mine).sort((a,b)=>String(b.fecha||'').localeCompare(String(a.fecha||''))||dcmp(dItem(a),dItem(b)));
-  return`${DERR?`<div class="card" style="margin-bottom:12px">Todavía no está habilitada esta sección. Avisale a un administrador.</div>`:''}
-  <div class="bar2"><button class="btn" data-dact="fnec">+ Cargar necesidad</button><button class="btn s" data-dact="fdon">+ Cargar donación</button></div>
-  <h2>Necesidades que cargué</h2><div class="card">${ns.length?ns.map(n=>`<div class="drow"><div><b>${esc(necN(n))}</b> · ${esc(dItemQ(n))}<div class="mut">${esc([n.localidad,n.telefono,n.fecha?'Cargada '+fd(n.fecha):''].filter(Boolean).join(' · '))}</div><div style="margin-top:4px">${estB(n.estado)} ${prioB(n.prioridad)}${n.fecha_entrega&&n.estado==='entregada'?' <span class="mut">Entregada el '+fd(n.fecha_entrega)+'</span>':''}</div></div><div>${n.estado==='pendiente'?`<button class="btn x" data-dact="fnec" data-id="${n.id}">Editar</button>`:''}</div></div>`).join(''):'<div class="empty">Todavía no cargaste necesidades.</div>'}</div>
-  <h2>Donaciones que cargué</h2><div class="card">${ds.length?ds.map(d=>`<div class="drow"><div><b>${esc(dItemQ(d))}</b>${donN(d)?' · de '+esc(donN(d)):''}<div class="mut">${d.fecha?'Recibida '+fd(d.fecha):''}</div><div style="margin-top:4px">${estB(d.estado)}</div></div><div>${d.estado==='disponible'?`<button class="btn x" data-dact="fdon" data-id="${d.id}">Editar</button>`:''}</div></div>`).join(''):'<div class="empty">Todavía no cargaste donaciones.</div>'}</div>`;
-}
-
-/* ---------- Admin: Donaciones ---------- */
-const DTABS=[['res','Resumen'],['nec','Necesidades'],['don','Donaciones'],['ent','Entregas'],['ele','Elementos'],['eq','Equipo']];
+/* ---------- Donaciones (admin y solicitante; el solicitante no asigna, no entrega ni borra) ---------- */
+const DTABS=[['res','Resumen'],['nec','Necesidades'],['don','Donaciones'],['ele','Elementos'],['eq','Equipo']];
 const DFIL={nec:[['activas','Activas'],['pendiente','Pendientes'],['asignada','Asignadas'],['entregada','Entregadas'],['cerrada','Cerradas'],['todas','Todas']],don:[['disponible','Disponibles'],['asignada','Asignadas'],['entregada','Entregadas'],['todas','Todas']]};
 function vDon(){
-  if(DERR)return`<div class="card">No se pudieron leer las tablas de donaciones (${esc(DERR)}). Falta ejecutar <b>migracion-15-donaciones.sql</b> en Supabase.</div>`;
-  const cnt={nec:S.dnec.filter(n=>n.estado==='pendiente'||n.estado==='asignada').length,don:S.ddon.filter(d=>d.estado==='disponible').length,ent:S.ddon.filter(d=>d.estado==='entregada').length};
-  const ph={nec:'Buscar persona, elemento, localidad, profesional…',don:'Buscar objeto, donante, destinatario…',ent:'Buscar objeto, donante, destinatario…',ele:'Buscar elemento o rubro…',eq:'Buscar por apellido, sector, mail…'}[DV];
-  const btn={nec:'<button class="btn" data-dact="fnec">+ Nueva necesidad</button>',don:'<button class="btn" data-dact="fdon">+ Nueva donación</button>',ele:'<button class="btn" data-dact="fele">+ Agregar elemento</button>',eq:'<button class="btn" data-dact="feq">+ Agregar al equipo</button>'}[DV]||'';
-  return`<div class="dtabs">${DTABS.map(([k,l])=>`<button class="${DV===k?'on':''}" data-dact="dv" data-v="${k}">${l}${cnt[k]!=null?` <small>${cnt[k]}</small>`:''}</button>`).join('')}</div>
+  if(DERR)return`<div class="card">${ADM()?`No se pudieron leer las tablas de donaciones (${esc(DERR)}). Falta ejecutar <b>migracion-15-donaciones.sql</b> en Supabase.`:'Todavía no está habilitada esta sección. Avisale a un administrador.'}</div>`;
+  if(!DTABS.some(t=>t[0]===DV))DV='res';
+  const cnt={nec:S.dnec.filter(n=>n.estado==='pendiente'||n.estado==='asignada').length,don:S.ddon.filter(d=>d.estado==='disponible').length};
+  const ph={nec:'Buscar persona, elemento, localidad, profesional…',don:'Buscar objeto, donante, destinatario…',ele:'Buscar elemento o rubro…',eq:'Buscar por apellido, sector, mail…'}[DV];
+  const btn={nec:'<button class="btn" data-dact="fnec">+ Nueva necesidad</button>',don:'<button class="btn" data-dact="fdon">+ Nueva donación</button>',ele:ADM()?'<button class="btn" data-dact="fele">+ Agregar elemento</button>':'',eq:ADM()?'<button class="btn" data-dact="feq">+ Agregar al equipo</button>':''}[DV]||'';
+  const top=ROL==='solicitante'&&DV==='res'?'<div class="bar2"><button class="btn" data-dact="fnec">+ Nueva necesidad</button><button class="btn s" data-dact="fdon">+ Nueva donación</button></div>':'';
+  return`${top}<div class="dtabs">${DTABS.map(([k,l])=>`<button class="${DV===k?'on':''}" data-dact="dv" data-v="${k}">${l}${cnt[k]!=null?` <small>${cnt[k]}</small>`:''}</button>`).join('')}</div>
   ${DV!=='res'?`<div class="bar2"><input data-dq placeholder="${ph}" value="${esc(DQ)}">${btn}</div>${DFIL[DV]?`<div class="dchips">${DFIL[DV].map(([v,l])=>`<button class="${DF[DV]===v?'on':''}" data-dact="dfil" data-v="${v}">${l}</button>`).join('')}</div>`:''}`:''}
   <div id="dlist">${dList()}</div>`;
 }
@@ -1369,8 +1364,10 @@ function dList(){
     return`<div class="card">${l.length?l.map(necRow).join(''):`<div class="empty">${S.dnec.length?'No hay necesidades con ese filtro.':'Todavía no hay necesidades cargadas.'}</div>`}</div>`}
   if(DV==='don'){const f=DF.don,l=S.ddon.filter(d=>{if(f!=='todas'&&d.estado!==f)return false;const n=by(S.dnec,d.necesidad_id);return dqm(DQ,d.elemento,d.detalle,d.donante_apellido,d.donante_nombre,d.donante_domicilio,d.donante_telefono,d.notas,d.destino_externo,n?necK(n):'')}).sort((a,b)=>dcmp(dItem(a),dItem(b))||dcmp(donN(a),donN(b)));
     return`<div class="card">${l.length?l.map(donRow).join(''):`<div class="empty">${S.ddon.length?'No hay donaciones con ese filtro.':'Todavía no hay donaciones cargadas.'}</div>`}</div>`}
-  if(DV==='ent'){const l=S.ddon.filter(d=>d.estado==='entregada').map(d=>{const n=by(S.dnec,d.necesidad_id);return{d,n,dest:n?necN(n):d.destino_externo||''}}).filter(r=>dqm(DQ,dItem(r.d),donN(r.d),r.dest,r.n&&r.n.localidad,r.n?profN(r.n.profesional):'')).sort((a,b)=>String(b.d.fecha_entrega||'').localeCompare(String(a.d.fecha_entrega||''))||dcmp(a.dest,b.dest));
-    return l.length?`<div class="card wrap"><table><tr><th>Destinatario</th><th>Objeto</th><th>Donante</th><th>Profesional</th><th>Fecha</th></tr>${l.map(({d,n,dest})=>`<tr><td><b>${esc(dest||'—')}</b>${n&&n.localidad?`<div class="mut">${esc(n.localidad)}</div>`:''}</td><td>${esc(dItemQ(d))}</td><td>${esc(donN(d)||'—')}</td><td>${esc(n&&n.profesional?profN(n.profesional):'—')}</td><td>${fd(d.fecha_entrega)||'—'}</td></tr>`).join('')}</table></div>`:'<div class="card empty">Todavía no hay entregas registradas.</div>'}
+  if(DV==='ele'&&!ADM()){const l=S.del.filter(e=>e.activo&&dqm(DQ,e.nombre,e.rubro)).sort((a,b)=>dcmp(a.rubro,b.rubro)||dcmp(a.nombre,b.nombre));
+    return`<div class="card wrap"><table style="min-width:420px"><tr><th>Elemento</th><th>Rubro</th><th>Pedidos / donaciones</th></tr>${l.map(e=>`<tr><td><b>${esc(e.nombre)}</b></td><td>${esc(e.rubro)}</td><td class="mut">${S.dnec.filter(n=>n.elemento===e.nombre).length} / ${S.ddon.filter(d=>d.elemento===e.nombre).length}</td></tr>`).join('')}</table></div><div class="mut" style="margin-top:6px">La lista la mantienen los administradores. Si falta un elemento, pediles que lo agreguen.</div>`}
+  if(DV==='eq'&&!ADM()){const l=S.deq.filter(e=>e.activo&&dqm(DQ,e.apellido,e.nombre,e.iniciales,e.sector,e.mail)).sort((a,b)=>dcmp(eqN(a),eqN(b)));
+    return`<div class="card wrap"><table style="min-width:640px"><tr><th>Apellido, nombre</th><th>Inic.</th><th>Sector</th><th>Interno</th><th>Mail</th><th>Casos activos</th></tr>${l.map(e=>`<tr><td><b>${esc(eqN(e))}</b></td><td>${esc(e.iniciales)}</td><td>${esc(e.sector)}</td><td>${esc(e.interno)}</td><td>${esc(e.mail)}</td><td>${S.dnec.filter(n=>n.profesional===e.iniciales&&(n.estado==='pendiente'||n.estado==='asignada')).length}</td></tr>`).join('')}</table></div>`}
   if(DV==='ele'){const l=S.del.filter(e=>dqm(DQ,e.nombre,e.rubro)).sort((a,b)=>dcmp(a.rubro,b.rubro)||dcmp(a.nombre,b.nombre));
     return`<div class="card wrap"><table><tr><th>Elemento</th><th>Rubro</th><th>En la lista</th><th>Pedidos / donaciones</th><th></th></tr>${l.map(e=>`<tr style="${e.activo?'':'opacity:.55'}"><td><input data-dt="elementos" data-id="${e.id}" data-f="nombre" value="${esc(e.nombre)}"></td><td><input data-dt="elementos" data-id="${e.id}" data-f="rubro" value="${esc(e.rubro)}" list="drubros"></td><td><input type="checkbox" data-dt="elementos" data-id="${e.id}" data-f="activo" ${e.activo?'checked':''} style="width:auto"></td><td class="mut">${S.dnec.filter(n=>n.elemento===e.nombre).length} / ${S.ddon.filter(d=>d.elemento===e.nombre).length}</td><td>${!S.dnec.some(n=>n.elemento===e.nombre)&&!S.ddon.some(d=>d.elemento===e.nombre)?`<button class="btn x" data-dact="delele" data-id="${e.id}">Eliminar</button>`:''}</td></tr>`).join('')}</table><datalist id="drubros">${[...new Set(S.del.map(e=>e.rubro))].sort(dcmp).map(r=>`<option value="${esc(r)}">`).join('')}</datalist></div><div class="mut" style="margin-top:6px">Usar nombres generales (“Silla”); la marca o las medidas van en el detalle. Cambiar el nombre lo cambia en todos los pedidos y donaciones. Para sacarlo de la lista sin perder lo cargado, destildá “En la lista”.</div>`}
   if(DV==='eq'){const l=S.deq.filter(e=>dqm(DQ,e.apellido,e.nombre,e.iniciales,e.sector,e.mail)).sort((a,b)=>dcmp(eqN(a),eqN(b)));
@@ -1385,9 +1382,9 @@ function dRes(){
   pares.sort((a,b)=>({alta:0,media:1,baja:2}[a.n.prioridad]??3)-({alta:0,media:1,baja:2}[b.n.prioridad]??3)||String(a.n.fecha||'').localeCompare(String(b.n.fecha||''))||dcmp(necK(a.n),necK(b.n)));
   const cnt=(l,e)=>l.filter(x=>sameEl(x.elemento,e)).length,els=[...new Set([...disp,...pend].map(x=>x.elemento))].sort(dcmp);
   const k=(v,l,s,act)=>`<div class="card" ${act}><span>${l}</span><b>${v}</b><small>${s}</small></div>`;
-  return`<div class="kpis">${k(pend.length,'Necesidades pendientes',urg.length+' de prioridad alta','data-dact="dv" data-v="nec" data-f="pendiente"')}${k(disp.length,'Donaciones disponibles','listas para asignar','data-dact="dv" data-v="don" data-f="disponible"')}${k(asig.length,'Asignadas sin entregar','falta la entrega','data-dact="dv" data-v="nec" data-f="asignada"')}${k(ent.length,'Entregas realizadas',ent.filter(d=>String(d.fecha_entrega||'').startsWith(mes)).length+' este mes','data-dact="dv" data-v="ent"')}</div>
+  return`<div class="kpis">${k(pend.length,'Necesidades pendientes',urg.length+' de prioridad alta','data-dact="dv" data-v="nec" data-f="pendiente"')}${k(disp.length,'Donaciones disponibles','listas para asignar','data-dact="dv" data-v="don" data-f="disponible"')}${k(asig.length,'Asignadas sin entregar','falta la entrega','data-dact="dv" data-v="nec" data-f="asignada"')}${k(ent.length,'Entregas realizadas',ent.filter(d=>String(d.fecha_entrega||'').startsWith(mes)).length+' este mes','data-dact="dv" data-v="don" data-f="entregada"')}</div>
   <h2>Posibles coincidencias</h2><div class="mut" style="margin-bottom:8px">Donaciones disponibles del mismo elemento que alguien pidió. Primero las de prioridad alta y las más antiguas.</div>
-  <div class="card">${pares.length?pares.slice(0,20).map(({n,d})=>`<div class="drow d3"><div><div class="mut dlab">Necesidad</div><b>${esc(necN(n))}</b> · ${esc(dItemQ(n))} ${prioB(n.prioridad)}<div class="mut">${esc([n.localidad,n.fecha?'Cargada '+fd(n.fecha):''].filter(Boolean).join(' · '))}</div></div><div><div class="mut dlab">Donación</div><b>${esc(dItemQ(d))}</b><div class="mut">${donN(d)?'De '+esc(donN(d)):'Donante sin cargar'}</div></div><div><button class="btn" data-dact="asig" data-n="${n.id}" data-d="${d.id}">Asignar</button></div></div>`).join(''):`<div class="empty">${disp.length?'Ninguna donación disponible coincide con las necesidades pendientes. Podés asignar a mano desde cada necesidad.':'No hay donaciones disponibles.'}</div>`}</div>
+  <div class="card">${pares.length?pares.slice(0,20).map(({n,d})=>`<div class="drow d3"><div><div class="mut dlab">Necesidad</div><b>${esc(necN(n))}</b> · ${esc(dItemQ(n))} ${prioB(n.prioridad)}<div class="mut">${esc([n.localidad,n.fecha?'Cargada '+fd(n.fecha):''].filter(Boolean).join(' · '))}</div></div><div><div class="mut dlab">Donación</div><b>${esc(dItemQ(d))}</b><div class="mut">${donN(d)?'De '+esc(donN(d)):'Donante sin cargar'}</div></div><div>${ADM()?`<button class="btn" data-dact="asig" data-n="${n.id}" data-d="${d.id}">Asignar</button>`:bd('Coincide','o')}</div></div>`).join(''):`<div class="empty">${disp.length?'Ninguna donación disponible coincide con las necesidades pendientes. Podés asignar a mano desde cada necesidad.':'No hay donaciones disponibles.'}</div>`}</div>
   ${els.length?`<h2>Por elemento</h2><div class="card wrap"><table style="min-width:420px"><tr><th>Elemento</th><th>Disponibles</th><th>Lo piden</th></tr>${els.map(e=>{const d=cnt(disp,e),p=cnt(pend,e);return`<tr><td><b>${esc(e)}</b></td><td>${d||'—'}</td><td>${p||'—'}${d&&p?' '+bd('Se puede asignar','o'):''}</td></tr>`}).join('')}</table></div>`:''}
   ${asig.length?`<h2>Asignadas, falta entregar</h2><div class="card">${asig.map(necRow).join('')}</div>`:''}
   ${urg.length?`<h2>Pendientes de prioridad alta</h2><div class="card">${urg.map(necRow).join('')}</div>`:''}`;
@@ -1398,7 +1395,7 @@ function necRow(n){
   <div class="mut">${esc([[n.domicilio,n.localidad].filter(Boolean).join(', '),n.telefono,n.profesional?'Prof.: '+profN(n.profesional):'',n.fecha?'Cargada '+fd(n.fecha):''].filter(Boolean).join(' · '))}</div>
   ${n.notas?`<div class="mut">Notas: ${esc(n.notas)}</div>`:''}
   <div style="margin-top:4px">${prioB(n.prioridad)} ${estB(n.estado)} ${d?`<span>${n.estado==='entregada'?'Recibió':'Asignada:'} <b>${esc(dItemQ(d))}</b>${donN(d)?' (de '+esc(donN(d))+')':''}${n.fecha_entrega?' · '+fd(n.fecha_entrega):''}</span>`:''}</div></div>
-  <div class="dacts">${n.estado==='pendiente'?`<button class="btn" data-dact="asigN" data-id="${n.id}">Asignar donación${pos?` <small>(${pos} posible${pos>1?'s':''})</small>`:''}</button>`:''}${n.estado==='asignada'&&d?`<button class="btn" data-dact="entr" data-id="${d.id}">Marcar entregada</button><button class="btn s" data-dact="desh" data-id="${d.id}">Deshacer asignación</button>`:''}<button class="btn x" data-dact="fnec" data-id="${n.id}">Editar</button></div></div>`;
+  <div class="dacts">${ADM()?`${n.estado==='pendiente'?`<button class="btn" data-dact="asigN" data-id="${n.id}">Asignar donación${pos?` <small>(${pos} posible${pos>1?'s':''})</small>`:''}</button>`:''}${n.estado==='asignada'&&d?`<button class="btn" data-dact="entr" data-id="${d.id}">Marcar entregada</button><button class="btn s" data-dact="desh" data-id="${d.id}">Deshacer asignación</button>`:''}`:pos?bd(pos+' donación'+(pos>1?'es':'')+' disponible'+(pos>1?'s':''),'o'):''}${puedeEditar(n,'pendiente')?`<button class="btn x" data-dact="fnec" data-id="${n.id}">Editar</button>`:''}</div></div>`;
 }
 function donRow(d){
   const n=by(S.dnec,d.necesidad_id),pos=d.estado==='disponible'?S.dnec.filter(x=>x.estado==='pendiente'&&sameEl(x.elemento,d.elemento)).length:0,dest=n?necN(n)+(n.localidad?` (${n.localidad})`:''):d.destino_externo;
@@ -1406,7 +1403,7 @@ function donRow(d){
   <div class="mut">${esc([d.donante_domicilio,d.donante_telefono,d.estado_producto?'Estado: '+d.estado_producto:'',d.fecha?'Recibida '+fd(d.fecha):''].filter(Boolean).join(' · '))}</div>
   ${d.notas?`<div class="mut">Notas: ${esc(d.notas)}</div>`:''}
   <div style="margin-top:4px">${estB(d.estado)} ${dest?`<span>${d.estado==='entregada'?'Entregada a':'Para'} <b>${esc(dest)}</b>${d.fecha_entrega?' · '+fd(d.fecha_entrega):''}</span>`:''}</div></div>
-  <div class="dacts">${d.estado==='disponible'?`<button class="btn" data-dact="asigD" data-id="${d.id}">Asignar a necesidad${pos?` <small>(${pos} posible${pos>1?'s':''})</small>`:''}</button><button class="btn s" data-dact="ext" data-id="${d.id}">Entregar a otro destino</button>`:''}${d.estado==='asignada'?`<button class="btn" data-dact="entr" data-id="${d.id}">Marcar entregada</button><button class="btn s" data-dact="desh" data-id="${d.id}">Deshacer asignación</button>`:''}<button class="btn x" data-dact="fdon" data-id="${d.id}">Editar</button></div></div>`;
+  <div class="dacts">${ADM()?`${d.estado==='disponible'?`<button class="btn" data-dact="asigD" data-id="${d.id}">Asignar a necesidad${pos?` <small>(${pos} posible${pos>1?'s':''})</small>`:''}</button><button class="btn s" data-dact="ext" data-id="${d.id}">Entregar a otro destino</button>`:''}${d.estado==='asignada'?`<button class="btn" data-dact="entr" data-id="${d.id}">Marcar entregada</button><button class="btn s" data-dact="desh" data-id="${d.id}">Deshacer asignación</button>`:''}`:pos?bd(pos+' lo pide'+(pos>1?'n':''),'o'):''}${puedeEditar(d,'disponible')?`<button class="btn x" data-dact="fdon" data-id="${d.id}">Editar</button>`:''}</div></div>`;
 }
 
 /* ---------- Usuarios (solo admin) ---------- */
@@ -1565,7 +1562,7 @@ async function start(){
   // Quién entra y con qué rol: el solicitante solo ve "Pedidos"
   let uid='';
   let provisoria=false;
-  try{const r=await sb.auth.getUser();const u=r&&r.data&&r.data.user;uid=u?u.id:'';UEMAIL=String((u&&u.email)||'').trim().toLowerCase();provisoria=!!(u&&u.user_metadata&&u.user_metadata.debe_cambiar_clave)}catch(e){}
+  try{const r=await sb.auth.getUser();const u=r&&r.data&&r.data.user;uid=u?u.id:'';UID=uid;UEMAIL=String((u&&u.email)||'').trim().toLowerCase();provisoria=!!(u&&u.user_metadata&&u.user_metadata.debe_cambiar_clave)}catch(e){}
   try{const r=await sb.from('perfiles').select('rol').eq('user_id',uid).maybeSingle();ROL=(r&&r.data&&r.data.rol)||'lector'}catch(e){ROL='lector'}
   DB=mkDB();ASSETS=mkAssets();$('#out').style.display='';
   if(ROL!=='solicitante')for(const k of Object.keys(COL))DB.collection(COL[k]).onSnapshot(s=>{S[k]=s.docs.map(d=>({id:d.id,...d.data()}));if(k==='prov')S.prov.sort((a,b)=>String(a.nombre||'').trim().localeCompare(String(b.nombre||'').trim(),'es',{sensitivity:'base',numeric:true}));render()},e=>toast(e.message));
