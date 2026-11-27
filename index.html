@@ -1722,8 +1722,13 @@ async function start(){
   // Quién entra y con qué rol: el solicitante solo ve "Pedidos"
   let uid='';
   let provisoria=false;
-  try{const r=await sb.auth.getUser();const u=r&&r.data&&r.data.user;uid=u?u.id:'';UID=uid;UEMAIL=String((u&&u.email)||'').trim().toLowerCase();provisoria=!!(u&&u.user_metadata&&u.user_metadata.debe_cambiar_clave)}catch(e){}
-  try{const r=await sb.from('perfiles').select('rol').eq('user_id',uid).maybeSingle();ROL=(r&&r.data&&r.data.rol)||'lector'}catch(e){ROL='lector'}
+  // Se reintenta: si la sesión tarda en estar lista, no hay que bajar a nadie de rol por error
+  const espera=ms=>new Promise(r=>setTimeout(r,ms));
+  for(let i=0;i<4&&!uid;i++){try{let r=await sb.auth.getUser();let u=r&&r.data&&r.data.user;if(!u){const s=await sb.auth.getSession();u=s&&s.data&&s.data.session&&s.data.session.user}
+    if(u){uid=u.id;UID=uid;UEMAIL=String(u.email||'').trim().toLowerCase();provisoria=!!(u.user_metadata&&u.user_metadata.debe_cambiar_clave)}}catch(e){}if(!uid)await espera(700)}
+  let rolOk=false;
+  for(let i=0;i<4&&uid&&!rolOk;i++){try{const r=await sb.from('perfiles').select('rol').eq('user_id',uid).maybeSingle();if(r&&!r.error){ROL=(r.data&&r.data.rol)||'lector';rolOk=true}}catch(e){}if(!rolOk)await espera(800)}
+  if(!rolOk){ROL='lector';setTimeout(()=>toast('No se pudo leer tu rol. Recargá la página (Ctrl + Shift + R) para ver todas las secciones.',12000),500)}
   DB=mkDB();ASSETS=mkAssets();$('#out').style.display='';
   if(ROL!=='solicitante')for(const k of Object.keys(COL))DB.collection(COL[k]).onSnapshot(s=>{S[k]=s.docs.map(d=>({id:d.id,...d.data()}));if(k==='prov')S.prov.sort((a,b)=>String(a.nombre||'').trim().localeCompare(String(b.nombre||'').trim(),'es',{sensitivity:'base',numeric:true}));render()},e=>toast(e.message));
   if(ROL==='admin'||ROL==='solicitante'){
