@@ -271,7 +271,7 @@ tr.tot th{background:var(--head);color:var(--tx);font-size:13px;letter-spacing:.
 .dtabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}.dtabs button,.dchips button{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:999px;padding:6px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
 .dtabs button.on,.dchips button.on{background:var(--kpi);color:var(--kpitx);border-color:var(--kpi)}.dtabs small{opacity:.7;font-weight:500}
 .dchips{display:flex;flex-wrap:wrap;gap:6px;margin:-2px 0 12px}.dchips button{padding:4px 11px;font-size:12.5px}
-.dfichas{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-items:start}.dficha{border-top:4px solid var(--ac)}.dficha.urg{border-top-color:#dc2626}.dfh{display:flex;gap:10px;align-items:flex-start}.dfav{flex:none;width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#64748b;color:#fff;font-weight:700;font-size:13px}.dfits{margin-top:8px}.dfit{border-top:1px solid var(--bd2);padding:8px 0}.dfit:last-child{padding-bottom:0}.dficha.dfd-asignada{border-top-color:#f59e0b}.dficha.dfd-entregada{border-top-color:#16a34a}.dficha.clk{cursor:pointer;transition:transform .15s,box-shadow .15s}.dficha.clk:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.12)}.dfit2{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:5px 0;border-top:1px solid var(--bd2);font-size:14px}.dfit2>span:last-child{text-align:right;white-space:nowrap}.dfrow{margin-bottom:0}
+.dfichas{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-items:start}.dficha{border-top:4px solid var(--ac)}.dficha.urg{border-top-color:#dc2626}.dfh{display:flex;gap:10px;align-items:flex-start}.dfav{flex:none;width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#64748b;color:#fff;font-weight:700;font-size:13px}.dfits{margin-top:8px}.dfit{border-top:1px solid var(--bd2);padding:8px 0}.dfit:last-child{padding-bottom:0}.dficha.dfd-asignada{border-top-color:#f59e0b}.dficha.dfd-entregada{border-top-color:#16a34a}.dlink{color:var(--ac);text-decoration:underline;text-underline-offset:2px;cursor:pointer}.dficha.clk{cursor:pointer;transition:transform .15s,box-shadow .15s}.dficha.clk:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.12)}.dfit2{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:5px 0;border-top:1px solid var(--bd2);font-size:14px}.dfit2>span:last-child{text-align:right;white-space:nowrap}.dfrow{margin-bottom:0}
 .ditem{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;align-items:center}.ditem>select[data-k=elemento]{flex:1 1 200px;width:auto}.ditem>input[data-k=detalle]{flex:2 1 200px;width:auto}.ditem>select[data-k=estado_producto]{flex:1 1 150px;width:auto}
 #ddlg h2{text-transform:none}#dlist td input{min-width:110px}
 @media(max-width:640px){.drow,.drow.d3{grid-template-columns:1fr}.dacts{justify-content:flex-start}}
@@ -1460,13 +1460,15 @@ const dVolver=()=>{const k=NFICHA,dn2=NDON;dClose();render();if(k&&S.dnec.some(x
 // Donaciones en tarjetas: se abren con un clic y se guardan solas al cerrar
 let NDON=null;
 const donDest=d=>{const n=by(S.dnec,d.necesidad_id);return n?necN(n)+(n.localidad?` (${n.localidad})`:''):d.destino_externo||''};
+// Enlace al destinatario: abre la ficha de la persona o la lista de lo entregado a esa institución
+const destLink=d=>{const n=by(S.dnec,d.necesidad_id),t=esc(donDest(d));if(n)return`<a href="#" class="dlink" data-dact="nficha" data-k="${esc(necP(n))}" title="Ver la ficha">${t}</a>`;if(d.destino_externo)return`<a href="#" class="dlink" data-dact="destv" data-v="${esc(d.destino_externo)}" title="Ver lo entregado a este destino">${t}</a>`;return t};
 function donCard(d){
   const dest=donDest(d),pos=d.estado==='disponible'?S.dnec.filter(x=>x.estado==='pendiente'&&sameEl(x.elemento,d.elemento)).length:0;
   return`<div class="card dficha clk dfd-${d.estado}" data-dact="dficha" data-id="${d.id}" title="Abrir la donación">
   <div style="display:flex;justify-content:space-between;gap:8px;align-items:start"><b>${esc(dItemQ(d))}</b>${estB(d.estado)}</div>
   <div class="mut" style="margin-top:4px">${donN(d)?'Donante: '+esc(donN(d)):'Donante sin cargar'}</div>
   ${d.estado_producto||d.fecha?`<div class="mut">${esc([d.estado_producto?'Estado: '+d.estado_producto:'',d.fecha?'Recibida '+fd(d.fecha):''].filter(Boolean).join(' · '))}</div>`:''}
-  ${dest?`<div class="dfit2"><span>${d.estado==='entregada'?'Entregada a':'Para'} <b>${esc(dest)}</b></span><span class="mut">${d.fecha_entrega?fd(d.fecha_entrega):''}</span></div>`:''}
+  ${dest?`<div class="dfit2"><span>${d.estado==='entregada'?'Entregada a':'Para'} <b>${destLink(d)}</b></span><span class="mut">${d.fecha_entrega?fd(d.fecha_entrega):''}</span></div>`:''}
   ${pos?`<div style="margin-top:6px">${bd(pos+' lo pide'+(pos>1?'n':''),'o')}</div>`:''}</div>`;
 }
 const DFLD=['elemento','cantidad','detalle','estado_producto','donante_apellido','donante_nombre','donante_telefono','donante_domicilio','fecha','notas'];
@@ -1476,7 +1478,7 @@ function fDonF(id){
   const I2=(n,v,t)=>`<input name="${n}"${t?` type="${t}"`:''} value="${esc(v||'')}"${dis}>`;
   dOpen(`${dHead(dItemQ(d),ed?'Los cambios se guardan solos al cerrar la tarjeta.':'Solo lectura.')}
   <form id="ddficha" data-id="${d.id}" onsubmit="return false">
-  <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0">${estB(d.estado)}${dest?`<span>${d.estado==='entregada'?'Entregada a':'Para'} <b>${esc(dest)}</b>${d.fecha_entrega?' · '+fd(d.fecha_entrega):''}</span>`:''}</div>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0">${estB(d.estado)}${dest?`<span>${d.estado==='entregada'?'Entregada a':'Para'} <b>${destLink(d)}</b>${d.fecha_entrega?' · '+fd(d.fecha_entrega):''}</span>`:''}</div>
   <div class="r2">${L('Elemento',`<select name="elemento"${dis}>${opts(elems(d.elemento),d.elemento)}</select>`)}${L('Cantidad',I2('cantidad',d.cantidad))}${L('Detalle (marca, medidas, color…)',I2('detalle',d.detalle))}${L('Estado del producto',`<select name="estado_producto"${dis}>${opts(EST_PROD,d.estado_producto||'','Sin definir')}</select>`)}
   ${L('Apellido del donante',I2('donante_apellido',d.donante_apellido))}${L('Nombre del donante',I2('donante_nombre',d.donante_nombre))}${L('Teléfono del donante',I2('donante_telefono',d.donante_telefono,'tel'))}${L('Fecha de recepción',I2('fecha',d.fecha,'date'))}</div>
   ${L('Domicilio del donante (para retirar)',I2('donante_domicilio',d.donante_domicilio))}${L('Notas',`<textarea name="notas" rows="3"${dis}>${esc(d.notas||'')}</textarea>`)}
@@ -1583,6 +1585,8 @@ document.addEventListener('click',async e=>{
   if(!b.closest('#ddlg')){NFICHA=null;NDON=null}
   if(a==='nficha')return fFicha(b.dataset.k);
   if(a==='dficha')return fDonF(id);
+  if(a==='destv'){const v=b.dataset.v,l=S.ddon.filter(x=>x.destino_externo===v).sort((x,y)=>String(y.fecha_entrega||'').localeCompare(String(x.fecha_entrega||'')));
+    return dOpen(`${dHead(v,l.length+' donaci'+(l.length>1?'ones entregadas':'ón entregada')+' a este destino. Clic en una para abrirla.')}<div class="dfichas" style="margin-top:12px">${l.map(donCard).join('')}</div><div class="bar2" style="margin-top:14px;justify-content:flex-end"><button type="button" class="btn" data-dact="cerrar">Listo</button></div>`)}
   const conf1=(a==='desh'||a==='delnec'||a==='deldon')&&b.dataset.ok!=='1';
   if(b.closest('#dficha')&&!['itemadd','itemdel','cerrar'].includes(a)&&!conf1)await fichaSave();
   if(b.closest('#ddficha')&&a!=='cerrar'&&!conf1)await donSave();
