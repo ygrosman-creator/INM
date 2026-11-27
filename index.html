@@ -271,6 +271,7 @@ tr.tot th{background:var(--head);color:var(--tx);font-size:13px;letter-spacing:.
 .dtabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}.dtabs button,.dchips button{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:999px;padding:6px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
 .dtabs button.on,.dchips button.on{background:var(--kpi);color:var(--kpitx);border-color:var(--kpi)}.dtabs small{opacity:.7;font-weight:500}
 .dchips{display:flex;flex-wrap:wrap;gap:6px;margin:-2px 0 12px}.dchips button{padding:4px 11px;font-size:12.5px}
+.dfichas{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-items:start}.dficha{border-top:4px solid var(--ac)}.dficha.urg{border-top-color:#dc2626}.dfh{display:flex;gap:10px;align-items:flex-start}.dfav{flex:none;width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#64748b;color:#fff;font-weight:700;font-size:13px}.dfits{margin-top:8px}.dfit{border-top:1px solid var(--bd2);padding:8px 0}.dfit:last-child{padding-bottom:0}
 .ditem{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;align-items:center}.ditem>select[data-k=elemento]{flex:1 1 200px;width:auto}.ditem>input[data-k=detalle]{flex:2 1 200px;width:auto}.ditem>select[data-k=estado_producto]{flex:1 1 150px;width:auto}
 #ddlg h2{text-transform:none}#dlist td input{min-width:110px}
 @media(max-width:640px){.drow,.drow.d3{grid-template-columns:1fr}.dacts{justify-content:flex-start}}
@@ -399,7 +400,8 @@ function vPagos(){
 }
 const fd=d=>d?String(d).slice(0,10).split('-').reverse().join('/'):'';
 const my=d=>d?MESES[+String(d).slice(5,7)-1]+' '+String(d).slice(0,4):'';
-const OPC=l=>S.opc.filter(o=>o.lista===l).sort((a,b)=>l==='etiqueta'||l==='forma_pago'?String(a.valor).localeCompare(String(b.valor),'es',{sensitivity:'base',numeric:true}):(a.orden||0)-(b.orden||0)).map(o=>o.valor);
+const OPC_EXTRA={vinculo:['Autoridades']},OPC_ALFA=['etiqueta','forma_pago','vinculo'];
+const OPC=l=>{const b=S.opc.filter(o=>o.lista===l).map(o=>o),lo=new Set(b.map(o=>String(o.valor).toLowerCase()));(OPC_EXTRA[l]||[]).forEach(x=>{if(!lo.has(x.toLowerCase()))b.push({valor:x,orden:0})});const ot=x=>/^otros?$/i.test(String(x).trim())?1:0;return b.sort((a,c)=>OPC_ALFA.includes(l)?ot(a.valor)-ot(c.valor)||String(a.valor).localeCompare(String(c.valor),'es',{sensitivity:'base',numeric:true}):(a.orden||0)-(c.orden||0)).map(o=>o.valor)};
 const tg=p=>p.etiquetas||[];
 const DEL=(c,id,txt='Eliminar')=>`<button class="btn x" data-act="delc" data-c="${c}" data-id="${id}">${ARM==='delc'+id?'¿Seguro?':txt}</button>`;
 const liveNum=el=>{
@@ -1360,7 +1362,7 @@ function vDon(){
 function dList(){
   if(DV==='res')return dRes();
   if(DV==='nec'){const f=DF.nec,l=S.dnec.filter(n=>(f==='activas'?(n.estado==='pendiente'||n.estado==='asignada'):f==='todas'||n.estado===f)&&dqm(DQ,n.apellido,n.nombre,n.elemento,n.detalle,n.localidad,n.domicilio,n.telefono,n.notas,profN(n.profesional))).sort((a,b)=>dcmp(necK(a),necK(b))||dcmp(dItem(a),dItem(b)));
-    return`<div class="card">${l.length?l.map(necRow).join(''):`<div class="empty">${S.dnec.length?'No hay necesidades con ese filtro.':'Todavía no hay necesidades cargadas.'}</div>`}</div>`}
+    return l.length?necFichas(l):`<div class="card"><div class="empty">${S.dnec.length?'No hay necesidades con ese filtro.':'Todavía no hay necesidades cargadas.'}</div></div>`}
   if(DV==='don'){const f=DF.don,l=S.ddon.filter(d=>{if(f!=='todas'&&d.estado!==f)return false;const n=by(S.dnec,d.necesidad_id);return dqm(DQ,d.elemento,d.detalle,d.donante_apellido,d.donante_nombre,d.donante_domicilio,d.donante_telefono,d.notas,d.destino_externo,n?necK(n):'')}).sort((a,b)=>dcmp(dItem(a),dItem(b))||dcmp(donN(a),donN(b)));
     return`<div class="card">${l.length?l.map(donRow).join(''):`<div class="empty">${S.ddon.length?'No hay donaciones con ese filtro.':'Todavía no hay donaciones cargadas.'}</div>`}</div>`}
   if(DV==='ele'&&!ADM()){const l=S.del.filter(e=>e.activo&&dqm(DQ,e.nombre,e.rubro)).sort((a,b)=>dcmp(a.rubro,b.rubro)||dcmp(a.nombre,b.nombre));
@@ -1385,16 +1387,37 @@ function dRes(){
   <h2>Posibles coincidencias</h2><div class="mut" style="margin-bottom:8px">Donaciones disponibles del mismo elemento que alguien pidió. Primero las de prioridad alta y las más antiguas.</div>
   <div class="card">${pares.length?pares.slice(0,20).map(({n,d})=>`<div class="drow d3"><div><div class="mut dlab">Necesidad</div><b>${esc(necN(n))}</b> · ${esc(dItemQ(n))} ${prioB(n.prioridad)}<div class="mut">${esc([n.localidad,n.fecha?'Cargada '+fd(n.fecha):''].filter(Boolean).join(' · '))}</div></div><div><div class="mut dlab">Donación</div><b>${esc(dItemQ(d))}</b><div class="mut">${donN(d)?'De '+esc(donN(d)):'Donante sin cargar'}</div></div><div>${ADM()?`<button class="btn" data-dact="asig" data-n="${n.id}" data-d="${d.id}">Asignar</button>`:bd('Coincide','o')}</div></div>`).join(''):`<div class="empty">${disp.length?'Ninguna donación disponible coincide con las necesidades pendientes. Podés asignar a mano desde cada necesidad.':'No hay donaciones disponibles.'}</div>`}</div>
   ${els.length?`<h2>Por elemento</h2><div class="card wrap"><table style="min-width:420px"><tr><th>Elemento</th><th>Disponibles</th><th>Lo piden</th></tr>${els.map(e=>{const d=cnt(disp,e),p=cnt(pend,e);return`<tr><td><b>${esc(e)}</b></td><td>${d||'—'}</td><td>${p||'—'}${d&&p?' '+bd('Se puede asignar','o'):''}</td></tr>`}).join('')}</table></div>`:''}
-  ${asig.length?`<h2>Asignadas, falta entregar</h2><div class="card">${asig.map(necRow).join('')}</div>`:''}
-  ${urg.length?`<h2>Pendientes de prioridad alta</h2><div class="card">${urg.map(necRow).join('')}</div>`:''}`;
+  ${asig.length?`<h2>Asignadas, falta entregar</h2>${necFichas(asig)}`:''}
+  ${urg.length?`<h2>Pendientes de prioridad alta</h2>${necFichas(urg)}`:''}`;
 }
-function necRow(n){
+// Fichas: una por persona, con todos sus elementos pedidos
+const necP=n=>[n.apellido,n.nombre].map(x=>String(x||'').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')).join('|');
+const necHerm=n=>S.dnec.filter(x=>necP(x)===necP(n));
+function necFichas(l){
+  const g=new Map();l.forEach(n=>{const k=necP(n);if(!g.has(k))g.set(k,[]);g.get(k).push(n)});
+  return`<div class="dfichas">${[...g.values()].map(necFicha).join('')}</div>`;
+}
+function necFicha(l){
+  const PR={alta:0,media:1,baja:2},n=l.slice().sort((a,b)=>String(b.fecha||'').localeCompare(String(a.fecha||'')))[0];
+  const f=k=>(l.find(x=>x[k])||{})[k]||'',top=l.map(x=>x.prioridad).sort((a,b)=>(PR[a]??3)-(PR[b]??3))[0];
+  const items=l.slice().sort((a,b)=>(PR[a.prioridad]??3)-(PR[b.prioridad]??3)||dcmp(dItem(a),dItem(b)));
+  const puedeAgregar=ADM()||ROL==='solicitante';
+  return`<div class="card dficha${top==='alta'&&l.some(x=>x.estado==='pendiente')?' urg':''}">
+  <div class="dfh"><span class="dfav" aria-hidden="true">${esc(inic(necN(n)))}</span><div style="min-width:0"><b>${esc(necN(n))}</b>
+  <div class="mut">${esc([[f('domicilio'),f('localidad')].filter(Boolean).join(', '),f('telefono')].filter(Boolean).join(' · '))||'Sin datos de contacto'}</div>
+  ${f('profesional')?`<div class="mut">Prof.: ${esc(profN(f('profesional')))}${(()=>{const e=S.deq.find(x=>x.iniciales===f('profesional'));return e&&e.interno?' · Int. '+esc(e.interno):''})()}</div>`:''}</div></div>
+  <div class="dfits">${items.map(necItem).join('')}</div>
+  ${puedeAgregar?`<button class="btn s" data-dact="necadd" data-id="${n.id}" style="margin-top:8px">+ Agregar elemento</button>`:''}</div>`;
+}
+function necItem(n){
   const d=by(S.ddon,n.donacion_id),pos=n.estado==='pendiente'?S.ddon.filter(x=>x.estado==='disponible'&&sameEl(x.elemento,n.elemento)).length:0;
-  return`<div class="drow"><div><b>${esc(necN(n))}</b> · ${esc(dItemQ(n))}
-  <div class="mut">${esc([[n.domicilio,n.localidad].filter(Boolean).join(', '),n.telefono,n.profesional?'Prof.: '+profN(n.profesional):'',n.fecha?'Cargada '+fd(n.fecha):''].filter(Boolean).join(' · '))}</div>
+  return`<div class="dfit"><div style="display:flex;justify-content:space-between;gap:8px;align-items:start"><div><b>${esc(dItemQ(n))}</b>
+  <div style="margin-top:3px">${prioB(n.prioridad)} ${estB(n.estado)}</div>
+  ${d?`<div class="mut" style="margin-top:3px">${n.estado==='entregada'?'Recibió':'Asignada:'} <b>${esc(dItemQ(d))}</b>${donN(d)?' (de '+esc(donN(d))+')':''}${n.fecha_entrega?' · '+fd(n.fecha_entrega):''}</div>`:''}
   ${n.notas?`<div class="mut">Notas: ${esc(n.notas)}</div>`:''}
-  <div style="margin-top:4px">${prioB(n.prioridad)} ${estB(n.estado)} ${d?`<span>${n.estado==='entregada'?'Recibió':'Asignada:'} <b>${esc(dItemQ(d))}</b>${donN(d)?' (de '+esc(donN(d))+')':''}${n.fecha_entrega?' · '+fd(n.fecha_entrega):''}</span>`:''}</div></div>
-  <div class="dacts">${ADM()?`${n.estado==='pendiente'?`<button class="btn" data-dact="asigN" data-id="${n.id}">Asignar donación${pos?` <small>(${pos} posible${pos>1?'s':''})</small>`:''}</button>`:''}${n.estado==='asignada'&&d?`<button class="btn" data-dact="entr" data-id="${d.id}">Marcar entregada</button><button class="btn s" data-dact="desh" data-id="${d.id}">Deshacer asignación</button>`:''}`:pos?bd(pos+' donación'+(pos>1?'es':'')+' disponible'+(pos>1?'s':''),'o'):''}${puedeEditar(n,'pendiente')?`<button class="btn x" data-dact="fnec" data-id="${n.id}">Editar</button>`:''}</div></div>`;
+  ${n.fecha?`<div class="mut" style="font-size:12px">Cargada ${fd(n.fecha)}</div>`:''}</div>
+  ${puedeEditar(n,'pendiente')?`<button class="btn x" data-dact="fnec" data-id="${n.id}">Editar</button>`:''}</div>
+  <div class="dacts" style="margin-top:6px">${ADM()?`${n.estado==='pendiente'?`<button class="btn" data-dact="asigN" data-id="${n.id}">Asignar donación${pos?` <small>(${pos} posible${pos>1?'s':''})</small>`:''}</button>`:''}${n.estado==='asignada'&&d?`<button class="btn" data-dact="entr" data-id="${d.id}">Marcar entregada</button><button class="btn s" data-dact="desh" data-id="${d.id}">Deshacer</button>`:''}`:pos?bd(pos+' donación'+(pos>1?'es':'')+' disponible'+(pos>1?'s':''),'o'):''}</div></div>`;
 }
 function donRow(d){
   const n=by(S.dnec,d.necesidad_id),pos=d.estado==='disponible'?S.dnec.filter(x=>x.estado==='pendiente'&&sameEl(x.elemento,d.elemento)).length:0,dest=n?necN(n)+(n.localidad?` (${n.localidad})`:''):d.destino_externo;
@@ -1432,15 +1455,16 @@ $('#ddlg').addEventListener('cancel',e=>{if($('#ddlg').dataset.forzado)e.prevent
 function itemRow(r,i,conEst){
   return`<div class="ditem" data-i="${i}"><select data-k="elemento" required><option value="">Elegí el elemento…</option>${opts(elems(r.elemento),r.elemento)}</select><input data-k="cantidad" value="${esc(r.cantidad||'1')}" placeholder="Cant." style="max-width:80px"><input data-k="detalle" value="${esc(r.detalle||'')}" placeholder="${conEst?'Marca, medidas, color…':'Medidas, características…'}">${conEst?`<select data-k="estado_producto">${opts(EST_PROD,r.estado_producto||'','Estado: sin definir')}</select>`:''}${i?'<button type="button" class="btn x" data-dact="itemdel" aria-label="Quitar">✕</button>':''}</div>`;
 }
-function fNec(id){
+function fNec(id,base){
   const o=id?by(S.dnec,id):null,adm=ROL==='admin',me=miEquipo();
-  const v=o||{apellido:'',nombre:'',telefono:'',domicilio:'',localidad:'',profesional:me?me.iniciales:'',prioridad:'media',fecha:today(),notas:''};
+  const v=o||{apellido:'',nombre:'',telefono:'',domicilio:'',localidad:'',profesional:me?me.iniciales:'',prioridad:'media',fecha:today(),notas:'',...(base?{apellido:base.apellido||'',nombre:base.nombre||'',telefono:base.telefono||'',domicilio:base.domicilio||'',localidad:base.localidad||'',profesional:base.profesional||(me?me.iniciales:'')}:{})};
+  const otros=o?necHerm(o).filter(x=>x.id!==o.id).length:0;
   const prof=S.deq.filter(e=>e.activo||e.iniciales===v.profesional).sort((a,b)=>dcmp(eqN(a),eqN(b)));
   const locs=[...new Set(S.dnec.map(n=>dcap(n.localidad)).filter(Boolean))].sort(dcmp);
-  dOpen(`${dHead(o?'Editar necesidad':'Nueva necesidad',o?necN(o):'Qué necesita la persona y cómo contactarla. Un elemento por renglón.')}
+  dOpen(`${dHead(o?'Editar necesidad':base?'Agregar elementos':'Nueva necesidad',o?necN(o)+(otros?` · los cambios de datos personales se aplican también a sus otros ${otros} elemento${otros>1?'s':''}`:''):base?'Para '+necN(base)+'. Un elemento por renglón.':'Qué necesita la persona y cómo contactarla. Un elemento por renglón.')}
   <form id="dform" data-tipo="nec" data-id="${id||''}"><div class="r2">${L('Apellido *','<input name="apellido" required autofocus value="'+esc(v.apellido)+'">')}${L('Nombre','<input name="nombre" value="'+esc(v.nombre)+'">')}${L('Teléfono','<input name="telefono" type="tel" value="'+esc(v.telefono)+'" placeholder="11 1234-5678">')}${L('Domicilio','<input name="domicilio" value="'+esc(v.domicilio)+'">')}${L('Localidad','<input name="localidad" list="dlocs" value="'+esc(v.localidad)+'">')}${adm?L('Profesional a cargo',`<select name="profesional">${opts(prof.map(e=>[e.iniciales,eqN(e)+' ('+e.iniciales+')']),v.profesional||'','— Sin asignar —')}</select>`):''}</div>
   <datalist id="dlocs">${locs.map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
-  <h3 style="margin:14px 0 6px;font-size:14px">${o?'Elemento':'Qué necesita'}</h3><div id="ditems">${itemRow(o||{},0,false)}</div>${o?'':'<button type="button" class="btn s" data-dact="itemadd">+ Agregar otro elemento</button>'}
+  <h3 style="margin:14px 0 6px;font-size:14px">Qué necesita</h3><div id="ditems">${itemRow(o||{},0,false)}</div><button type="button" class="btn s" data-dact="itemadd">+ Agregar otro elemento</button>
   <div class="r2">${L('Prioridad',`<select name="prioridad">${opts([['alta','Alta'],['media','Media'],['baja','Baja'],['','Sin definir']],v.prioridad||'')}</select>`)}${L('Fecha de carga','<input name="fecha" type="date" value="'+esc(v.fecha||'')+'">')}</div>
   ${L('Notas','<textarea name="notas" rows="3">'+esc(v.notas||'')+'</textarea>')}
   <div class="bar2" style="margin-top:14px;justify-content:flex-end">${o&&adm?`<button type="button" class="btn d" data-dact="delnec" data-id="${o.id}" style="margin-right:auto">Eliminar</button>`:''}${o&&adm&&o.estado==='pendiente'?`<button type="button" class="btn s" data-dact="cerrarN" data-id="${o.id}">Cerrar sin donación</button>`:''}${o&&adm&&o.estado==='cerrada'?`<button type="button" class="btn s" data-dact="reabrirN" data-id="${o.id}">Reabrir</button>`:''}<button type="button" class="btn s" data-dact="cerrar">Cancelar</button><button class="btn" type="submit">${o?'Guardar cambios':'Guardar necesidad'}</button></div></form>`);
@@ -1463,6 +1487,14 @@ async function dSave(f){
   if(tipo==='nec'){if(ROL!=='admin'){const me=miEquipo();v.profesional=id?(by(S.dnec,id)||{}).profesional||null:(me?me.iniciales:null)}else v.profesional=v.profesional||null;v.apellido=dcap(v.apellido);v.nombre=dcap(v.nombre)}
   else{v.donante_apellido=dcap(v.donante_apellido);v.donante_nombre=dcap(v.donante_nombre)}
   const t=tipo==='nec'?'necesidades':'donaciones',filas=items.map(r=>({...v,...r,cantidad:r.cantidad||'1'}));
+  if(id&&tipo==='nec'){
+    const o=by(S.dnec,id),PF=['apellido','nombre','telefono','domicilio','localidad','profesional'],pers={};PF.forEach(k=>pers[k]=v[k]===undefined?o[k]:(v[k]||null));
+    const cambio=PF.some(k=>(o[k]||null)!==(pers[k]||null)),herm=cambio?necHerm(o).filter(x=>x.id!==id&&puedeEditar(x,'pendiente')):[];
+    let ok=await dRun(()=>sb.from(t).update(filas[0]).eq('id',id).select('id').then(r=>{if(!r.error&&(!r.data||!r.data.length))r.error={message:'No se pudo guardar: ya no se puede editar (quizás ya fue asignada).'};return r}),filas.length>1?'Cambios guardados y '+(filas.length-1)+' elemento'+(filas.length>2?'s':'')+' agregado'+(filas.length>2?'s':''):'Cambios guardados');
+    if(ok&&filas.length>1)ok=await dRun(()=>sb.from(t).insert(filas.slice(1)),'');
+    for(const h of herm)if(ok)ok=await dRun(()=>sb.from(t).update(pers).eq('id',h.id),'');
+    if(ok){dClose();render()}return;
+  }
   const ok=id?await dRun(()=>sb.from(t).update(filas[0]).eq('id',id).select('id').then(r=>{if(!r.error&&(!r.data||!r.data.length))r.error={message:'No se pudo guardar: ya no se puede editar (quizás ya fue asignada).'};return r}),'Cambios guardados')
     :await dRun(()=>sb.from(t).insert(filas),tipo==='nec'?(filas.length>1?filas.length+' necesidades cargadas':'Necesidad cargada'):(filas.length>1?filas.length+' donaciones cargadas':'Donación cargada'));
   if(ok){dClose();render()}
@@ -1486,6 +1518,7 @@ document.addEventListener('click',async e=>{
   if(a==='dv'){DV=b.dataset.v;DQ='';if(b.dataset.f)DF[DV]=b.dataset.f;try{sessionStorage.setItem('inm-dv',DV)}catch(x){}if(view!=='don'){view='don'}render();return}
   if(a==='dfil'){DF[DV]=b.dataset.v;render();return}
   if(a==='fnec')return fNec(id);
+  if(a==='necadd'){const n=by(S.dnec,id);const l=n?necHerm(n):[],f=k=>(l.find(x=>x[k])||{})[k]||'';return fNec(null,n?{apellido:n.apellido,nombre:n.nombre,telefono:f('telefono'),domicilio:f('domicilio'),localidad:f('localidad'),profesional:f('profesional')}:null)}
   if(a==='fdon')return fDon(id);
   if(a==='itemadd'){const c=$('#ditems'),i=c.querySelectorAll('.ditem').length;c.insertAdjacentHTML('beforeend',itemRow({},i,!!c.dataset.est));return}
   if(a==='itemdel'){b.closest('.ditem').remove();return}
