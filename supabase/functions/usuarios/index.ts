@@ -16,7 +16,7 @@ const CORS = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 const json = (o: unknown) => new Response(JSON.stringify(o), { headers: { ...CORS, 'Content-Type': 'application/json' } });
-const ROLES = ['admin', 'editor', 'lector', 'solicitante'];
+const ROLES = ['admin', 'editor', 'lector', 'solicitante', 'lector_solicitante'];
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });

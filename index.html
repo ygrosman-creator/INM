@@ -1315,12 +1315,13 @@ const ADM=()=>ROL==='admin';
 // Puede corregir: el admin siempre; el solicitante solo lo que cargó él, mientras siga pendiente / disponible
 const puedeEditar=(x,libre)=>ADM()||(x.created_by===UID&&x.estado===libre);
 const TABS_SOL=[['don','Donaciones',()=>vDon()]],TABS_ADM=[['don','Donaciones',()=>vDon()],['usr','Usuarios',()=>vUsr()]];
-const TT=()=>ROL==='solicitante'?TABS_SOL:ROL==='admin'?[...TABS,...TABS_ADM]:TABS;
+const TT=()=>ROL==='solicitante'?TABS_SOL:ROL==='admin'?[...TABS,...TABS_ADM]:ROL==='lector_solicitante'?[...TABS,...TABS_SOL]:TABS;
+const PIDE=()=>ROL==='solicitante'||ROL==='lector_solicitante';
 Object.assign(FRASES,{don:'Necesidades y donaciones.',usr:'Quién entra y qué puede ver.'});
 Object.assign(ICO,{
   don:'<path d="M20 12v9H4v-9"/><rect x="2" y="7" width="20" height="5" rx="1"/><path d="M12 21V7M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7z"/>',
   usr:'<circle cx="9" cy="8" r="4"/><path d="M2 21v-1a7 7 0 0 1 14 0v1"/><path d="M17 11l2 2 4-4"/>'});
-const ROLES=[['admin','Administrador','Ve y edita todo: inmuebles, donaciones y usuarios. Asigna las donaciones.'],['editor','Editor','Ve y edita inmuebles. No ve donaciones.'],['lector','Lector','Solo consulta inmuebles. No ve donaciones.'],['solicitante','Solicitante','Ve todas las necesidades y donaciones y carga nuevas. No asigna, no entrega ni borra. No ve inmuebles.']];
+const ROLES=[['admin','Administrador','Ve y edita todo: inmuebles, donaciones y usuarios. Asigna las donaciones.'],['editor','Editor','Ve y edita inmuebles. No ve donaciones.'],['lector','Lector','Solo consulta inmuebles. No ve donaciones.'],['solicitante','Solicitante','Ve todas las necesidades y donaciones y carga nuevas. No asigna, no entrega ni borra. No ve inmuebles.'],['lector_solicitante','Lector + Solicitante','Consulta inmuebles sin poder modificarlos y, en donaciones, hace lo mismo que un Solicitante.']];
 const EST_PROD=['Nuevo','Muy bueno','Bueno','Regular','Necesita arreglo'];
 const dn=s=>String(s??'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 const dcmp=(a,b)=>String(a??'').localeCompare(String(b??''),'es',{sensitivity:'base'});
@@ -1355,7 +1356,7 @@ function vDon(){
   const cnt={nec:S.dnec.filter(n=>n.estado==='pendiente'||n.estado==='asignada').length,don:S.ddon.filter(d=>d.estado==='disponible').length};
   const ph={nec:'Buscar persona, elemento, localidad, profesional…',don:'Buscar objeto, donante, destinatario…',ele:'Buscar elemento o rubro…',eq:'Buscar por apellido, sector, mail…'}[DV];
   const btn={nec:'<button class="btn" data-dact="fnec">+ Nueva necesidad</button>',don:'<button class="btn" data-dact="fdon">+ Nueva donación</button>',ele:ADM()?'<button class="btn" data-dact="fele">+ Agregar elemento</button>':'',eq:ADM()?'<button class="btn" data-dact="feq">+ Agregar al equipo</button>':''}[DV]||'';
-  const top=ROL==='solicitante'&&DV==='res'?'<div class="bar2"><button class="btn" data-dact="fnec">+ Nueva necesidad</button><button class="btn s" data-dact="fdon">+ Nueva donación</button></div>':'';
+  const top=PIDE()&&DV==='res'?'<div class="bar2"><button class="btn" data-dact="fnec">+ Nueva necesidad</button><button class="btn s" data-dact="fdon">+ Nueva donación</button></div>':'';
   return`${top}<div class="dtabs">${DTB().map(([k,l])=>`<button class="${DV===k?'on':''}" data-dact="dv" data-v="${k}">${l}${cnt[k]!=null?` <small>${cnt[k]}</small>`:''}</button>`).join('')}</div>
   ${DV!=='res'?`<div class="bar2"><input data-dq placeholder="${ph}" value="${esc(DQ)}">${btn}</div>${DFIL[DV]?`<div class="dchips">${DFIL[DV].map(([v,l])=>`<button class="${DF[DV]===v?'on':''}" data-dact="dfil" data-v="${v}">${l}</button>`).join('')}</div>`:''}`:''}
   <div id="dlist">${dList()}</div>`;
@@ -1429,7 +1430,7 @@ function fFicha(k){
   <form id="dficha" data-k="${esc(k)}" onsubmit="return false"><div class="r2">${L('Apellido *','<input name="apellido" value="'+esc(n.apellido||'')+'"'+dis+'>')}${L('Nombre','<input name="nombre" value="'+esc(n.nombre||'')+'"'+dis+'>')}${L('Teléfono','<input name="telefono" type="tel" value="'+esc(f('telefono'))+'"'+dis+'>')}${L('Domicilio','<input name="domicilio" value="'+esc(f('domicilio'))+'"'+dis+'>')}${L('Localidad','<input name="localidad" list="dlocs" value="'+esc(f('localidad'))+'"'+dis+'>')}${adm?L('Profesional a cargo',`<select name="profesional" onchange="const e=S.deq.find(x=>x.iniciales===this.value);this.form.querySelector('#dintv').value=e&&e.interno||''">${opts(prof.map(e=>[e.iniciales,eqN(e)+' ('+e.iniciales+')']),f('profesional'),'— Sin asignar —')}</select>`):f('profesional')?L('Profesional a cargo',`<input value="${esc(profN(f('profesional')))}" disabled>`):''}${adm||f('profesional')?L('Interno del profesional',`<input id="dintv" value="${esc((S.deq.find(x=>x.iniciales===f('profesional'))||{}).interno||'')}" disabled style="max-width:140px">`):''}</div>
   <datalist id="dlocs">${locs.map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
   <h3 style="margin:14px 0 4px;font-size:14px">Elementos (${l.length})</h3><div class="dfits">${l.map(item).join('')}</div>
-  <div id="ditems" data-ficha="1"></div>${adm||ROL==='solicitante'?'<button type="button" class="btn s" data-dact="itemadd">+ Agregar otro elemento</button>':''}
+  <div id="ditems" data-ficha="1"></div>${adm||PIDE()?'<button type="button" class="btn s" data-dact="itemadd">+ Agregar otro elemento</button>':''}
   <div class="bar2" style="margin-top:14px;justify-content:flex-end"><button type="button" class="btn" data-dact="cerrar">Listo</button></div></form>`);
 }
 let FSAVE=null;
@@ -1731,7 +1732,7 @@ async function start(){
   if(!rolOk){ROL='lector';setTimeout(()=>toast('No se pudo leer tu rol. Recargá la página (Ctrl + Shift + R) para ver todas las secciones.',12000),500)}
   DB=mkDB();ASSETS=mkAssets();$('#out').style.display='';
   if(ROL!=='solicitante')for(const k of Object.keys(COL))DB.collection(COL[k]).onSnapshot(s=>{S[k]=s.docs.map(d=>({id:d.id,...d.data()}));if(k==='prov')S.prov.sort((a,b)=>String(a.nombre||'').trim().localeCompare(String(b.nombre||'').trim(),'es',{sensitivity:'base',numeric:true}));render()},e=>toast(e.message));
-  if(ROL==='admin'||ROL==='solicitante'){
+  if(ROL==='admin'||PIDE()){
     for(const k of Object.keys(DCOL))DB.collection(DCOL[k]).onSnapshot(s=>{S[k]=s.docs.map(d=>({id:d.id,...d.data()}));DERR='';render()},e=>{DERR=(e&&e.message)||'error';render()});
     if(ROL==='admin'){loadPer();loadUsr();sb.channel('rt-perfiles').on('postgres_changes',{event:'*',schema:'public',table:'perfiles'},()=>loadPer()).subscribe()}
   }
